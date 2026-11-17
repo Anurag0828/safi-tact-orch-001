@@ -12,6 +12,7 @@
     "operationType": {
       "enum": [
         "BARGE_IN",
+        "LIST_HELD",
         "APPROVE_ACTION",
         "REJECT_ACTION",
         "RETURN_TO_UNGATED",

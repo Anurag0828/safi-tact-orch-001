@@ -171,3 +171,13 @@ def test_gate_operation_schema_requires_action_id_and_target_mode():
             "targetMode": "GATED",
         },
     )
+
+    # LIST_HELD by conversationId or subjectLine passes
+    validate_against_schema(
+        "gate-operation.schema.json",
+        {
+            "operationType": "LIST_HELD",
+            "conversationId": "conv_01",
+            "actorGuid": "user_01",
+        },
+    )
