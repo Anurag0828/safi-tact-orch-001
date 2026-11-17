@@ -28,6 +28,7 @@ services:
       WINDMILL_BASE_URL: http://windmill-server:8000
       WINDMILL_TOKEN: ${WINDMILL_TOKEN:?WINDMILL_TOKEN must be set}
       WINDMILL_WORKSPACE: ${WINDMILL_WORKSPACE:-safi-ops}
+      WINDMILL_ALLOWED_SCRIPTS: ${WINDMILL_ALLOWED_SCRIPTS:-f/safi/ops_task_assignment}
       SAFI_AUTHZ_URL: ${SAFI_AUTHZ_URL:-}
       SAFI_AUTHZ_TOKEN: ${SAFI_AUTHZ_TOKEN:-}
       NATS_URL: ${NATS_URL:?NATS_URL must be set}
@@ -61,6 +62,7 @@ services:
       # R-SEC-03: Block $env access inside workflow nodes so N8N_ENCRYPTION_KEY is never exposed;
       # webhooks & gate callbacks authenticate via native n8n Header Auth credentials.
       N8N_BLOCK_ENV_ACCESS_IN_NODE: "true"
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
     volumes:
       - n8n_data:/home/node/.n8n
     networks:
@@ -80,7 +82,8 @@ services:
       CALNODE_ENCRYPTION_KEY: ${CALNODE_ENCRYPTION_KEY:?CALNODE_ENCRYPTION_KEY must be set}
       CALNODE_RECOVERY_SECRET: ${CALNODE_RECOVERY_SECRET:?CALNODE_RECOVERY_SECRET must be set}
       # R-GATE-02: Leave SMTP unconfigured so ungated auto-emails cannot bypass the Gate
-      SMTP_HOST: ""
+      # (Calnode v0.14.0 reads EMAIL_SMTP_HOST)
+      EMAIL_SMTP_HOST: ""
     volumes:
       - calnode_data:/data
     networks:
@@ -97,6 +100,11 @@ services:
     ports:
       - "127.0.0.1:4222:4222"
       - "127.0.0.1:8222:8222"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8222/healthz || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     volumes:
       - nats_data:/data
     networks:

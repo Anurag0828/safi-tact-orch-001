@@ -512,3 +512,378 @@ async def test_authorize_read_operation_persists_owner_across_restart(isolated_s
     )
     owners = await store.list_conversation_owners()
     assert owners.get("conv_read_owner_persist") == "user_alpha"
+
+
+@pytest.mark.asyncio
+async def test_dispatch_allowlist_bypass_via_payload_recipients_blocked_without_row_creation(isolated_system):
+    """Unlisted recipients hidden inside payload are rejected BEFORE creating any conversation row."""
+    from gate.errors import RecipientNotAllowlistedError
+
+    dispatcher, _, _, store, _, mock_adapters = isolated_system
+    user_a = _make_actor("user_alpha")
+
+    # Case 1: empty recipients[] + unlisted email in payload -> blocked & no rogue row
+    with pytest.raises(RecipientNotAllowlistedError):
+        await dispatcher.submit_action(
+            ActionSubmission(
+                conversationId="conv_bypass_1",
+                subjectLineDisplay="Bypass 1",
+                engine=EngineName.N8N,
+                operation="dispatch_followup",
+                idempotencyKey="bp_1",
+                payload={"recipientEmail": "attacker@evil.example", "messageBody": "hi"},
+                recipients=[],
+                actor=user_a,
+            )
+        )
+    assert await store.get_conversation("conv_bypass_1") is None
+    assert len(mock_adapters[EngineName.N8N].call_log) == 0
+
+    # Case 2: decoy allowlisted recipient + unlisted attendeeEmail in payload -> blocked
+    with pytest.raises(RecipientNotAllowlistedError):
+        await dispatcher.submit_action(
+            ActionSubmission(
+                conversationId="conv_bypass_2",
+                engine=EngineName.CALNODE,
+                operation="create_booking",
+                idempotencyKey="bp_2",
+                payload={"attendeeEmail": "unlisted@evil.example", "slotId": "2026-11-18T14:00:00Z"},
+                recipients=["customer-a@allowlist.test.local"],
+                actor=user_a,
+            )
+        )
+    assert await store.get_conversation("conv_bypass_2") is None
+
+    # Case 3: controlled outbound op with zero recipients anywhere -> blocked
+    with pytest.raises(RecipientNotAllowlistedError):
+        await dispatcher.submit_action(
+            ActionSubmission(
+                conversationId="conv_bypass_3",
+                engine=EngineName.N8N,
+                operation="dispatch_followup",
+                idempotencyKey="bp_3",
+                payload={"messageBody": "no recipient supplied"},
+                recipients=[],
+                actor=user_a,
+            )
+        )
+    assert await store.get_conversation("conv_bypass_3") is None
+
+
+@pytest.mark.asyncio
+async def test_windmill_arbitrary_script_path_and_calnode_calendar_escape_blocked(test_config, isolated_system):
+    """Windmill script allowlist and Calnode bounded-calendar checks reject scope escapes & traversal."""
+    from adapters.calnode import CalnodeAdapter
+    from adapters.windmill import WindmillAdapter
+
+    wm = WindmillAdapter(test_config)
+    with pytest.raises(UnauthorizedError):
+        await wm.execute("start_assignment", {"scriptPath": "f/other/evil_script"}, "wm_esc_1")
+    with pytest.raises(UnauthorizedError):
+        await wm.execute("start_assignment", {"scriptPath": "../admin/reset"}, "wm_esc_2")
+
+    cal = CalnodeAdapter(test_config)
+    with pytest.raises(UnauthorizedError):
+        await cal.list_slots(calendar_id="other-unbounded-cal")
+    with pytest.raises(UnauthorizedError):
+        await cal.execute(
+            "create_booking",
+            {"calendarId": "../v1/admin", "slotId": "2026-11-18T14:00:00Z", "attendeeEmail": "customer-a@allowlist.test.local"},
+            "cal_esc_1",
+        )
+
+    # Through GateDispatcher, adapter UnauthorizedError is recorded as FAILED(denied)
+    dispatcher, _, _, store, history, mock_adapters = isolated_system
+    mock_adapters[EngineName.WINDMILL] = wm
+    user_a = _make_actor("user_alpha")
+    with pytest.raises(UnauthorizedError):
+        await dispatcher.submit_action(
+            ActionSubmission(
+                conversationId="conv_wm_escape",
+                engine=EngineName.WINDMILL,
+                operation="start_assignment",
+                idempotencyKey="wm_esc_gate_1",
+                payload={
+                    "scriptPath": "f/other/evil",
+                    "bookingId": "bkg_1",
+                    "conversationId": "conv_wm_escape",
+                    "assignee": "ops-specialist-1@allowlist.test.local",
+                },
+                recipients=["ops-specialist-1@allowlist.test.local"],
+                actor=user_a,
+            )
+        )
+    action = await store.get_action_by_idempotency_key("conv_wm_escape", "wm_esc_gate_1")
+    assert action["state"] == ActionState.FAILED.value
+    assert any(
+        e.type == ControlEventType.ACTION_FAILED and e.outcome == Outcome.DENIED
+        for e in history.events
+    )
+
+
+@pytest.mark.asyncio
+async def test_n8n_adapter_does_not_send_admin_api_key_on_webhooks(test_config):
+    """Least privilege: n8n webhook calls send X-SAFI-Webhook-Secret only, never X-N8N-API-KEY."""
+    import httpx
+    from adapters.n8n import N8nAdapter
+
+    captured_headers: dict[str, str] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured_headers.update(dict(request.headers))
+        return httpx.Response(200, json={"status": "dispatched", "executionId": "99"})
+
+    transport = httpx.MockTransport(handler)
+    cfg = GateConfig(n8n_api_key="admin-n8n-key", n8n_webhook_secret="webhook-only-secret")
+    async with httpx.AsyncClient(transport=transport) as client:
+        adapter = N8nAdapter(cfg, http_client=client)
+        res = await adapter.execute(
+            "dispatch_followup",
+            {"conversationId": "conv_n8n_lp", "recipientEmail": "customer-a@allowlist.test.local", "messageBody": "hi"},
+            "lp_1",
+        )
+        assert res["status"] == "dispatched"
+
+    lower_headers = {k.lower(): v for k, v in captured_headers.items()}
+    assert lower_headers.get("x-safi-webhook-secret") == "webhook-only-secret"
+    assert "x-n8n-api-key" not in lower_headers
+
+
+@pytest.mark.asyncio
+async def test_shared_sqlite_concurrent_writes_no_transaction_interleaving(isolated_system):
+    """20 concurrent conversations writing actions simultaneously never interleave transactions."""
+    dispatcher, _, _, store, _, _ = isolated_system
+    user_a = _make_actor("user_alpha")
+
+    async def run_one(i: int):
+        return await dispatcher.submit_action(
+            ActionSubmission(
+                conversationId=f"conv_conc_{i}",
+                subjectLineDisplay=f"Concurrent {i}",
+                engine=EngineName.N8N,
+                operation="dispatch_followup",
+                idempotencyKey=f"conc_key_{i}",
+                payload={"messageBody": f"msg {i}"},
+                recipients=["customer-a@allowlist.test.local"],
+                actor=user_a,
+            )
+        )
+
+    results = await asyncio.gather(*(run_one(i) for i in range(20)))
+    assert len(results) == 20
+    assert all(r["state"] == ActionState.DONE.value for r in results)
+
+    for i in range(20):
+        rec = await store.get_idempotency_record(f"conv_conc_{i}", f"conc_key_{i}")
+        assert rec is not None
+        assert rec["outcome"] == Outcome.OK.value
+
+
+@pytest.mark.asyncio
+async def test_approve_action_toctou_race_reconciled_by_barge_in(isolated_system):
+    """approve_action marks action in-flight inside state_lock so concurrent barge_in reconciles it."""
+    dispatcher, modes, _, store, _, mock_adapters = isolated_system
+    user_a = _make_actor("user_alpha")
+    conv_id = "conv_approve_race"
+
+    await store.get_or_create_conversation(conv_id, "Approve Race", owner_guid="user_alpha")
+    await modes.barge_in(actor=user_a, conversation_id=conv_id)
+
+    held = await dispatcher.submit_action(
+        ActionSubmission(
+            conversationId=conv_id,
+            engine=EngineName.CALNODE,
+            operation="create_booking",
+            idempotencyKey="ar_1",
+            payload={"slotId": "slot_1", "attendeeEmail": "customer-a@allowlist.test.local"},
+            recipients=["customer-a@allowlist.test.local"],
+            actor=user_a,
+        )
+    )
+    assert held["state"] == ActionState.HELD.value
+
+    started = asyncio.Event()
+    finish = asyncio.Event()
+
+    async def slow_book(op, payload, idem):
+        started.set()
+        await finish.wait()
+        return {"bookingId": "bkg_approve_race", "status": "confirmed"}
+
+    mock_adapters[EngineName.CALNODE].execute = slow_book
+
+    approve_task = asyncio.create_task(modes.approve_action(conv_id, held["actionId"], actor=user_a))
+    await started.wait()
+
+    barge_task = asyncio.create_task(modes.barge_in(actor=user_a, conversation_id=conv_id))
+    await asyncio.sleep(0.05)
+    finish.set()
+
+    approve_res = await approve_task
+    barge_res = await barge_task
+
+    assert approve_res["state"] == ActionState.DONE.value
+    assert barge_res["mode"] == ConversationMode.GATED.value
+    assert len(barge_res["reconciledInFlight"]) == 1
+    assert barge_res["reconciledInFlight"][0]["actionId"] == held["actionId"]
+    assert barge_res["reconciledInFlight"][0]["undone"] is False
+
+
+@pytest.mark.asyncio
+async def test_return_to_ungated_store_error_fails_closed_not_gated(isolated_system):
+    """StoreError during return_to_ungated transitions conversation to FAILED_CLOSED (never reverts to GATED)."""
+    dispatcher, modes, _, store, history, _ = isolated_system
+    user_a = _make_actor("user_alpha")
+    conv_id = "conv_ungate_store_err"
+
+    await store.get_or_create_conversation(conv_id, "Ungate StoreErr", owner_guid="user_alpha")
+    await modes.barge_in(actor=user_a, conversation_id=conv_id)
+
+    orig_publish = history.record_control_event
+
+    async def failing_publish(*args, **kwargs):
+        if kwargs.get("event_type") == ControlEventType.MODE_UNGATED:
+            raise StoreError("Simulated JetStream publish failure on MODE_UNGATED")
+        return await orig_publish(*args, **kwargs)
+
+    history.record_control_event = failing_publish
+
+    with pytest.raises(StoreError):
+        await modes.return_to_ungated(actor=user_a, conversation_id=conv_id, resolutions=[])
+
+    conv = await store.get_conversation(conv_id)
+    assert conv["mode"] == ConversationMode.FAILED_CLOSED.value
+
+
+@pytest.mark.asyncio
+async def test_reconcile_to_ungated_blocked_when_held_actions_exist(isolated_system):
+    """Reconciling FAILED_CLOSED directly to UNGATED is blocked if HELD actions exist; GATED succeeds."""
+    from gate.errors import HeldActionsUnresolvedError
+
+    dispatcher, modes, _, store, _, _ = isolated_system
+    user_a = _make_actor("user_alpha")
+    conv_id = "conv_reconcile_held"
+
+    await store.get_or_create_conversation(conv_id, "Reconcile Held", owner_guid="user_alpha")
+    await modes.barge_in(actor=user_a, conversation_id=conv_id)
+    held = await dispatcher.submit_action(
+        ActionSubmission(
+            conversationId=conv_id,
+            engine=EngineName.N8N,
+            operation="dispatch_followup",
+            idempotencyKey="rh_1",
+            payload={"messageBody": "held"},
+            recipients=["customer-a@allowlist.test.local"],
+            actor=user_a,
+        )
+    )
+    assert held["state"] == ActionState.HELD.value
+
+    await store.update_conversation_mode(conv_id, ConversationMode.FAILED_CLOSED)
+
+    with pytest.raises(HeldActionsUnresolvedError):
+        await modes.reconcile_failed_closed(
+            actor=user_a, conversation_id=conv_id, target_mode=ConversationMode.UNGATED
+        )
+
+    rec = await modes.reconcile_failed_closed(
+        actor=user_a, conversation_id=conv_id, target_mode=ConversationMode.GATED
+    )
+    assert rec["mode"] == ConversationMode.GATED.value
+    assert len(await store.get_held_actions(conv_id)) == 1
+
+
+@pytest.mark.asyncio
+async def test_nonexistent_conversation_barge_in_does_not_squat_acl(isolated_system):
+    """Calling barge_in on a nonexistent conversationId raises 404 without pinning ownership in ACL."""
+    from gate.errors import ConversationNotFoundError
+
+    _, modes, authz, _, _, _ = isolated_system
+    user_a = _make_actor("user_alpha")
+
+    with pytest.raises(ConversationNotFoundError):
+        await modes.barge_in(actor=user_a, conversation_id="conv_never_existed")
+
+    assert "conv_never_existed" not in authz.conversation_access_map
+
+
+@pytest.mark.asyncio
+async def test_downstream_unknown_error_exposes_real_action_id_and_engine(isolated_system):
+    """DownstreamOutcomeUnknownError carries real Gate actionId ('act_...') and engine name."""
+    dispatcher, _, _, _, _, mock_adapters = isolated_system
+    user_a = _make_actor("user_alpha")
+
+    async def timeout_execute(op, payload, idem):
+        raise DownstreamOutcomeUnknownError("calnode", "HTTP timeout")
+
+    mock_adapters[EngineName.CALNODE].execute = timeout_execute
+
+    with pytest.raises(DownstreamOutcomeUnknownError) as exc_info:
+        await dispatcher.submit_action(
+            ActionSubmission(
+                conversationId="conv_unknown_aid",
+                engine=EngineName.CALNODE,
+                operation="create_booking",
+                idempotencyKey="uaid_1",
+                payload={"attendeeEmail": "customer-a@allowlist.test.local"},
+                recipients=["customer-a@allowlist.test.local"],
+                actor=user_a,
+            )
+        )
+    assert exc_info.value.details["actionId"].startswith("act_")
+    assert exc_info.value.details["engine"] == "calnode"
+
+
+@pytest.mark.asyncio
+async def test_concurrent_barge_in_emits_mode_gated_once(isolated_system):
+    """Concurrent barge_in calls on the same conversation emit MODE_GATED exactly once."""
+    _, modes, _, store, history, _ = isolated_system
+    user_a = _make_actor("user_alpha")
+    conv_id = "conv_conc_barge"
+
+    await store.get_or_create_conversation(conv_id, "Concurrent Barge", owner_guid="user_alpha")
+
+    r1, r2 = await asyncio.gather(
+        modes.barge_in(actor=user_a, conversation_id=conv_id),
+        modes.barge_in(actor=user_a, conversation_id=conv_id),
+    )
+    assert r1["mode"] == ConversationMode.GATED.value
+    assert r2["mode"] == ConversationMode.GATED.value
+
+    mode_gated_events = [
+        e for e in history.events
+        if e.conversationId == conv_id and e.type == ControlEventType.MODE_GATED
+    ]
+    assert len(mode_gated_events) == 1
+
+
+@pytest.mark.asyncio
+async def test_cross_engine_idempotency_conflict_rejected(isolated_system):
+    """Same (conversationId, idempotencyKey, operation) on a DIFFERENT engine raises IdempotencyConflictError."""
+    dispatcher, _, _, _, _, _ = isolated_system
+    user_a = _make_actor("user_alpha")
+
+    await dispatcher.submit_action(
+        ActionSubmission(
+            conversationId="conv_eng_conflict",
+            engine=EngineName.N8N,
+            operation="dispatch_followup",
+            idempotencyKey="same_k",
+            payload={"messageBody": "hi"},
+            recipients=["customer-a@allowlist.test.local"],
+            actor=user_a,
+        )
+    )
+
+    with pytest.raises(IdempotencyConflictError):
+        await dispatcher.submit_action(
+            ActionSubmission(
+                conversationId="conv_eng_conflict",
+                engine=EngineName.CALNODE,
+                operation="dispatch_followup",
+                idempotencyKey="same_k",
+                payload={"messageBody": "hi"},
+                recipients=["customer-a@allowlist.test.local"],
+                actor=user_a,
+            )
+        )

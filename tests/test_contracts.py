@@ -125,3 +125,49 @@ def test_captured_contract_example_files_validate_against_schemas():
     for schema_name, example_name in pairs:
         payload = json.loads((CONTRACTS_DIR / example_name).read_text(encoding="utf-8"))
         validate_against_schema(schema_name, payload)
+
+
+def test_gate_operation_schema_requires_action_id_and_target_mode():
+    # APPROVE_ACTION without actionId must fail schema validation
+    with pytest.raises(ContractValidationError):
+        validate_against_schema(
+            "gate-operation.schema.json",
+            {
+                "operationType": "APPROVE_ACTION",
+                "conversationId": "conv_01",
+                "actorGuid": "user_01",
+            },
+        )
+
+    # REJECT_ACTION without actionId must fail schema validation
+    with pytest.raises(ContractValidationError):
+        validate_against_schema(
+            "gate-operation.schema.json",
+            {
+                "operationType": "REJECT_ACTION",
+                "conversationId": "conv_01",
+                "actorGuid": "user_01",
+            },
+        )
+
+    # RECONCILE without targetMode must fail schema validation
+    with pytest.raises(ContractValidationError):
+        validate_against_schema(
+            "gate-operation.schema.json",
+            {
+                "operationType": "RECONCILE",
+                "conversationId": "conv_01",
+                "actorGuid": "user_01",
+            },
+        )
+
+    # RECONCILE with valid targetMode passes
+    validate_against_schema(
+        "gate-operation.schema.json",
+        {
+            "operationType": "RECONCILE",
+            "conversationId": "conv_01",
+            "actorGuid": "user_01",
+            "targetMode": "GATED",
+        },
+    )

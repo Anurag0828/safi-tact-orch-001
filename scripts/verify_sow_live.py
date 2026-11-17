@@ -59,6 +59,15 @@ def git_sha() -> str:
         return "UNKNOWN"
 
 
+def _posix_repo_root() -> str:
+    """Computes the WSL/POSIX repo path dynamically from ROOT (no hardcoded mount path)."""
+    if os.name == "nt":
+        drive = ROOT.drive.rstrip(":").lower()
+        rest = ROOT.as_posix().split(":", 1)[1]
+        return f"/mnt/{drive}{rest}"
+    return ROOT.as_posix()
+
+
 def _wsl_cmd(bash_script: str) -> list[str]:
     if os.name == "nt":
         return ["wsl", "-d", "Ubuntu-24.04", "-u", "root", "bash", "-lc", bash_script]
@@ -67,8 +76,9 @@ def _wsl_cmd(bash_script: str) -> list[str]:
 
 def restart_full_local_stack() -> None:
     """Restarts the ENTIRE local Docker Compose stack (gate, n8n, calnode, windmill, nats) for A10."""
+    repo_posix = _posix_repo_root()
     cmd = _wsl_cmd(
-        "cd /mnt/d/Interworks/Safi && docker compose -f deploy/docker-compose.yml --env-file deploy/.env --profile local-nats restart"
+        f"cd '{repo_posix}' && docker compose -f deploy/docker-compose.yml --env-file deploy/.env --profile local-nats restart"
     )
     subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
@@ -515,6 +525,18 @@ async def main() -> None:
                 "actor": owner_actor,
             },
         )
+        r_a_while_b_gated = await client.post(
+            f"{GATE}/safichat/ops/marketing/followup",
+            headers=gate_headers,
+            json={
+                "conversationId": conv_a,
+                "subjectLineDisplay": subj_a,
+                "recipientEmail": "customer-a@allowlist.test.local",
+                "messageBody": "Independent Conv A follow-up while Conv B is GATED",
+                "idempotencyKey": f"followup:{conv_a}:while_b_gated",
+                "actor": owner_actor,
+            },
+        )
         r_c_job = await client.post(
             f"{GATE}/safichat/ops/operations/assign",
             headers=gate_headers,
@@ -530,7 +552,8 @@ async def main() -> None:
         )
         assert r_hb1.json()["state"] == "HELD"
         assert r_hb2.json()["state"] == "HELD"
-        assert r_c_job.json()["state"] == "DONE"
+        assert r_a_while_b_gated.status_code == 200 and r_a_while_b_gated.json()["state"] == "DONE"
+        assert r_c_job.status_code == 200 and r_c_job.json()["state"] == "DONE"
         hb1_id = r_hb1.json()["actionId"]
         hb2_id = r_hb2.json()["actionId"]
 
@@ -540,13 +563,43 @@ async def main() -> None:
             json.dumps(real_gate_action_row, indent=2) + "\n", encoding="utf-8"
         )
 
+        # Live 409 AMBIGUOUS_SUBJECT_LINE check (two caller-owned conversations sharing one Subject Line)
+        dup_subj = f"Shared Renewal Subject {run_id}"
+        conv_dup1 = f"conv_sow_dup1_{run_id}"
+        conv_dup2 = f"conv_sow_dup2_{run_id}"
+        for cid_dup, k_dup in ((conv_dup1, "d1"), (conv_dup2, "d2")):
+            r_dup = await client.post(
+                f"{GATE}/safichat/ops/marketing/followup",
+                headers=gate_headers,
+                json={
+                    "conversationId": cid_dup,
+                    "subjectLineDisplay": dup_subj,
+                    "recipientEmail": "customer-a@allowlist.test.local",
+                    "messageBody": f"Dup subject seed {k_dup}",
+                    "idempotencyKey": f"dup:{run_id}:{k_dup}",
+                    "actor": owner_actor,
+                },
+            )
+            assert r_dup.status_code == 200, r_dup.text
+        r_ambig = await client.post(
+            f"{GATE}/safichat/ops/gate/barge-in",
+            headers=gate_headers,
+            json={"subjectLine": dup_subj, "actor": owner_actor},
+        )
+        assert r_ambig.status_code == 409, f"Expected 409 AMBIGUOUS_SUBJECT_LINE, got {r_ambig.status_code}: {r_ambig.text}"
+        assert r_ambig.json()["errorCode"] == "AMBIGUOUS_SUBJECT_LINE"
+        ambig_cands = {c["conversationId"] for c in r_ambig.json()["details"]["candidates"]}
+        assert ambig_cands == {conv_dup1, conv_dup2}
+
         report["tests"]["A06"] = {
             "status": "PASS",
             "timestamp": utc_now(),
             "conversations": [conv_a, conv_b, conv_c],
             "gatedConversationId": conv_b,
             "heldActionIds": [hb1_id, hb2_id],
+            "independentConvAFollowupExecId": r_a_while_b_gated.json()["result"].get("executionId"),
             "independentConvCJobId": r_c_job.json()["result"]["jobId"],
+            "ambiguousSubjectLine409Verified": sorted(ambig_cands),
             "perConversationIdempotencyIsolationVerified": True,
         }
 
@@ -567,9 +620,22 @@ async def main() -> None:
         assert held_after_data["mode"] == "GATED"
         assert len(held_after_data["heldActions"]) == 2
 
-        # Verify Calnode booking ALSO survived full-stack restart
+        # Verify Calnode booking survived full-stack restart AND retry produces zero duplicate bookings
         cal_post_restart = (await client.get(f"{CALNODE}/v1/bookings", headers=calnode_headers)).json()
+        cal_confirmed_before_retry = sum(1 for i in cal_post_restart.get("items", []) if i.get("status") == "confirmed")
         assert any(i["id"] == booking_id for i in cal_post_restart.get("items", []))
+        r_book_post_restart = await client.post(
+            f"{GATE}/safichat/ops/sales/book",
+            headers=gate_headers,
+            json=book_payload,
+        )
+        assert r_book_post_restart.status_code == 200, r_book_post_restart.text
+        b_post = r_book_post_restart.json()
+        assert b_post["idempotentReplay"] is True
+        assert b_post["result"]["bookingId"] == booking_id
+        cal_after_retry = (await client.get(f"{CALNODE}/v1/bookings", headers=calnode_headers)).json()
+        cal_confirmed_after_retry = sum(1 for i in cal_after_retry.get("items", []) if i.get("status") == "confirmed")
+        assert cal_confirmed_after_retry == cal_confirmed_before_retry
 
         report["tests"]["A10"] = {
             "status": "PASS",
@@ -580,9 +646,11 @@ async def main() -> None:
             "modeAfterRestart": held_after_data["mode"],
             "heldCountAfterRestart": len(held_after_data["heldActions"]),
             "calnodeBookingSurvivedRestart": True,
+            "postRestartBookingRetryReplay": b_post["idempotentReplay"],
+            "calnodeConfirmedCountUnchanged": cal_confirmed_after_retry == cal_confirmed_before_retry,
         }
 
-        # === A07: Ungate (Release 1, Cancel 1, No Duplicate + No TRANSITIONING Deadlock) ===
+        # === A07: Ungate (Release 1, Cancel 1, No Duplicate + Live Approve/Reject) ===
         r_ungate = await client.post(
             f"{GATE}/safichat/ops/gate/ungate",
             headers=gate_headers,
@@ -600,6 +668,24 @@ async def main() -> None:
         assert ug["mode"] == "UNGATED"
         assert len(ug["released"]) == 1
         assert ug["cancelled"] == [hb2_id]
+        released_exec_id = ug["released"][0]["result"].get("executionId")
+
+        # Retry the RELEASED action -> MUST be idempotentReplay=True with identical executionId (zero duplicate send!)
+        r_retry_released = await client.post(
+            f"{GATE}/safichat/ops/marketing/followup",
+            headers=gate_headers,
+            json={
+                "conversationId": conv_b,
+                "subjectLineDisplay": subj_b,
+                "recipientEmail": "customer-b@allowlist.test.local",
+                "messageBody": "Held action 1 (to release)",
+                "idempotencyKey": f"held:{conv_b}:1",
+                "actor": owner_actor,
+            },
+        )
+        assert r_retry_released.status_code == 200, r_retry_released.text
+        assert r_retry_released.json()["idempotentReplay"] is True
+        assert r_retry_released.json()["result"].get("executionId") == released_exec_id
 
         r_retry_cancelled = await client.post(
             f"{GATE}/safichat/ops/marketing/followup",
@@ -617,18 +703,67 @@ async def main() -> None:
         assert r_retry_cancelled.json()["state"] == "CANCELLED"
         assert r_retry_cancelled.json()["idempotentReplay"] is True
 
+        # Live /approve and /reject on a GATED conversation
+        r_barge_dup1 = await client.post(
+            f"{GATE}/safichat/ops/gate/barge-in",
+            headers=gate_headers,
+            json={"conversationId": conv_dup1, "actor": owner_actor},
+        )
+        assert r_barge_dup1.status_code == 200 and r_barge_dup1.json()["mode"] == "GATED"
+        r_h_app = await client.post(
+            f"{GATE}/safichat/ops/marketing/followup",
+            headers=gate_headers,
+            json={
+                "conversationId": conv_dup1,
+                "recipientEmail": "customer-a@allowlist.test.local",
+                "messageBody": "Live approve test",
+                "idempotencyKey": f"approve_live:{run_id}",
+                "actor": owner_actor,
+            },
+        )
+        r_h_rej = await client.post(
+            f"{GATE}/safichat/ops/marketing/followup",
+            headers=gate_headers,
+            json={
+                "conversationId": conv_dup1,
+                "recipientEmail": "customer-a@allowlist.test.local",
+                "messageBody": "Live reject test",
+                "idempotencyKey": f"reject_live:{run_id}",
+                "actor": owner_actor,
+            },
+        )
+        assert r_h_app.json()["state"] == "HELD" and r_h_rej.json()["state"] == "HELD"
+        h_app_id = r_h_app.json()["actionId"]
+        h_rej_id = r_h_rej.json()["actionId"]
+
+        r_live_approve = await client.post(
+            f"{GATE}/safichat/ops/gate/approve",
+            headers=gate_headers,
+            json={"conversationId": conv_dup1, "actionId": h_app_id, "actor": owner_actor},
+        )
+        assert r_live_approve.status_code == 200 and r_live_approve.json()["state"] == "DONE"
+        r_live_reject = await client.post(
+            f"{GATE}/safichat/ops/gate/reject",
+            headers=gate_headers,
+            json={"conversationId": conv_dup1, "actionId": h_rej_id, "actor": owner_actor},
+        )
+        assert r_live_reject.status_code == 200 and r_live_reject.json()["state"] == "REJECTED"
+
         report["tests"]["A07"] = {
             "status": "PASS",
             "timestamp": utc_now(),
             "conversationId": conv_b,
             "releasedActionId": hb1_id,
-            "releasedExecId": ug["released"][0]["result"].get("executionId"),
+            "releasedExecId": released_exec_id,
+            "releasedRetryIdempotentReplay": r_retry_released.json()["idempotentReplay"],
             "cancelledActionIds": ug["cancelled"],
             "modeAfter": ug["mode"],
             "cancelledRetryStatus": r_retry_cancelled.json()["state"],
+            "liveApproveVerified": {"actionId": h_app_id, "state": r_live_approve.json()["state"]},
+            "liveRejectVerified": {"actionId": h_rej_id, "state": r_live_reject.json()["state"]},
         }
 
-        # === A08: Live Race & Barge In Against Real Windmill Dispatch ===
+        # === A08: Live Race & Barge In Against Real Windmill Dispatch (Verified Reconciled In-Flight) ===
         conv_race = f"conv_sow_race_{run_id}"
         await client.post(
             f"{GATE}/safichat/ops/marketing/followup",
@@ -642,8 +777,13 @@ async def main() -> None:
                 "actor": owner_actor,
             },
         )
-        wm_task = asyncio.create_task(
-            client.post(
+        wm_started_ts = utc_now()
+        wm_finished_ts: str | None = None
+        barge_confirmed_ts: str | None = None
+
+        async def _run_wm_race():
+            nonlocal wm_finished_ts
+            resp = await client.post(
                 f"{GATE}/safichat/ops/operations/assign",
                 headers=gate_headers,
                 json={
@@ -655,19 +795,32 @@ async def main() -> None:
                     "actor": owner_actor,
                 },
             )
-        )
-        await asyncio.sleep(0.03)
-        barge_task = asyncio.create_task(
-            client.post(
+            wm_finished_ts = utc_now()
+            return resp
+
+        wm_task = asyncio.create_task(_run_wm_race())
+        # Give gate-adapter ~60ms to enter DISPATCHING against Windmill before barge-in arrives
+        await asyncio.sleep(0.06)
+        barge_started_ts = utc_now()
+
+        async def _run_barge_race():
+            nonlocal barge_confirmed_ts
+            resp = await client.post(
                 f"{GATE}/safichat/ops/gate/barge-in",
                 headers=gate_headers,
                 json={"conversationId": conv_race, "actor": owner_actor},
             )
-        )
+            barge_confirmed_ts = utc_now()
+            return resp
+
+        barge_task = asyncio.create_task(_run_barge_race())
         r_wm_race, r_barge_race = await asyncio.gather(wm_task, barge_task)
         assert r_wm_race.status_code == 200 and r_barge_race.status_code == 200
         assert r_barge_race.json()["mode"] == "GATED"
         assert r_barge_race.json()["undone"] is False
+        assert len(r_barge_race.json()["reconciledInFlight"]) >= 1, (
+            f"Expected in-flight Windmill action to be reconciled during barge-in, got: {r_barge_race.json()}"
+        )
 
         r_after_race = await client.post(
             f"{GATE}/safichat/ops/marketing/followup",
@@ -687,6 +840,12 @@ async def main() -> None:
             "status": "PASS",
             "timestamp": utc_now(),
             "conversationId": conv_race,
+            "timestamps": {
+                "inflightStarted": wm_started_ts,
+                "bargeInStarted": barge_started_ts,
+                "inflightFinished": wm_finished_ts,
+                "bargeInConfirmed": barge_confirmed_ts,
+            },
             "inflightActionState": r_wm_race.json()["state"],
             "bargeInMode": r_barge_race.json()["mode"],
             "reconciledInFlight": r_barge_race.json()["reconciledInFlight"],
@@ -694,7 +853,8 @@ async def main() -> None:
             "postConfirmationActionState": r_after_race.json()["state"],
         }
 
-        # === A09: Live Fail-Closed Authz, Anti-DoS, IDOR & Allowlist ===
+        # === A09: Live Fail-Closed Authz, Anti-DoS, IDOR, Allowlist & Scope Escape ===
+        cb_headers = {"X-SAFI-Gate-Secret": env["GATE_API_TOKEN"]}
         r_no_bearer = await client.post(
             f"{GATE}/safichat/ops/gate/barge-in",
             json={"conversationId": conv_a, "actor": owner_actor},
@@ -720,6 +880,28 @@ async def main() -> None:
             f"{GATE}/safichat/ops/gate/barge-in",
             headers=gate_headers,
             json={"conversationId": conv_a, "actor": other_actor},
+        )
+        # Unauthorized cross-user /approve, /reject, /ungate, /held on conv_race (GATED)
+        held_race_id = r_after_race.json()["actionId"]
+        r_unauth_approve = await client.post(
+            f"{GATE}/safichat/ops/gate/approve",
+            headers=gate_headers,
+            json={"conversationId": conv_race, "actionId": held_race_id, "actor": other_actor},
+        )
+        r_unauth_reject = await client.post(
+            f"{GATE}/safichat/ops/gate/reject",
+            headers=gate_headers,
+            json={"conversationId": conv_race, "actionId": held_race_id, "actor": other_actor},
+        )
+        r_unauth_ungate = await client.post(
+            f"{GATE}/safichat/ops/gate/ungate",
+            headers=gate_headers,
+            json={"conversationId": conv_race, "resolutions": [], "actor": other_actor},
+        )
+        r_unauth_held = await client.post(
+            f"{GATE}/safichat/ops/gate/held",
+            headers=gate_headers,
+            json={"conversationId": conv_race, "actor": other_actor},
         )
         # Cross-user Subject Line enumeration attempt -> 403 (zero candidate leak)
         r_cross_subject = await client.post(
@@ -755,7 +937,50 @@ async def main() -> None:
                 "actor": owner_actor,
             },
         )
-        # Authorized owner sending incomplete context on their OWN conversation -> 401 FAILED_CLOSED
+        # /gate/dispatch payload-recipient allowlist bypass attempt -> 403 RECIPIENT_NOT_ALLOWLISTED
+        r_dispatch_payload_bypass = await client.post(
+            f"{GATE}/gate/dispatch",
+            headers=cb_headers,
+            json={
+                "conversationId": conv_a,
+                "engine": "n8n",
+                "operation": "dispatch_followup",
+                "idempotencyKey": f"dispatch:bypass:{run_id}",
+                "recipients": [],
+                "payload": {"recipientEmail": "hidden-unlisted@evil.example", "messageBody": "bypass"},
+                "actor": owner_actor,
+            },
+        )
+        # Windmill arbitrary scriptPath escape via /gate/dispatch -> 403 UNAUTHORIZED
+        r_wm_script_escape = await client.post(
+            f"{GATE}/gate/dispatch",
+            headers=cb_headers,
+            json={
+                "conversationId": conv_a,
+                "engine": "windmill",
+                "operation": "start_assignment",
+                "idempotencyKey": f"wm:escape:{run_id}",
+                "recipients": ["ops-specialist-1@allowlist.test.local"],
+                "payload": {
+                    "scriptPath": "f/other/evil_script",
+                    "bookingId": "bkg_esc",
+                    "conversationId": conv_a,
+                    "assignee": "ops-specialist-1@allowlist.test.local",
+                },
+                "actor": owner_actor,
+            },
+        )
+        # Calnode out-of-bounds calendarId escape -> 403 UNAUTHORIZED
+        r_cal_escape = await client.post(
+            f"{GATE}/safichat/ops/sales/slots",
+            headers=gate_headers,
+            json={
+                "conversationId": conv_a,
+                "calendarId": "other-unbounded-calendar",
+                "actor": owner_actor,
+            },
+        )
+        # Authorized owner sending incomplete context on their OWN conversation -> 401 FAILED_CLOSED, then live /reconcile!
         conv_unc = f"conv_sow_uncertain_{run_id}"
         await client.post(
             f"{GATE}/safichat/ops/marketing/followup",
@@ -774,42 +999,60 @@ async def main() -> None:
             headers=gate_headers,
             json={"conversationId": conv_unc, "actor": owner_incomplete_actor},
         )
+        r_live_reconcile = await client.post(
+            f"{GATE}/safichat/ops/gate/reconcile",
+            headers=gate_headers,
+            json={"conversationId": conv_unc, "targetMode": "GATED", "actor": owner_actor},
+        )
 
         assert r_no_bearer.status_code == 403
         assert r_no_cb_secret.status_code == 403
         assert r_stranger.status_code == 403
         assert r_cross_user.status_code == 403
+        assert r_unauth_approve.status_code == 403
+        assert r_unauth_reject.status_code == 403
+        assert r_unauth_ungate.status_code == 403
+        assert r_unauth_held.status_code == 403
         assert r_cross_subject.status_code == 403
         assert r_cross_dos.status_code == 403
         assert r_job_idor.status_code == 404
         assert r_revoked.status_code == 403
         assert r_non_allowlist.status_code == 403
+        assert r_dispatch_payload_bypass.status_code == 403
+        assert r_wm_script_escape.status_code == 403
+        assert r_cal_escape.status_code == 403
         assert r_owner_incomplete.status_code == 401
+        assert r_live_reconcile.status_code == 200 and r_live_reconcile.json()["mode"] == "GATED"
 
         report["tests"]["A09"] = {
             "status": "BLOCKED",
             "timestamp": utc_now(),
             "localFailClosedVerification": "PASS",
-            "reason": "All local fail-closed authz, anti-DoS, Subject-Line isolation, Windmill job IDOR, revocation, and allowlist checks passed live; live SAFI Cognito endpoint (V-08 / SAFI_AUTHZ_URL) remains BLOCKED awaiting SAFI infrastructure.",
+            "reason": "All local fail-closed authz, anti-DoS, Subject-Line isolation, Windmill job IDOR, revocation, allowlist bypass, script/calendar scope escape, and reconcile checks passed live; live SAFI Cognito endpoint (V-08 / SAFI_AUTHZ_URL) remains BLOCKED awaiting SAFI infrastructure.",
             "observedStatuses": {
                 "missingBearerToken": r_no_bearer.status_code,
                 "missingCallbackSecret": r_no_cb_secret.status_code,
                 "unlistedStranger": r_stranger.status_code,
                 "crossUserConversationAccess": r_cross_user.status_code,
+                "crossUserApprove": r_unauth_approve.status_code,
+                "crossUserReject": r_unauth_reject.status_code,
+                "crossUserUngate": r_unauth_ungate.status_code,
+                "crossUserHeld": r_unauth_held.status_code,
                 "crossUserSubjectEnumeration": r_cross_subject.status_code,
                 "crossUserIncompleteContextDos": r_cross_dos.status_code,
                 "crossConversationJobStatusIdor": r_job_idor.status_code,
                 "revokedActor": r_revoked.status_code,
                 "nonAllowlistedRecipient": r_non_allowlist.status_code,
+                "dispatchPayloadRecipientBypass": r_dispatch_payload_bypass.status_code,
+                "windmillScriptPathEscape": r_wm_script_escape.status_code,
+                "calnodeCalendarScopeEscape": r_cal_escape.status_code,
                 "ownerIncompleteContextFailClosed": r_owner_incomplete.status_code,
+                "liveReconcileFromFailedClosed": r_live_reconcile.status_code,
             },
         }
 
-    # === A11: Verify Real JetStream ControlEvents & Capture Contract Examples ===
+    # === A11: Verify Real JetStream ControlEvents (Full Context + All Lifecycle Types) & Capture Contract Examples ===
     stream_name = env.get("JETSTREAM_STREAM", "SAFI_HISTORY")
-    recent_events: list[dict[str, Any]] = []
-    sample_control_event: dict[str, Any] | None = None
-    total_msgs = 0
 
     js_script = (
         "import asyncio, json, nats\n"
@@ -817,13 +1060,22 @@ async def main() -> None:
         "  nc = await nats.connect('nats://nats:4222')\n"
         "  js = nc.jetstream()\n"
         f"  info = await js.stream_info('{stream_name}')\n"
-        "  start = max(1, info.state.last_seq - 9)\n"
-        "  out = {'total': info.state.messages, 'events': [], 'sample': None}\n"
+        "  start = max(1, info.state.last_seq - 79)\n"
+        "  out = {'total': info.state.messages, 'events': [], 'byType': {}, 'proxyEvent': None, 'sample': None}\n"
         "  for seq in range(start, info.state.last_seq + 1):\n"
         f"    msg = await js.get_msg('{stream_name}', seq=seq)\n"
         "    ev = json.loads(msg.data.decode('utf-8'))\n"
+        f"    if '{run_id}' not in ev.get('conversationId', ''): continue\n"
+        "    entry = {\n"
+        "      'seq': seq, 'subject': msg.subject, 'eventId': ev['eventId'], 'type': ev['type'],\n"
+        "      'conversationId': ev['conversationId'], 'subjectLineDisplay': ev.get('subjectLineDisplay'),\n"
+        "      'actorGuid': ev['actorGuid'], 'actorKind': ev['actorKind'], 'outcome': ev['outcome'],\n"
+        "      'context': ev['context'], 'ts': ev['ts']\n"
+        "    }\n"
+        "    out['events'].append(entry)\n"
+        "    out['byType'][ev['type']] = entry\n"
+        "    if ev.get('actorKind') == 'PROXY' and out['proxyEvent'] is None: out['proxyEvent'] = entry\n"
         "    if out['sample'] is None and ev.get('subjectLineDisplay'): out['sample'] = ev\n"
-        "    out['events'].append({'seq': seq, 'subject': msg.subject, 'eventId': ev['eventId'], 'type': ev['type'], 'conversationId': ev['conversationId'], 'subjectLineDisplay': ev.get('subjectLineDisplay'), 'actorGuid': ev['actorGuid'], 'actorKind': ev['actorKind'], 'outcome': ev['outcome']})\n"
         "  await nc.close()\n"
         "  print(json.dumps(out))\n"
         "asyncio.run(go())\n"
@@ -836,8 +1088,30 @@ async def main() -> None:
     proc = subprocess.run(cmd, input=js_script, text=True, check=True, stdout=subprocess.PIPE)
     js_data = json.loads(proc.stdout)
     total_msgs = js_data["total"]
-    recent_events = js_data["events"]
+    lifecycle_by_type = js_data["byType"]
+    proxy_event = js_data["proxyEvent"]
     sample_control_event = js_data["sample"]
+
+    # Verify full lifecycle event coverage AND historical portContext preservation on n8n PROXY event
+    for required_type in (
+        "MODE_GATED",
+        "ACTION_HELD",
+        "ACTION_APPROVED",
+        "ACTION_REJECTED",
+        "ACTION_RELEASED",
+        "ACTION_CANCELLED",
+        "MODE_UNGATED",
+        "GATE_FAILED_CLOSED",
+    ):
+        assert required_type in lifecycle_by_type, f"Missing lifecycle event type '{required_type}' in JetStream"
+        ctx = lifecycle_by_type[required_type]["context"]
+        assert "meetingContext" in ctx and "portContext" in ctx and "permissionProvenance" in ctx
+
+    assert proxy_event is not None, "Expected n8n PROXY ControlEvent in JetStream"
+    assert proxy_event["context"]["portContext"].get("port") == "safichat-local-api", (
+        f"Original portContext.port was clobbered on PROXY event: {proxy_event['context']['portContext']}"
+    )
+    assert proxy_event["context"]["portContext"].get("proxyPort") == "n8n-internal"
 
     if sample_control_event:
         (ROOT / "contracts" / "control-event.example.json").write_text(
@@ -867,10 +1141,12 @@ async def main() -> None:
         "status": "BLOCKED",
         "timestamp": utc_now(),
         "localJetStreamVerification": "PASS",
-        "reason": "Verified real schema-validated ControlEvents persisted in local NATS JetStream stream SAFI_HISTORY; binding to SAFI's production NATS/JetStream cluster & verifying SAFI Subject naming (V-07) remains BLOCKED awaiting SAFI infrastructure.",
+        "reason": "Verified real schema-validated ControlEvents across all lifecycle types (with full Meeting/Port/Permission Context and un-clobbered PROXY portContext) persisted in local NATS JetStream stream SAFI_HISTORY; binding to SAFI's production NATS/JetStream cluster & verifying SAFI Subject naming (V-07) remains BLOCKED awaiting SAFI infrastructure.",
         "stream": stream_name,
         "totalPersistedControlEvents": total_msgs,
-        "recentEvents": recent_events[-5:],
+        "runEventCount": len(js_data["events"]),
+        "proxyContextPreservationVerified": proxy_event,
+        "lifecycleEventsByType": lifecycle_by_type,
     }
 
     report["tests"]["A12"] = {

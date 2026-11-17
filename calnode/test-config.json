@@ -22,7 +22,7 @@
         "path": "calnode.builtin.email_confirmation",
         "status": "DISABLED_AND_EXCLUDED",
         "requirement": "R-GATE-02",
-        "reason": "Calnode built-in transactional SMTP confirmation bypasses the Local Gate Adapter; event type configured with invite_delivery='none' and SMTP_HOST='' in Docker Compose."
+        "reason": "Calnode built-in transactional SMTP confirmation bypasses the Local Gate Adapter; event type configured with invite_delivery='none' and EMAIL_SMTP_HOST='' in Docker Compose."
       },
       {
         "path": "calnode.builtin.reminder_cron",

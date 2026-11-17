@@ -3,7 +3,7 @@
   "title": "GateOperation",
   "type": "object",
   "additionalProperties": false,
-  "required": ["operationType", "actorGuid", "actorKind"],
+  "required": ["operationType", "actorGuid"],
   "anyOf": [
     { "required": ["conversationId"] },
     { "required": ["subjectLine"] }
@@ -12,18 +12,17 @@
     "operationType": {
       "enum": [
         "BARGE_IN",
-        "LIST_HELD",
         "APPROVE_ACTION",
         "REJECT_ACTION",
         "RETURN_TO_UNGATED",
         "RECONCILE"
       ]
     },
-    "conversationId": { "type": "string", "minLength": 1 },
-    "subjectLine": { "type": "string", "minLength": 1 },
-    "actorGuid": { "type": "string", "minLength": 1 },
+    "conversationId": { "type": "string" },
+    "subjectLine": { "type": "string" },
+    "actorGuid": { "type": "string" },
     "actorKind": { "enum": ["USER", "PROXY"] },
-    "actionId": { "type": "string", "minLength": 1 },
+    "actionId": { "type": "string" },
     "targetMode": { "enum": ["UNGATED", "GATED"] },
     "resolutions": {
       "type": "array",
@@ -33,12 +32,30 @@
         "additionalProperties": false,
         "required": ["actionId", "decision"],
         "properties": {
-          "actionId": { "type": "string", "minLength": 1 },
+          "actionId": { "type": "string" },
           "decision": { "enum": ["RELEASE", "CANCEL"] }
         }
       }
     },
     "idempotencyKey": { "type": "string" },
     "correlationId": { "type": "string" }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "operationType": { "enum": ["APPROVE_ACTION", "REJECT_ACTION"] }
+        }
+      },
+      "then": { "required": ["actionId"] }
+    },
+    {
+      "if": {
+        "properties": {
+          "operationType": { "const": "RECONCILE" }
+        }
+      },
+      "then": { "required": ["targetMode"] }
+    }
+  ]
 }

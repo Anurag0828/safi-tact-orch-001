@@ -83,8 +83,7 @@ class N8nAdapter(EngineAdapter):
             "X-Idempotency-Key": idempotency_key,
             "Content-Type": "application/json",
         }
-        if self.config.n8n_api_key:
-            headers["X-N8N-API-KEY"] = self.config.n8n_api_key
+        # Least-privilege (SOW §9): authenticate webhooks ONLY with X-SAFI-Webhook-Secret, never admin X-N8N-API-KEY
         if self.config.n8n_webhook_secret:
             headers["X-SAFI-Webhook-Secret"] = self.config.n8n_webhook_secret
 

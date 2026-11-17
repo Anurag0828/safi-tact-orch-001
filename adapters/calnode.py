@@ -9,6 +9,7 @@ Verified against live Calnode v0.14.0 (ghcr.io/calnode/calnode@sha256:120f1434d0
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -16,8 +17,10 @@ import httpx
 
 from adapters.base import EngineAdapter
 from gate.config import GateConfig
-from gate.errors import DownstreamError, DownstreamOutcomeUnknownError
+from gate.errors import DownstreamError, DownstreamOutcomeUnknownError, UnauthorizedError
 from gate.models import EngineName
+
+_SAFE_SLUG_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$")
 
 
 class CalnodeAdapter(EngineAdapter):
@@ -31,6 +34,20 @@ class CalnodeAdapter(EngineAdapter):
         self.config = config
         self._client = http_client
 
+    def _validate_bounded_calendar_slug(self, calendar_id: str | None) -> str:
+        """Enforces SOW §3/§4 bounded test calendar scope and blocks path traversal."""
+        allowed_slug = self.config.calnode_calendar_id.strip()
+        slug = (calendar_id or allowed_slug).strip()
+        if not slug or not _SAFE_SLUG_RE.match(slug):
+            raise UnauthorizedError(
+                f"Invalid Calnode calendar slug '{slug}' (path traversal / illegal characters blocked)"
+            )
+        if slug != allowed_slug:
+            raise UnauthorizedError(
+                f"Calendar '{slug}' is outside the authorized bounded test calendar '{allowed_slug}' (SOW §3)"
+            )
+        return slug
+
     async def list_slots(
         self,
         calendar_id: str | None = None,
@@ -38,7 +55,7 @@ class CalnodeAdapter(EngineAdapter):
         date_to: str | None = None,
     ) -> dict[str, Any]:
         """Read-only availability query against live Calnode /v1/event-types/{slug}/slots (R-CAL-01)."""
-        slug = calendar_id or self.config.calnode_calendar_id
+        slug = self._validate_bounded_calendar_slug(calendar_id)
         today = datetime.now(timezone.utc).date()
         params: dict[str, Any] = {
             "from": date_from or today.isoformat(),
@@ -77,7 +94,7 @@ class CalnodeAdapter(EngineAdapter):
                     "Missing required booking fields: 'slotId' and 'attendeeEmail' are required",
                     {"missingFields": [f for f in ("slotId", "attendeeEmail") if not payload.get(f)]},
                 )
-            slug = payload.get("calendarId") or self.config.calnode_calendar_id
+            slug = self._validate_bounded_calendar_slug(payload.get("calendarId"))
             booking_body = {
                 "event_type_slug": slug,
                 "start_at": slot_id,

@@ -19,7 +19,7 @@ Hardened implementation of the **Local Gate Adapter**, **SafiChat operation wiri
   - `workflows/n8n/lead_intake_gated_followup.json`: Enforces `X-SAFI-Webhook-Secret`, preserves full actor context, and posts controlled effects strictly to `POST /gate/dispatch` with `X-SAFI-Gate-Secret`.
   - `workflows/n8n/approved_followup_dispatch.json`: Enforces `X-SAFI-Webhook-Secret` AND `gateApproved === true` (returns `403 GATE_BYPASS_REJECTED` on direct bypass attempts).
   - `workflows/windmill/ops_task_assignment.py`: Deterministic idempotent operational assignment script.
-  - `calnode/test-config.json`: Bounded test calendar (`consultation-30m`) with ungateable auto-notifications disabled (`invite_delivery: "none"`, `reminders: []`, `SMTP_HOST=""`).
+  - `calnode/test-config.json`: Bounded test calendar (`consultation-30m`) with ungateable auto-notifications disabled (`invite_delivery: "none"`, `reminders: []`, `EMAIL_SMTP_HOST=""`).
 
 ## Running Automated & Live Verification
 

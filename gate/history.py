@@ -132,61 +132,70 @@ class JetStreamHistoryPublisher(HistoryPublisher):
             None if config.jetstream_required else InMemoryHistoryPublisher()
         )
 
-    async def connect(self) -> None:
-        try:
-            import nats
+    async def connect(self, max_retries: int = 5, retry_delay_s: float = 1.0) -> None:
+        import asyncio
 
-            opts: dict[str, Any] = {"servers": [self.config.nats_url]}
-            if self.config.nats_token:
-                opts["token"] = self.config.nats_token
-            elif self.config.nats_user and self.config.nats_password:
-                opts["user"] = self.config.nats_user
-                opts["password"] = self.config.nats_password
-            self._nc = await nats.connect(**opts)
-            self._js = self._nc.jetstream()
-
+        last_exc: Exception | None = None
+        for attempt in range(1, max_retries + 1):
             try:
-                await self._js.stream_info(self.config.jetstream_stream)
-            except Exception as stream_exc:
-                if not self.config.jetstream_auto_create_stream:
-                    raise StoreError(
-                        f"JetStream stream '{self.config.jetstream_stream}' not found or unreachable "
-                        f"(JETSTREAM_AUTO_CREATE_STREAM=false; refusing to mutate NATS): {stream_exc}"
-                    ) from stream_exc
-                subject_wildcard = f"{self.config.jetstream_control_subject_prefix}.>"
-                await self._js.add_stream(
-                    name=self.config.jetstream_stream,
-                    subjects=[subject_wildcard],
-                )
-                logger.info(
-                    "Created local JetStream stream '%s' for '%s' (JETSTREAM_AUTO_CREATE_STREAM=true)",
-                    self.config.jetstream_stream,
-                    subject_wildcard,
-                )
+                import nats
 
-            self.connected = True
-            logger.info(
-                "Connected to NATS JetStream at %s (stream=%s)",
-                self.config.nats_url,
-                self.config.jetstream_stream,
-            )
-        except Exception as exc:
-            self.connected = False
-            self._js = None
-            if self._nc is not None:
+                opts: dict[str, Any] = {"servers": [self.config.nats_url]}
+                if self.config.nats_token:
+                    opts["token"] = self.config.nats_token
+                elif self.config.nats_user and self.config.nats_password:
+                    opts["user"] = self.config.nats_user
+                    opts["password"] = self.config.nats_password
+                self._nc = await nats.connect(**opts)
+                self._js = self._nc.jetstream()
+
                 try:
-                    await self._nc.close()
-                except Exception:
-                    pass
-                self._nc = None
-            if self.config.jetstream_required:
-                raise StoreError(
-                    f"JetStream is required (JETSTREAM_REQUIRED=true) but unavailable at {self.config.nats_url}: {exc}"
-                ) from exc
-            logger.warning(
-                "Could not connect to NATS JetStream (%s). Falling back to local publisher (JETSTREAM_REQUIRED=false).",
-                exc,
-            )
+                    await self._js.stream_info(self.config.jetstream_stream)
+                except Exception as stream_exc:
+                    if not self.config.jetstream_auto_create_stream:
+                        raise StoreError(
+                            f"JetStream stream '{self.config.jetstream_stream}' not found or unreachable "
+                            f"(JETSTREAM_AUTO_CREATE_STREAM=false; refusing to mutate NATS): {stream_exc}"
+                        ) from stream_exc
+                    subject_wildcard = f"{self.config.jetstream_control_subject_prefix}.>"
+                    await self._js.add_stream(
+                        name=self.config.jetstream_stream,
+                        subjects=[subject_wildcard],
+                    )
+                    logger.info(
+                        "Created local JetStream stream '%s' for '%s' (JETSTREAM_AUTO_CREATE_STREAM=true)",
+                        self.config.jetstream_stream,
+                        subject_wildcard,
+                    )
+
+                self.connected = True
+                logger.info(
+                    "Connected to NATS JetStream at %s (stream=%s)",
+                    self.config.nats_url,
+                    self.config.jetstream_stream,
+                )
+                return
+            except Exception as exc:
+                last_exc = exc
+                self.connected = False
+                self._js = None
+                if self._nc is not None:
+                    try:
+                        await self._nc.close()
+                    except Exception:
+                        pass
+                    self._nc = None
+                if attempt < max_retries and self.config.jetstream_required:
+                    await asyncio.sleep(retry_delay_s)
+
+        if self.config.jetstream_required:
+            raise StoreError(
+                f"JetStream is required (JETSTREAM_REQUIRED=true) but unavailable at {self.config.nats_url}: {last_exc}"
+            ) from last_exc
+        logger.warning(
+            "Could not connect to NATS JetStream (%s). Falling back to local publisher (JETSTREAM_REQUIRED=false).",
+            last_exc,
+        )
 
     async def record_control_event(
         self,

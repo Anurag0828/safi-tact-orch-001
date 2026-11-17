@@ -33,6 +33,9 @@ class GateConfig:
     windmill_base_url: str = "http://127.0.0.1:8001"
     windmill_token: str = ""
     windmill_workspace: str = "safi-ops"
+    allowed_windmill_scripts: frozenset[str] = field(
+        default_factory=lambda: frozenset({"f/safi/ops_task_assignment"})
+    )
     windmill_max_poll_attempts: int = 60
     windmill_poll_interval_seconds: float = 0.25
 
@@ -71,6 +74,10 @@ class GateConfig:
             for item in raw_allowlist.split(",")
             if item.strip()
         )
+        raw_scripts = os.getenv("WINDMILL_ALLOWED_SCRIPTS", "f/safi/ops_task_assignment")
+        allowed_scripts = frozenset(
+            item.strip() for item in raw_scripts.split(",") if item.strip()
+        )
         return cls(
             store_path=os.getenv("GATE_STORE_PATH", "data/gate_state.db"),
             allowed_recipients=allowed,
@@ -83,6 +90,7 @@ class GateConfig:
             windmill_base_url=os.getenv("WINDMILL_BASE_URL", "http://127.0.0.1:8001").rstrip("/"),
             windmill_token=os.getenv("WINDMILL_TOKEN", ""),
             windmill_workspace=os.getenv("WINDMILL_WORKSPACE", "safi-ops"),
+            allowed_windmill_scripts=allowed_scripts,
             windmill_max_poll_attempts=int(os.getenv("WINDMILL_MAX_POLL_ATTEMPTS", "60")),
             windmill_poll_interval_seconds=float(os.getenv("WINDMILL_POLL_INTERVAL_SECONDS", "0.25")),
             gate_api_token=os.getenv("GATE_API_TOKEN", ""),

@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
+from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, AsyncIterator
 
 import aiosqlite
 
@@ -47,6 +49,22 @@ class GateStore:
     def __init__(self, db_path: str = "data/gate_state.db") -> None:
         self.db_path = db_path
         self._db: aiosqlite.Connection | None = None
+        # Serializes multi-statement SQLite transactions on the shared connection (prevents cross-conv commit interleaving)
+        self._write_lock = asyncio.Lock()
+
+    @asynccontextmanager
+    async def _transaction(self) -> AsyncIterator[aiosqlite.Connection]:
+        async with self._write_lock:
+            conn = self.db
+            try:
+                yield conn
+                await conn.commit()
+            except Exception:
+                try:
+                    await conn.rollback()
+                except Exception:
+                    pass
+                raise
 
     async def initialize(self) -> None:
         try:
@@ -244,39 +262,37 @@ class GateStore:
         owner_guid: str | None = None,
     ) -> dict[str, Any]:
         now = utc_now_iso()
-        await self.db.execute(
-            """
-            INSERT OR IGNORE INTO conversations (conversation_id, subject_line, owner_guid, mode, target_mode, created_at, updated_at)
-            VALUES (?, ?, ?, ?, NULL, ?, ?);
-            """,
-            (conversation_id, subject_line, owner_guid, initial_mode.value, now, now),
-        )
-        await self.db.commit()
-
-        cursor = await self.db.execute(
-            "SELECT * FROM conversations WHERE conversation_id = ?;",
-            (conversation_id,),
-        )
-        row = await cursor.fetchone()
-
-        needs_subject = bool(subject_line and row["subject_line"] != subject_line)
-        needs_owner = bool(owner_guid and not row["owner_guid"])
-        if needs_subject or needs_owner:
-            new_subject = subject_line if needs_subject else row["subject_line"]
-            new_owner = owner_guid if needs_owner else row["owner_guid"]
-            await self.db.execute(
-                "UPDATE conversations SET subject_line = ?, owner_guid = ?, updated_at = ? WHERE conversation_id = ?;",
-                (new_subject, new_owner, now, conversation_id),
+        async with self._transaction() as conn:
+            await conn.execute(
+                """
+                INSERT OR IGNORE INTO conversations (conversation_id, subject_line, owner_guid, mode, target_mode, created_at, updated_at)
+                VALUES (?, ?, ?, ?, NULL, ?, ?);
+                """,
+                (conversation_id, subject_line, owner_guid, initial_mode.value, now, now),
             )
-            await self.db.commit()
-            row = await (
-                await self.db.execute(
-                    "SELECT * FROM conversations WHERE conversation_id = ?;",
-                    (conversation_id,),
-                )
-            ).fetchone()
+            cursor = await conn.execute(
+                "SELECT * FROM conversations WHERE conversation_id = ?;",
+                (conversation_id,),
+            )
+            row = await cursor.fetchone()
 
-        return dict(row)
+            needs_subject = bool(subject_line and row["subject_line"] != subject_line)
+            needs_owner = bool(owner_guid and not row["owner_guid"])
+            if needs_subject or needs_owner:
+                new_subject = subject_line if needs_subject else row["subject_line"]
+                new_owner = owner_guid if needs_owner else row["owner_guid"]
+                await conn.execute(
+                    "UPDATE conversations SET subject_line = ?, owner_guid = ?, updated_at = ? WHERE conversation_id = ?;",
+                    (new_subject, new_owner, now, conversation_id),
+                )
+                row = await (
+                    await conn.execute(
+                        "SELECT * FROM conversations WHERE conversation_id = ?;",
+                        (conversation_id,),
+                    )
+                ).fetchone()
+
+            return dict(row)
 
     async def list_conversation_owners(self) -> dict[str, str]:
         """Returns {conversation_id: owner_guid} for restoring per-conversation ACLs after restart."""
@@ -328,15 +344,15 @@ class GateStore:
     ) -> None:
         now = utc_now_iso()
         target_val = target_mode.value if target_mode else None
-        await self.db.execute(
-            """
-            UPDATE conversations
-            SET mode = ?, target_mode = ?, updated_at = ?
-            WHERE conversation_id = ?;
-            """,
-            (mode.value, target_val, now, conversation_id),
-        )
-        await self.db.commit()
+        async with self._transaction() as conn:
+            await conn.execute(
+                """
+                UPDATE conversations
+                SET mode = ?, target_mode = ?, updated_at = ?
+                WHERE conversation_id = ?;
+                """,
+                (mode.value, target_val, now, conversation_id),
+            )
 
     # --- Actions Management ---
 
@@ -359,61 +375,59 @@ class GateStore:
         payload_hash = compute_payload_hash(payload)
         effective_ref = payload_ref or f"sha256:{payload_hash[:16]}"
 
-        # Per-conversation idempotency uniqueness check (E5 Invariant 1 + A06 isolation)
-        cursor = await self.db.execute(
-            "SELECT * FROM idempotency_records WHERE conversation_id = ? AND idempotency_key = ?;",
-            (conversation_id, idempotency_key),
-        )
-        existing_idempotency = await cursor.fetchone()
-        if existing_idempotency:
-            raise IdempotencyConflictError(idempotency_key)
+        async with self._transaction() as conn:
+            cursor = await conn.execute(
+                "SELECT * FROM idempotency_records WHERE conversation_id = ? AND idempotency_key = ?;",
+                (conversation_id, idempotency_key),
+            )
+            existing_idempotency = await cursor.fetchone()
+            if existing_idempotency:
+                raise IdempotencyConflictError(idempotency_key)
 
-        await self.db.execute(
-            """
-            INSERT INTO actions (
-                action_id, conversation_id, engine, operation, idempotency_key,
-                state, payload_ref, payload_json, recipients_json, actor_guid,
-                actor_kind, context_json, result_json, error_json, external_ref_id,
-                created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, NULL, ?, ?);
-            """,
-            (
-                action_id,
-                conversation_id,
-                engine.value,
-                operation,
-                idempotency_key,
-                initial_state.value,
-                effective_ref,
-                json.dumps(payload),
-                json.dumps(recipients),
-                actor_guid,
-                actor_kind,
-                json.dumps(context),
-                now,
-                now,
-            ),
-        )
+            await conn.execute(
+                """
+                INSERT INTO actions (
+                    action_id, conversation_id, engine, operation, idempotency_key,
+                    state, payload_ref, payload_json, recipients_json, actor_guid,
+                    actor_kind, context_json, result_json, error_json, external_ref_id,
+                    created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, NULL, ?, ?);
+                """,
+                (
+                    action_id,
+                    conversation_id,
+                    engine.value,
+                    operation,
+                    idempotency_key,
+                    initial_state.value,
+                    effective_ref,
+                    json.dumps(payload),
+                    json.dumps(recipients),
+                    actor_guid,
+                    actor_kind,
+                    json.dumps(context),
+                    now,
+                    now,
+                ),
+            )
 
-        await self.db.execute(
-            """
-            INSERT INTO idempotency_records (
-                conversation_id, idempotency_key, action_id, operation,
-                payload_hash, outcome, response_json, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, NULL, ?);
-            """,
-            (
-                conversation_id,
-                idempotency_key,
-                action_id,
-                operation,
-                payload_hash,
-                Outcome.UNKNOWN.value,
-                now,
-            ),
-        )
-
-        await self.db.commit()
+            await conn.execute(
+                """
+                INSERT INTO idempotency_records (
+                    conversation_id, idempotency_key, action_id, operation,
+                    payload_hash, outcome, response_json, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, NULL, ?);
+                """,
+                (
+                    conversation_id,
+                    idempotency_key,
+                    action_id,
+                    operation,
+                    payload_hash,
+                    Outcome.UNKNOWN.value,
+                    now,
+                ),
+            )
 
         record = GateActionRecord(
             actionId=action_id,
@@ -509,22 +523,6 @@ class GateStore:
         error: dict[str, Any] | None = None,
         outcome_override: Outcome | None = None,
     ) -> None:
-        cursor = await self.db.execute(
-            "SELECT state FROM actions WHERE action_id = ?;",
-            (action_id,),
-        )
-        row = await cursor.fetchone()
-        if not row:
-            raise ActionNotFoundError(action_id)
-
-        current_state = ActionState(row["state"])
-        try:
-            assert_valid_action_transition(current_state, state)
-        except ValueError as exc:
-            raise InvalidActionStateError(
-                action_id, current_state.value, state.value
-            ) from exc
-
         now = utc_now_iso()
         res_json = json.dumps(result) if result is not None else None
         err_json = json.dumps(error) if error is not None else None
@@ -537,51 +535,66 @@ class GateStore:
             ActionState.CANCELLED,
         )
 
-        # R-CTX-03: Purge message payload body once terminal; retain only operational ref/hash
-        if state in terminal_states:
-            await self.db.execute(
-                """
-                UPDATE actions
-                SET state = ?, payload_json = '{}',
-                    result_json = COALESCE(?, result_json),
-                    error_json = COALESCE(?, error_json),
-                    external_ref_id = COALESCE(?, external_ref_id),
-                    updated_at = ?
-                WHERE action_id = ?;
-                """,
-                (state.value, res_json, err_json, ext_ref, now, action_id),
+        async with self._transaction() as conn:
+            cursor = await conn.execute(
+                "SELECT state FROM actions WHERE action_id = ?;",
+                (action_id,),
             )
-            if outcome_override is not None:
-                outcome_val = outcome_override.value
-            elif state == ActionState.DONE:
-                outcome_val = Outcome.OK.value
-            elif state in (ActionState.CANCELLED, ActionState.REJECTED):
-                outcome_val = Outcome.DENIED.value
-            else:
-                outcome_val = Outcome.ERROR.value
-            resp_val = res_json or err_json
-            await self.db.execute(
-                """
-                UPDATE idempotency_records
-                SET outcome = ?, response_json = ?
-                WHERE action_id = ?;
-                """,
-                (outcome_val, resp_val, action_id),
-            )
-        else:
-            await self.db.execute(
-                """
-                UPDATE actions
-                SET state = ?, result_json = COALESCE(?, result_json),
-                    error_json = COALESCE(?, error_json),
-                    external_ref_id = COALESCE(?, external_ref_id),
-                    updated_at = ?
-                WHERE action_id = ?;
-                """,
-                (state.value, res_json, err_json, ext_ref, now, action_id),
-            )
+            row = await cursor.fetchone()
+            if not row:
+                raise ActionNotFoundError(action_id)
 
-        await self.db.commit()
+            current_state = ActionState(row["state"])
+            try:
+                assert_valid_action_transition(current_state, state)
+            except ValueError as exc:
+                raise InvalidActionStateError(
+                    action_id, current_state.value, state.value
+                ) from exc
+
+            # R-CTX-03: Purge message payload body once terminal; retain only operational ref/hash
+            if state in terminal_states:
+                await conn.execute(
+                    """
+                    UPDATE actions
+                    SET state = ?, payload_json = '{}',
+                        result_json = COALESCE(?, result_json),
+                        error_json = COALESCE(?, error_json),
+                        external_ref_id = COALESCE(?, external_ref_id),
+                        updated_at = ?
+                    WHERE action_id = ?;
+                    """,
+                    (state.value, res_json, err_json, ext_ref, now, action_id),
+                )
+                if outcome_override is not None:
+                    outcome_val = outcome_override.value
+                elif state == ActionState.DONE:
+                    outcome_val = Outcome.OK.value
+                elif state in (ActionState.CANCELLED, ActionState.REJECTED):
+                    outcome_val = Outcome.DENIED.value
+                else:
+                    outcome_val = Outcome.ERROR.value
+                resp_val = res_json or err_json
+                await conn.execute(
+                    """
+                    UPDATE idempotency_records
+                    SET outcome = ?, response_json = ?
+                    WHERE action_id = ?;
+                    """,
+                    (outcome_val, resp_val, action_id),
+                )
+            else:
+                await conn.execute(
+                    """
+                    UPDATE actions
+                    SET state = ?, result_json = COALESCE(?, result_json),
+                        error_json = COALESCE(?, error_json),
+                        external_ref_id = COALESCE(?, external_ref_id),
+                        updated_at = ?
+                    WHERE action_id = ?;
+                    """,
+                    (state.value, res_json, err_json, ext_ref, now, action_id),
+                )
 
     async def get_idempotency_record(
         self, conversation_id: str, idempotency_key: str
@@ -621,15 +634,15 @@ class GateStore:
         response: dict[str, Any] | None = None,
     ) -> None:
         resp_json = json.dumps(response) if response is not None else None
-        await self.db.execute(
-            """
-            UPDATE idempotency_records
-            SET outcome = ?, response_json = COALESCE(?, response_json)
-            WHERE conversation_id = ? AND idempotency_key = ?;
-            """,
-            (outcome.value, resp_json, conversation_id, idempotency_key),
-        )
-        await self.db.commit()
+        async with self._transaction() as conn:
+            await conn.execute(
+                """
+                UPDATE idempotency_records
+                SET outcome = ?, response_json = COALESCE(?, response_json)
+                WHERE conversation_id = ? AND idempotency_key = ?;
+                """,
+                (outcome.value, resp_json, conversation_id, idempotency_key),
+            )
 
     # --- Restart & Crash Recovery (E6, R-REC-01) ---
 

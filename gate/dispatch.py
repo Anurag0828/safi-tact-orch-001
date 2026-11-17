@@ -37,6 +37,64 @@ from gate.store import GateStore, compute_payload_hash
 
 logger = logging.getLogger("gate.dispatch")
 
+_RECIPIENT_PAYLOAD_KEYS = frozenset(
+    {
+        "recipientemail",
+        "attendeeemail",
+        "leademail",
+        "assignee",
+        "email",
+        "to",
+        "recipients",
+        "recipient",
+    }
+)
+
+_OPERATIONS_REQUIRING_RECIPIENT = frozenset(
+    {
+        "dispatch_followup",
+        "ingest_lead",
+        "create_booking",
+        "start_assignment",
+    }
+)
+
+
+def extract_all_recipients(
+    explicit_recipients: list[str], payload: dict[str, Any]
+) -> list[str]:
+    """Extracts ALL recipients from both submission.recipients AND payload fields (prevents /gate/dispatch allowlist bypass)."""
+    collected: list[str] = []
+    seen: set[str] = set()
+
+    def _add(val: Any) -> None:
+        if isinstance(val, str):
+            cleaned = val.strip()
+            if cleaned and cleaned.lower() not in seen:
+                seen.add(cleaned.lower())
+                collected.append(cleaned)
+        elif isinstance(val, list):
+            for item in val:
+                _add(item)
+
+    for r in explicit_recipients:
+        _add(r)
+
+    def _walk(obj: Any) -> None:
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if str(k).lower() in _RECIPIENT_PAYLOAD_KEYS:
+                    _add(v)
+                elif isinstance(v, (dict, list)):
+                    _walk(v)
+        elif isinstance(obj, list):
+            for item in obj:
+                if isinstance(item, (dict, list)):
+                    _walk(item)
+
+    _walk(payload)
+    return collected
+
 
 class GateDispatcher:
     """The ONE trusted per-conversation dispatcher across n8n, Calnode, and Windmill."""
@@ -67,11 +125,7 @@ class GateDispatcher:
         correlation_id: str | None = None,
         allow_create: bool = False,
     ) -> None:
-        """Transitions conversation to FAILED_CLOSED and emits GATE_FAILED_CLOSED (E4, R-SEC-04).
-
-        By default (`allow_create=False`), NEVER creates a new conversation row for a nonexistent
-        conversationId (prevents bogus FAILED_CLOSED row injection by unauthenticated/malformed callers).
-        """
+        """Transitions conversation to FAILED_CLOSED and emits GATE_FAILED_CLOSED (E4, R-SEC-04)."""
         conv = await self.store.get_conversation(conversation_id)
         if conv is None:
             if not allow_create:
@@ -83,16 +137,23 @@ class GateDispatcher:
         await self.store.update_conversation_mode(
             conversation_id, ConversationMode.FAILED_CLOSED
         )
-        await self.history.record_control_event(
-            conversation_id=conversation_id,
-            actor=actor,
-            event_type=ControlEventType.GATE_FAILED_CLOSED,
-            operation_id=operation_id,
-            idempotency_key=idempotency_key,
-            outcome=Outcome.UNKNOWN,
-            subject_line_display=effective_subject,
-            correlation_id=correlation_id,
-        )
+        try:
+            await self.history.record_control_event(
+                conversation_id=conversation_id,
+                actor=actor,
+                event_type=ControlEventType.GATE_FAILED_CLOSED,
+                operation_id=operation_id,
+                idempotency_key=idempotency_key,
+                outcome=Outcome.UNKNOWN,
+                subject_line_display=effective_subject,
+                correlation_id=correlation_id,
+            )
+        except StoreError as exc:
+            logger.error(
+                "Failed to emit GATE_FAILED_CLOSED to JetStream for '%s' (mode persisted FAILED_CLOSED): %s",
+                conversation_id,
+                exc,
+            )
 
     async def _check_actor_authz(
         self,
@@ -119,7 +180,6 @@ class GateDispatcher:
             )
             raise
         except (PermissionCheckFailedError, IdentityUncertainError):
-            # Only fail-close an existing conversation (never create bogus rows on bad caller context)
             await self.fail_closed(
                 conversation_id=conversation_id,
                 actor=actor,
@@ -131,14 +191,57 @@ class GateDispatcher:
             )
             raise
 
+    async def _validate_recipients_or_deny(
+        self,
+        conversation_id: str,
+        operation: str,
+        operation_id: str,
+        idempotency_key: str,
+        explicit_recipients: list[str],
+        payload: dict[str, Any],
+        actor: ActorContext,
+        subject_line_display: str,
+        correlation_id: str | None,
+    ) -> list[str]:
+        """Validates ALL explicit and payload-embedded recipients against the allowlist (R-SEC-01, R-SEC-02)."""
+        all_recipients = extract_all_recipients(explicit_recipients, payload)
+        if operation in _OPERATIONS_REQUIRING_RECIPIENT and not all_recipients:
+            await self.history.record_control_event(
+                conversation_id=conversation_id,
+                actor=actor,
+                event_type=ControlEventType.ACTION_FAILED,
+                operation_id=operation_id,
+                idempotency_key=idempotency_key,
+                outcome=Outcome.DENIED,
+                subject_line_display=subject_line_display,
+                correlation_id=correlation_id,
+            )
+            raise RecipientNotAllowlistedError("<missing_recipient>")
+
+        for recipient in all_recipients:
+            if not self.config.is_recipient_allowed(recipient):
+                await self.history.record_control_event(
+                    conversation_id=conversation_id,
+                    actor=actor,
+                    event_type=ControlEventType.ACTION_FAILED,
+                    operation_id=operation_id,
+                    idempotency_key=idempotency_key,
+                    outcome=Outcome.DENIED,
+                    subject_line_display=subject_line_display,
+                    correlation_id=correlation_id,
+                )
+                raise RecipientNotAllowlistedError(recipient)
+        return all_recipients
+
     async def _check_existing_idempotency(
         self,
         conversation_id: str,
         idempotency_key: str,
+        engine: EngineName,
         operation: str,
         payload: dict[str, Any],
     ) -> dict[str, Any] | None:
-        """Evaluates per-conversation idempotency records safely under lock (E5 Invariant 1 & 8, A06 isolation)."""
+        """Evaluates per-conversation idempotency records safely under lock (E5 Invariant 1 & 8, A06/A07)."""
         existing = await self.store.get_idempotency_record(conversation_id, idempotency_key)
         if existing is None:
             return None
@@ -157,6 +260,10 @@ class GateDispatcher:
                 idempotency_key,
                 "Idempotency record exists without matching action row; reconcile before retry",
             )
+
+        # Verify engine matches original action (prevents cross-engine idempotency collisions)
+        if existing_action["engine"] != engine.value:
+            raise IdempotencyConflictError(idempotency_key)
 
         state = existing_action["state"]
         if state == ActionState.DONE.value:
@@ -206,13 +313,60 @@ class GateDispatcher:
             f"Previous action is in transitional state '{state}'",
         )
 
+    async def _record_held_and_emit(
+        self,
+        action_id: str,
+        submission: ActionSubmission,
+        all_recipients: list[str],
+        operation_id: str,
+        effective_subject: str,
+        mode: ConversationMode,
+    ) -> dict[str, Any]:
+        await self.store.record_action(
+            action_id=action_id,
+            conversation_id=submission.conversationId,
+            engine=submission.engine,
+            operation=submission.operation,
+            idempotency_key=submission.idempotencyKey,
+            initial_state=ActionState.HELD,
+            payload=submission.payload,
+            recipients=all_recipients,
+            actor_guid=submission.actor.actorGuid,
+            actor_kind=submission.actor.actorKind.value,
+            context=submission.actor.to_event_context(),
+            payload_ref=submission.payloadRef,
+        )
+        try:
+            await self.history.record_control_event(
+                conversation_id=submission.conversationId,
+                actor=submission.actor,
+                event_type=ControlEventType.ACTION_HELD,
+                operation_id=operation_id,
+                idempotency_key=submission.idempotencyKey,
+                outcome=Outcome.OK,
+                subject_line_display=effective_subject,
+                correlation_id=submission.correlationId,
+            )
+        except StoreError:
+            await self.store.update_conversation_mode(
+                submission.conversationId, ConversationMode.FAILED_CLOSED
+            )
+            raise
+        return {
+            "actionId": action_id,
+            "conversationId": submission.conversationId,
+            "state": ActionState.HELD.value,
+            "mode": mode.value,
+            "idempotencyKey": submission.idempotencyKey,
+        }
+
     async def submit_action(self, submission: ActionSubmission) -> dict[str, Any]:
         """Entry point for ALL controlled effects across n8n, Calnode, and Windmill (R-GATE-01)."""
         conv_id = submission.conversationId
         operation_id = f"{submission.engine.value}:{submission.operation}"
         runtime = self.runtimes.get(conv_id)
 
-        # 1. Mandatory authorization check FIRST (blocks unauthorized replay reads, GATED hold injection, and rogue conversation creation - A09)
+        # 1. Mandatory authorization check FIRST
         existing_conv = await self.store.get_conversation(conv_id)
         effective_subject = (
             submission.subjectLineDisplay
@@ -228,7 +382,24 @@ class GateDispatcher:
             correlation_id=submission.correlationId,
         )
 
-        # Persist owner_guid for USER or delegated PROXY so ownership survives restarts (A09/A10)
+        # 2. Check existing FAILED_CLOSED BEFORE mutating SQLite (never overwrite subject_line on FAILED_CLOSED!)
+        if existing_conv is not None and ConversationMode(existing_conv["mode"]) == ConversationMode.FAILED_CLOSED:
+            raise GateFailedClosedError(conv_id)
+
+        # 3. Validate ALL explicit + payload-embedded recipients BEFORE creating conversation rows (R-SEC-01)
+        all_recipients = await self._validate_recipients_or_deny(
+            conversation_id=conv_id,
+            operation=submission.operation,
+            operation_id=operation_id,
+            idempotency_key=submission.idempotencyKey,
+            explicit_recipients=submission.recipients,
+            payload=submission.payload,
+            actor=submission.actor,
+            subject_line_display=effective_subject,
+            correlation_id=submission.correlationId,
+        )
+
+        # 4. Now persist/update conversation row safely AFTER authz, FAILED_CLOSED, and allowlist pass
         owner_to_pin: str | None = None
         if submission.actor.actorKind.value == "USER":
             owner_to_pin = submission.actor.actorGuid
@@ -242,22 +413,7 @@ class GateDispatcher:
         )
         effective_subject = submission.subjectLineDisplay or conv["subject_line"] or ""
 
-        # 2. Recipient allowlist validation (R-SEC-01, R-SEC-02)
-        for recipient in submission.recipients:
-            if not self.config.is_recipient_allowed(recipient):
-                await self.history.record_control_event(
-                    conversation_id=conv_id,
-                    actor=submission.actor,
-                    event_type=ControlEventType.ACTION_FAILED,
-                    operation_id=operation_id,
-                    idempotency_key=submission.idempotencyKey,
-                    outcome=Outcome.DENIED,
-                    subject_line_display=effective_subject,
-                    correlation_id=submission.correlationId,
-                )
-                raise RecipientNotAllowlistedError(recipient)
-
-        # 3. Fast admission check under state_lock: check FAILED_CLOSED BEFORE idempotency replay!
+        # 5. Fast admission check under state_lock
         action_id = f"act_{uuid4().hex[:12]}"
         async with runtime.state_lock:
             conv = await self.store.get_conversation(conv_id)
@@ -267,45 +423,26 @@ class GateDispatcher:
                 raise GateFailedClosedError(conv_id)
 
             replay = await self._check_existing_idempotency(
-                conv_id, submission.idempotencyKey, submission.operation, submission.payload
+                conv_id,
+                submission.idempotencyKey,
+                submission.engine,
+                submission.operation,
+                submission.payload,
             )
             if replay is not None:
                 return replay
 
             if mode in (ConversationMode.GATED, ConversationMode.TRANSITIONING):
-                await self.store.record_action(
+                return await self._record_held_and_emit(
                     action_id=action_id,
-                    conversation_id=conv_id,
-                    engine=submission.engine,
-                    operation=submission.operation,
-                    idempotency_key=submission.idempotencyKey,
-                    initial_state=ActionState.HELD,
-                    payload=submission.payload,
-                    recipients=submission.recipients,
-                    actor_guid=submission.actor.actorGuid,
-                    actor_kind=submission.actor.actorKind.value,
-                    context=submission.actor.to_event_context(),
-                    payload_ref=submission.payloadRef,
-                )
-                await self.history.record_control_event(
-                    conversation_id=conv_id,
-                    actor=submission.actor,
-                    event_type=ControlEventType.ACTION_HELD,
+                    submission=submission,
+                    all_recipients=all_recipients,
                     operation_id=operation_id,
-                    idempotency_key=submission.idempotencyKey,
-                    outcome=Outcome.OK,
-                    subject_line_display=effective_subject,
-                    correlation_id=submission.correlationId,
+                    effective_subject=effective_subject,
+                    mode=mode,
                 )
-                return {
-                    "actionId": action_id,
-                    "conversationId": conv_id,
-                    "state": ActionState.HELD.value,
-                    "mode": mode.value,
-                    "idempotencyKey": submission.idempotencyKey,
-                }
 
-        # 4. UNGATED path: serialize execution per conversation (R-GATE-07)
+        # 6. UNGATED path: serialize execution per conversation (R-GATE-07)
         async with runtime.dispatch_lock:
             async with runtime.state_lock:
                 conv = await self.store.get_conversation(conv_id)
@@ -315,43 +452,24 @@ class GateDispatcher:
                     raise GateFailedClosedError(conv_id)
 
                 replay = await self._check_existing_idempotency(
-                    conv_id, submission.idempotencyKey, submission.operation, submission.payload
+                    conv_id,
+                    submission.idempotencyKey,
+                    submission.engine,
+                    submission.operation,
+                    submission.payload,
                 )
                 if replay is not None:
                     return replay
 
                 if mode in (ConversationMode.GATED, ConversationMode.TRANSITIONING):
-                    await self.store.record_action(
+                    return await self._record_held_and_emit(
                         action_id=action_id,
-                        conversation_id=conv_id,
-                        engine=submission.engine,
-                        operation=submission.operation,
-                        idempotency_key=submission.idempotencyKey,
-                        initial_state=ActionState.HELD,
-                        payload=submission.payload,
-                        recipients=submission.recipients,
-                        actor_guid=submission.actor.actorGuid,
-                        actor_kind=submission.actor.actorKind.value,
-                        context=submission.actor.to_event_context(),
-                        payload_ref=submission.payloadRef,
-                    )
-                    await self.history.record_control_event(
-                        conversation_id=conv_id,
-                        actor=submission.actor,
-                        event_type=ControlEventType.ACTION_HELD,
+                        submission=submission,
+                        all_recipients=all_recipients,
                         operation_id=operation_id,
-                        idempotency_key=submission.idempotencyKey,
-                        outcome=Outcome.OK,
-                        subject_line_display=effective_subject,
-                        correlation_id=submission.correlationId,
+                        effective_subject=effective_subject,
+                        mode=mode,
                     )
-                    return {
-                        "actionId": action_id,
-                        "conversationId": conv_id,
-                        "state": ActionState.HELD.value,
-                        "mode": mode.value,
-                        "idempotencyKey": submission.idempotencyKey,
-                    }
 
                 await self.store.record_action(
                     action_id=action_id,
@@ -361,7 +479,7 @@ class GateDispatcher:
                     idempotency_key=submission.idempotencyKey,
                     initial_state=ActionState.RECEIVED,
                     payload=submission.payload,
-                    recipients=submission.recipients,
+                    recipients=all_recipients,
                     actor_guid=submission.actor.actorGuid,
                     actor_kind=submission.actor.actorKind.value,
                     context=submission.actor.to_event_context(),
@@ -399,93 +517,117 @@ class GateDispatcher:
         action_id: str,
         actor: ActorContext,
         correlation_id: str | None = None,
+        already_inflight: bool = False,
     ) -> dict[str, Any]:
-        """Dispatches an already APPROVED/RELEASED action with mandatory fresh permission recheck (R-GATE-09)."""
+        """Dispatches an already APPROVED/RELEASED action with mandatory fresh permission recheck (R-GATE-09).
+
+        When `already_inflight=True` (reserved atomically by approve_action under state_lock), guarantees
+        `runtime.mark_settled(action_id)` even if pre-dispatch checks raise before `_execute_downstream`.
+        """
         initial = await self.store.get_action(action_id)
         if initial is None:
             raise ActionNotFoundError(action_id)
 
         conv_id = initial["conversation_id"]
         runtime = self.runtimes.get(conv_id)
+        handed_to_executor = False
 
-        async with runtime.dispatch_lock:
-            async with runtime.state_lock:
-                conv = await self.store.get_conversation(conv_id)
-                if ConversationMode(conv["mode"]) == ConversationMode.FAILED_CLOSED:
-                    raise GateFailedClosedError(conv_id)
+        try:
+            async with runtime.dispatch_lock:
+                async with runtime.state_lock:
+                    conv = await self.store.get_conversation(conv_id)
+                    if ConversationMode(conv["mode"]) == ConversationMode.FAILED_CLOSED:
+                        raise GateFailedClosedError(conv_id)
 
-                action = await self.store.get_action(action_id)
-                if action is None:
-                    raise ActionNotFoundError(action_id)
+                    action = await self.store.get_action(action_id)
+                    if action is None:
+                        raise ActionNotFoundError(action_id)
 
-                engine = EngineName(action["engine"])
-                operation = action["operation"]
-                operation_id = f"{engine.value}:{operation}"
-                idempotency_key = action["idempotency_key"]
-                payload = action["payload"]
-                recipients = action["recipients"]
-                subject_line_display = (conv["subject_line"] if conv else "") or ""
+                    engine = EngineName(action["engine"])
+                    operation = action["operation"]
+                    operation_id = f"{engine.value}:{operation}"
+                    idempotency_key = action["idempotency_key"]
+                    payload = action["payload"]
+                    recipients = action["recipients"]
+                    subject_line_display = (conv["subject_line"] if conv else "") or ""
 
-                if action["state"] == ActionState.DONE.value:
-                    return {
-                        "actionId": action_id,
-                        "conversationId": conv_id,
-                        "state": ActionState.DONE.value,
-                        "idempotencyKey": idempotency_key,
-                        "idempotentReplay": True,
-                        "result": action.get("result", {}),
-                    }
+                    if action["state"] == ActionState.DONE.value:
+                        return {
+                            "actionId": action_id,
+                            "conversationId": conv_id,
+                            "state": ActionState.DONE.value,
+                            "idempotencyKey": idempotency_key,
+                            "idempotentReplay": True,
+                            "result": action.get("result", {}),
+                        }
 
-                if action["state"] != ActionState.APPROVED.value:
-                    raise InvalidActionStateError(
-                        action_id, action["state"], ActionState.APPROVED.value
-                    )
+                    if action["state"] != ActionState.APPROVED.value:
+                        raise InvalidActionStateError(
+                            action_id, action["state"], ActionState.APPROVED.value
+                        )
 
-                for recipient in recipients:
-                    if not self.config.is_recipient_allowed(recipient):
+                    # Re-verify ALL explicit + payload-embedded recipients before dispatch
+                    all_recipients = extract_all_recipients(recipients, payload)
+                    if operation in _OPERATIONS_REQUIRING_RECIPIENT and not all_recipients:
                         await self.store.update_action_state(
                             action_id,
                             ActionState.FAILED,
-                            error={"code": "RECIPIENT_NOT_ALLOWLISTED", "recipient": recipient},
+                            error={"code": "RECIPIENT_NOT_ALLOWLISTED", "recipient": "<missing_recipient>"},
                             outcome_override=Outcome.DENIED,
                         )
-                        await self.history.record_control_event(
-                            conversation_id=conv_id,
-                            actor=actor,
-                            event_type=ControlEventType.ACTION_FAILED,
-                            operation_id=operation_id,
-                            idempotency_key=idempotency_key,
-                            outcome=Outcome.DENIED,
-                            subject_line_display=subject_line_display,
-                            correlation_id=correlation_id,
-                        )
-                        raise RecipientNotAllowlistedError(recipient)
+                        raise RecipientNotAllowlistedError("<missing_recipient>")
 
-                await self._recheck_permission_or_fail(
+                    for recipient in all_recipients:
+                        if not self.config.is_recipient_allowed(recipient):
+                            await self.store.update_action_state(
+                                action_id,
+                                ActionState.FAILED,
+                                error={"code": "RECIPIENT_NOT_ALLOWLISTED", "recipient": recipient},
+                                outcome_override=Outcome.DENIED,
+                            )
+                            await self.history.record_control_event(
+                                conversation_id=conv_id,
+                                actor=actor,
+                                event_type=ControlEventType.ACTION_FAILED,
+                                operation_id=operation_id,
+                                idempotency_key=idempotency_key,
+                                outcome=Outcome.DENIED,
+                                subject_line_display=subject_line_display,
+                                correlation_id=correlation_id,
+                            )
+                            raise RecipientNotAllowlistedError(recipient)
+
+                    await self._recheck_permission_or_fail(
+                        action_id=action_id,
+                        conversation_id=conv_id,
+                        actor=actor,
+                        operation_id=operation_id,
+                        idempotency_key=idempotency_key,
+                        subject_line_display=subject_line_display,
+                        correlation_id=correlation_id,
+                    )
+
+                    await self.store.update_action_state(action_id, ActionState.AUTHORIZED)
+                    await self.store.update_action_state(action_id, ActionState.DISPATCHING)
+                    if not already_inflight:
+                        runtime.mark_inflight(action_id)
+                    handed_to_executor = True
+
+                return await self._execute_downstream(
                     action_id=action_id,
                     conversation_id=conv_id,
-                    actor=actor,
-                    operation_id=operation_id,
+                    engine=engine,
+                    operation=operation,
+                    payload=payload,
                     idempotency_key=idempotency_key,
+                    actor=actor,
                     subject_line_display=subject_line_display,
                     correlation_id=correlation_id,
                 )
-
-                await self.store.update_action_state(action_id, ActionState.AUTHORIZED)
-                await self.store.update_action_state(action_id, ActionState.DISPATCHING)
-                runtime.mark_inflight(action_id)
-
-            return await self._execute_downstream(
-                action_id=action_id,
-                conversation_id=conv_id,
-                engine=engine,
-                operation=operation,
-                payload=payload,
-                idempotency_key=idempotency_key,
-                actor=actor,
-                subject_line_display=subject_line_display,
-                correlation_id=correlation_id,
-            )
+        finally:
+            if already_inflight and not handed_to_executor:
+                async with runtime.state_lock:
+                    runtime.mark_settled(action_id)
 
     async def _recheck_permission_or_fail(
         self,
@@ -591,11 +733,45 @@ class GateDispatcher:
                 "result": result,
             }
 
-        except DownstreamOutcomeUnknownError as exc:
+        except UnauthorizedError as exc:
+            # Adapter-level scope guard (e.g. arbitrary Windmill scriptPath or out-of-bounds Calnode calendar)
             await self.store.update_action_state(
                 action_id,
                 ActionState.FAILED,
-                error={"code": exc.code, "message": exc.message, "outcome": "unknown", "details": exc.details},
+                error=exc.to_dict(),
+                outcome_override=Outcome.DENIED,
+            )
+            await self.history.record_control_event(
+                conversation_id=conversation_id,
+                actor=actor,
+                event_type=ControlEventType.ACTION_FAILED,
+                operation_id=operation_id,
+                idempotency_key=idempotency_key,
+                outcome=Outcome.DENIED,
+                subject_line_display=subject_line_display,
+                correlation_id=correlation_id,
+            )
+            raise
+
+        except DownstreamOutcomeUnknownError as exc:
+            # Always emit the real Gate action_id (act_...) + engine in structured details
+            extra = {k: v for k, v in exc.details.items() if k not in ("actionId", "idempotencyKey")}
+            extra["engine"] = engine.value
+            normalized_err = DownstreamOutcomeUnknownError(
+                action_id=action_id,
+                idempotency_key=idempotency_key,
+                reason=exc.message,
+                extra_details=extra,
+            )
+            await self.store.update_action_state(
+                action_id,
+                ActionState.FAILED,
+                error={
+                    "code": normalized_err.code,
+                    "message": normalized_err.message,
+                    "outcome": "unknown",
+                    "details": normalized_err.details,
+                },
                 outcome_override=Outcome.UNKNOWN,
             )
             await self.history.record_control_event(
@@ -617,7 +793,7 @@ class GateDispatcher:
                 correlation_id=correlation_id,
                 allow_create=False,
             )
-            raise
+            raise normalized_err from exc
 
         except DownstreamError as exc:
             await self.store.update_action_state(
@@ -639,10 +815,12 @@ class GateDispatcher:
             raise
 
         except Exception as exc:
-            # Fail-closed catch-all: NEVER leave an action permanently stuck in DISPATCHING (SOW §9, A10)
             logger.exception("Unexpected error during downstream execution for action '%s'", action_id)
             unknown_err = DownstreamOutcomeUnknownError(
-                action_id, idempotency_key, f"Unexpected adapter error: {type(exc).__name__}: {exc}"
+                action_id,
+                idempotency_key,
+                f"Unexpected adapter error: {type(exc).__name__}: {exc}",
+                extra_details={"engine": engine.value},
             )
             await self.store.update_action_state(
                 action_id,

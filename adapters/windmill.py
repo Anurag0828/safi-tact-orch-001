@@ -8,14 +8,17 @@ Verified against live Windmill CE v1.425.0 (ghcr.io/windmill-labs/windmill:1.425
 from __future__ import annotations
 
 import asyncio
+import re
 from typing import Any
 
 import httpx
 
 from adapters.base import EngineAdapter
 from gate.config import GateConfig
-from gate.errors import DownstreamError, DownstreamOutcomeUnknownError
+from gate.errors import DownstreamError, DownstreamOutcomeUnknownError, UnauthorizedError
 from gate.models import EngineName
+
+_SAFE_SCRIPT_PATH_RE = re.compile(r"^[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*$")
 
 
 class WindmillAdapter(EngineAdapter):
@@ -39,6 +42,22 @@ class WindmillAdapter(EngineAdapter):
             else config.windmill_poll_interval_seconds
         )
 
+    def _validate_script_path(self, raw_path: str | None) -> str:
+        """Enforces SOW §4 authorized workflow scope and blocks arbitrary Windmill script execution / path traversal."""
+        script_path = (raw_path or "f/safi/ops_task_assignment").strip()
+        if (
+            not script_path
+            or ".." in script_path
+            or script_path.startswith("/")
+            or not _SAFE_SCRIPT_PATH_RE.match(script_path)
+        ):
+            raise UnauthorizedError(f"Invalid Windmill script path '{script_path}'")
+        if script_path not in self.config.allowed_windmill_scripts:
+            raise UnauthorizedError(
+                f"Windmill script '{script_path}' is outside authorized workflow scope (SOW §4)"
+            )
+        return script_path
+
     async def execute(
         self,
         operation: str,
@@ -47,6 +66,7 @@ class WindmillAdapter(EngineAdapter):
     ) -> dict[str, Any]:
         ws = self.config.windmill_workspace
         if operation == "start_assignment":
+            script_path = self._validate_script_path(payload.get("scriptPath"))
             missing = [k for k in ("bookingId", "conversationId", "assignee") if not payload.get(k)]
             if missing:
                 raise DownstreamError(
@@ -54,7 +74,6 @@ class WindmillAdapter(EngineAdapter):
                     f"Missing required assignment fields: {', '.join(missing)}",
                     {"missingFields": missing},
                 )
-            script_path = payload.get("scriptPath", "f/safi/ops_task_assignment")
             job_payload = {
                 "bookingId": payload["bookingId"],
                 "conversationId": payload["conversationId"],
