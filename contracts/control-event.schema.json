@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ControlEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "conversationId",
+    "actorGuid",
+    "type",
+    "operationId",
+    "idempotencyKey",
+    "outcome",
+    "context",
+    "ts"
+  ],
+  "properties": {
+    "eventId": { "type": "string" },
+    "conversationId": { "type": "string" },
+    "subjectLineDisplay": { "type": "string" },
+    "actorGuid": { "type": "string" },
+    "actorKind": { "enum": ["USER", "PROXY"] },
+    "type": {
+      "enum": [
+        "MODE_GATED",
+        "MODE_UNGATED",
+        "ACTION_HELD",
+        "ACTION_APPROVED",
+        "ACTION_REJECTED",
+        "ACTION_RELEASED",
+        "ACTION_CANCELLED",
+        "ACTION_DISPATCHED",
+        "ACTION_FAILED",
+        "GATE_FAILED_CLOSED"
+      ]
+    },
+    "operationId": { "type": "string" },
+    "idempotencyKey": { "type": "string" },
+    "outcome": { "enum": ["ok", "denied", "error", "unknown"] },
+    "context": {
+      "type": "object",
+      "description": "Meeting/Port Context + provisioning/permission provenance",
+      "additionalProperties": true
+    },
+    "correlationId": { "type": "string" },
+    "ts": { "type": "string", "format": "date-time" }
+  }
+}

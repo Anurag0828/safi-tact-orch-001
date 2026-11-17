@@ -1,0 +1,13 @@
+# Pinned runtime dependencies for SAFI-TACT-ORCH-001 Gate Adapter (Part C3 Closed List)
+fastapi==0.141.1
+uvicorn==0.34.0
+pydantic==2.13.4
+aiosqlite==0.22.1
+httpx==0.28.1
+jsonschema==4.26.0
+nats-py==2.9.0
+python-dotenv==1.0.1
+
+# Test framework
+pytest==8.3.4
+pytest-asyncio==0.25.0

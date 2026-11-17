@@ -1,0 +1,15 @@
+{
+  "_meta": "UNVERIFIED_TEMPLATE: Replace with REAL captured response from live Windmill instance during Phase 1 T-02",
+  "jobId": "01933c9e-7a12-7b40-9e1a-f81122334455",
+  "workspace": "safi-ops",
+  "scriptPath": "f/safi/ops_task_assignment",
+  "state": "COMPLETED",
+  "assignee": "ops-specialist-1@allowlist.test.local",
+  "result": {
+    "assignmentId": "asgn_20261117_001",
+    "bookingId": "bkg_9f82a10c",
+    "status": "ASSIGNED"
+  },
+  "retryCount": 0,
+  "error": null
+}

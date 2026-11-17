@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GateOperation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["operationType", "conversationId", "actorGuid"],
+  "properties": {
+    "operationType": {
+      "enum": [
+        "BARGE_IN",
+        "APPROVE_ACTION",
+        "REJECT_ACTION",
+        "RETURN_TO_UNGATED",
+        "RECONCILE"
+      ]
+    },
+    "conversationId": { "type": "string" },
+    "subjectLine": { "type": "string" },
+    "actorGuid": { "type": "string" },
+    "actorKind": { "enum": ["USER", "PROXY"] },
+    "actionId": { "type": "string" },
+    "resolutions": {
+      "type": "array",
+      "description": "Per-action resolution when returning to ungated mode",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["actionId", "decision"],
+        "properties": {
+          "actionId": { "type": "string" },
+          "decision": { "enum": ["RELEASE", "CANCEL"] }
+        }
+      }
+    },
+    "idempotencyKey": { "type": "string" },
+    "correlationId": { "type": "string" }
+  }
+}

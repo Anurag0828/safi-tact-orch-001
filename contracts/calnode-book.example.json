@@ -1,0 +1,11 @@
+{
+  "_meta": "UNVERIFIED_TEMPLATE: Replace with REAL captured response from live Calnode instance during Phase 1 T-02",
+  "bookingId": "bkg_9f82a10c",
+  "calendarId": "cal_test_bounded_01",
+  "slotId": "slot_20261118_1400",
+  "status": "CONFIRMED",
+  "attendeeEmail": "customer-a@allowlist.test.local",
+  "idempotencyKey": "book:conv-a:slot_20261118_1400",
+  "notificationsSuppressed": true,
+  "createdAt": "2026-11-17T18:00:00Z"
+}

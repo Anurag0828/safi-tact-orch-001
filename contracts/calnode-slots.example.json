@@ -1,0 +1,19 @@
+{
+  "_meta": "UNVERIFIED_TEMPLATE: Replace with REAL captured response from live Calnode instance during Phase 1 T-02",
+  "calendarId": "cal_test_bounded_01",
+  "timezone": "UTC",
+  "slots": [
+    {
+      "slotId": "slot_20261118_1400",
+      "start": "2026-11-18T14:00:00Z",
+      "end": "2026-11-18T14:30:00Z",
+      "available": true
+    },
+    {
+      "slotId": "slot_20261118_1500",
+      "start": "2026-11-18T15:00:00Z",
+      "end": "2026-11-18T15:30:00Z",
+      "available": true
+    }
+  ]
+}

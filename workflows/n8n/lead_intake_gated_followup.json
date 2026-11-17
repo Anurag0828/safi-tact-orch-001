@@ -1,0 +1,111 @@
+{
+  "name": "SAFI Lead Intake & Gated Follow-Up (R-MKT-01, R-MKT-02)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "safi-lead-intake",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook-intake",
+      "name": "Authenticated Lead Intake Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "notes": "Local-only authenticated webhook. No public unauthenticated webhooks (R-SEC-02)."
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-conv",
+              "name": "conversationId",
+              "value": "={{ $json.body.conversationId }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-email",
+              "name": "recipientEmail",
+              "value": "={{ $json.body.leadEmail }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-followup",
+              "name": "preparedFollowup",
+              "value": "={{ 'Hello ' + ($json.body.leadName || 'Customer') + ', thank you for contacting us regarding: ' + ($json.body.inquiryText || 'your inquiry') + '. Here are available consultation times.' }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-idem",
+              "name": "followupIdempotencyKey",
+              "value": "={{ 'followup:' + $json.body.conversationId + ':' + $json.body.idempotencyKey }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "node-prepare-followup",
+      "name": "Prepare Approved Follow-Up Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.GATE_ADAPTER_INTERNAL_URL || 'http://gate-adapter:8000' }}/gate/dispatch",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ conversationId: $json.conversationId, engine: 'n8n', operation: 'dispatch_followup', idempotencyKey: $json.followupIdempotencyKey, recipients: [$json.recipientEmail], payload: { conversationId: $json.conversationId, recipientEmail: $json.recipientEmail, messageBody: $json.preparedFollowup, resumeUrl: $execution.resumeUrl }, actor: $node['Authenticated Lead Intake Webhook'].json.body.actor || { actorGuid: 'proxy-n8n-workflow', actorKind: 'PROXY' } }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "node-submit-to-gate",
+      "name": "Submit Controlled Effect to Gate Adapter (NO Direct Send)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [740, 300],
+      "notes": "R-GATE-01: Never use direct SMTP/email/SMS nodes in n8n. Every controlled effect MUST pass through the Local Gate Adapter."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'ingested', executionId: $execution.id, conversationId: $json.conversationId, gateResponse: $json }) }}"
+      },
+      "id": "node-respond",
+      "name": "Return Verified Status to Gate",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1000, 300]
+    }
+  ],
+  "connections": {
+    "Authenticated Lead Intake Webhook": {
+      "main": [
+        [{ "node": "Prepare Approved Follow-Up Payload", "type": "main", "index": 0 }]
+      ]
+    },
+    "Prepare Approved Follow-Up Payload": {
+      "main": [
+        [{ "node": "Submit Controlled Effect to Gate Adapter (NO Direct Send)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Submit Controlled Effect to Gate Adapter (NO Direct Send)": {
+      "main": [
+        [{ "node": "Return Verified Status to Gate", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "sowRequirementIds": ["R-MKT-01", "R-MKT-02", "R-GATE-01", "R-SEC-02"]
+  }
+}

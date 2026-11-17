@@ -1,0 +1,145 @@
+# SAFI-TACT-ORCH-001 Local UNIX Docker Compose Stack (R-ENV-01, R-ENV-02, R-ENV-03, R-SEC-03)
+# All ports are bound strictly to 127.0.0.1 (local-only administration).
+# All secrets/credentials MUST be provided via deploy/.env (copied from .env.template).
+
+services:
+  gate-adapter:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.gate
+    container_name: safi-gate-adapter
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      GATE_STORE_PATH: /app/data/gate_state.db
+      SAFI_ALLOWED_RECIPIENTS: ${SAFI_ALLOWED_RECIPIENTS:?SAFI_ALLOWED_RECIPIENTS must be set}
+      N8N_BASE_URL: http://n8n:5678
+      N8N_API_KEY: ${N8N_API_KEY:?N8N_API_KEY must be set}
+      N8N_WEBHOOK_SECRET: ${N8N_WEBHOOK_SECRET:?N8N_WEBHOOK_SECRET must be set}
+      CALNODE_BASE_URL: http://calnode:3000
+      CALNODE_API_KEY: ${CALNODE_API_KEY:?CALNODE_API_KEY must be set}
+      CALNODE_CALENDAR_ID: ${CALNODE_CALENDAR_ID:-cal_test_bounded_01}
+      WINDMILL_BASE_URL: http://windmill-server:8000
+      WINDMILL_TOKEN: ${WINDMILL_TOKEN:?WINDMILL_TOKEN must be set}
+      WINDMILL_WORKSPACE: ${WINDMILL_WORKSPACE:-safi-ops}
+      SAFI_AUTHZ_URL: ${SAFI_AUTHZ_URL:-}
+      SAFI_AUTHZ_TOKEN: ${SAFI_AUTHZ_TOKEN:-}
+      NATS_URL: ${NATS_URL:?NATS_URL must be set}
+      NATS_TOKEN: ${NATS_TOKEN:-}
+      NATS_USER: ${NATS_USER:-}
+      NATS_PASSWORD: ${NATS_PASSWORD:-}
+      JETSTREAM_STREAM: ${JETSTREAM_STREAM:-SAFI_HISTORY}
+      JETSTREAM_CONTROL_SUBJECT_PREFIX: ${JETSTREAM_CONTROL_SUBJECT_PREFIX:-safi.control.events}
+    volumes:
+      - gate_state_data:/app/data
+    networks:
+      - safi_local_net
+
+  n8n:
+    # Pinned release tag (verify exact digest in T-01)
+    image: docker.n8n.io/n8nio/n8n:1.68.0
+    container_name: safi-n8n
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      N8N_HOST: 127.0.0.1
+      N8N_PORT: 5678
+      N8N_PROTOCOL: http
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?N8N_ENCRYPTION_KEY must be set}
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER: ${N8N_ADMIN_USER:?N8N_ADMIN_USER must be set}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_ADMIN_PASSWORD:?N8N_ADMIN_PASSWORD must be set}
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+      GATE_ADAPTER_INTERNAL_URL: http://gate-adapter:8000
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - safi_local_net
+
+  calnode:
+    # UNVERIFIED: Pin exact Calnode image tag/digest or local build path during Phase 1 T-01
+    # Source reference: https://github.com/Calnode/calnode
+    image: ${CALNODE_PINNED_IMAGE:?CALNODE_PINNED_IMAGE must be pinned in .env during T-01}
+    container_name: safi-calnode
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      NODE_ENV: production
+      CALNODE_ADMIN_EMAIL: ${CALNODE_ADMIN_EMAIL:?CALNODE_ADMIN_EMAIL must be set}
+      CALNODE_ADMIN_PASSWORD: ${CALNODE_ADMIN_PASSWORD:?CALNODE_ADMIN_PASSWORD must be set}
+      CALNODE_API_KEY: ${CALNODE_API_KEY:?CALNODE_API_KEY must be set}
+      # R-GATE-02: Disable ungated automatic email/SMS notifications
+      DISABLE_NOTIFICATIONS: "true"
+      SMTP_HOST: ""
+    volumes:
+      - calnode_data:/app/data
+    networks:
+      - safi_local_net
+
+  windmill-db:
+    image: postgres:16.4-alpine
+    container_name: safi-windmill-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${WINDMILL_DB_USER:?WINDMILL_DB_USER must be set}
+      POSTGRES_PASSWORD: ${WINDMILL_DB_PASSWORD:?WINDMILL_DB_PASSWORD must be set}
+      POSTGRES_DB: windmill
+    volumes:
+      - windmill_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d windmill"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - safi_local_net
+
+  windmill-server:
+    # Pinned release tag (verify exact digest in T-01)
+    image: ghcr.io/windmill-labs/windmill:1.425.0
+    container_name: safi-windmill-server
+    restart: unless-stopped
+    depends_on:
+      windmill-db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8001:8000"
+    environment:
+      DATABASE_URL: postgres://${WINDMILL_DB_USER}:${WINDMILL_DB_PASSWORD}@windmill-db:5432/windmill?sslmode=disable
+      MODE: server
+      WM_SUPERADMIN_EMAIL: ${WINDMILL_ADMIN_EMAIL:?WINDMILL_ADMIN_EMAIL must be set}
+      WM_SUPERADMIN_SECRET: ${WINDMILL_ADMIN_PASSWORD:?WINDMILL_ADMIN_PASSWORD must be set}
+      BASE_URL: http://127.0.0.1:8001
+    networks:
+      - safi_local_net
+
+  windmill-worker:
+    image: ghcr.io/windmill-labs/windmill:1.425.0
+    container_name: safi-windmill-worker
+    restart: unless-stopped
+    depends_on:
+      windmill-db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${WINDMILL_DB_USER}:${WINDMILL_DB_PASSWORD}@windmill-db:5432/windmill?sslmode=disable
+      MODE: worker
+      WORKER_GROUP: default
+    volumes:
+      - windmill_worker_logs:/tmp/windmill/logs
+    networks:
+      - safi_local_net
+
+volumes:
+  gate_state_data:
+  n8n_data:
+  calnode_data:
+  windmill_db_data:
+  windmill_worker_logs:
+
+networks:
+  safi_local_net:
+    driver: bridge

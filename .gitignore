@@ -1,0 +1,27 @@
+# Secrets and local environment files (R-SEC-03)
+.env
+.env.*
+!.env.template
+deploy/.env
+deploy/.env.*
+!deploy/.env.template
+
+# Local SQLite operational store databases
+*.db
+*.db-wal
+*.db-shm
+data/
+
+# Python caches & build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Temporary logs and evidence scratch
+*.log
+extracted_docx_text.txt
