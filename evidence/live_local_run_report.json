@@ -1,11 +1,11 @@
 {
-  "runTimestamp": "2026-11-17T22:20:32.460567Z",
-  "runId": "1794954032",
-  "gitCommitSha": "bd5039252009cc3f9379613a3c8cd60f2d70e812",
+  "runTimestamp": "2026-11-17T22:50:44.194634Z",
+  "runId": "1794955844",
+  "gitCommitSha": "9e7d5265f5b307a015ccd8da261f729d3b95452c",
   "tests": {
     "A01": {
       "status": "PASS",
-      "timestamp": "2026-11-17T22:20:33.087781Z",
+      "timestamp": "2026-11-17T22:50:45.037532Z",
       "gate": {
         "status": "ok",
         "service": "safi-local-gate-adapter",
@@ -16,7 +16,7 @@
           "failedClosedCount": 0,
           "interruptedDispatchingActions": [],
           "interruptedPreDispatchActions": [],
-          "heldActionsPreserved": 4
+          "heldActionsPreserved": 7
         }
       },
       "n8n": {
@@ -30,21 +30,21 @@
     },
     "A03": {
       "status": "PASS",
-      "timestamp": "2026-11-17T22:20:35.063129Z",
-      "conversationId": "conv_sow_a_1794954032",
-      "intakeExecutionId": "58",
-      "followupExecutionId": "59",
-      "deliveryReceiptId": "rcpt_59_1794954033084",
+      "timestamp": "2026-11-17T22:50:47.102031Z",
+      "conversationId": "conv_sow_a_1794955844",
+      "intakeExecutionId": "72",
+      "followupExecutionId": "73",
+      "deliveryReceiptId": "rcpt_73_1794955845247",
       "singleFollowupVerifiedByIdempotentReplay": true,
       "directBypassStatus": 403,
       "directIntakeBypassStatus": 403
     },
     "A04": {
       "status": "PASS",
-      "timestamp": "2026-11-17T22:20:35.334436Z",
-      "conversationId": "conv_sow_a_1794954032",
+      "timestamp": "2026-11-17T22:50:47.417785Z",
+      "conversationId": "conv_sow_a_1794955844",
       "slotId": "2026-11-18T14:00:00Z",
-      "bookingId": "8e3bfb51-cff9-4e0b-a00e-bd4ff83b6f13",
+      "bookingId": "1b3e1025-8ac9-4da3-b3bd-4238faf35dee",
       "inviteDelivery": "none",
       "calnodeTotalBefore": 0,
       "calnodeTotalAfter": 1,
@@ -52,79 +52,101 @@
     },
     "A05": {
       "status": "PASS",
-      "timestamp": "2026-11-17T22:20:36.187284Z",
-      "conversationId": "conv_sow_a_1794954032",
-      "jobId": "01a1eb98-fec5-e302-c1aa-a01a89d16f3a",
+      "timestamp": "2026-11-17T22:50:48.445497Z",
+      "conversationId": "conv_sow_a_1794955844",
+      "jobId": "01a1ebb4-a5a2-cc4f-1c70-6d3531c87fdc",
       "permissionedAs": "u/safi_ops_runner",
       "state": "COMPLETED",
       "assignee": "ops-specialist-1@allowlist.test.local",
-      "assignmentId": "asgn_697cff9afeb5",
+      "assignmentId": "asgn_609b61d69705",
       "jobStatusEndpointVerified": true,
       "errorReportingVerified": {
         "statusCode": 502,
-        "failedJobId": "01a1eb99-0078-3c62-d6f5-18c782eeefe1"
+        "failedJobId": "01a1ebb4-a7af-b93d-944c-cd19928c37e0"
       }
     },
     "A02": {
       "status": "BLOCKED",
-      "timestamp": "2026-11-17T22:20:36.187305Z",
+      "timestamp": "2026-11-17T22:50:48.445527Z",
       "reason": "REST control surface (/safichat/ops/*) verified live for conv_a, but native SafiChat / Meeting Manager UI invocation contract (V-06) has not been supplied by SAFI (SOW \u00a73 & \u00a710).",
-      "verifiedApiConversationId": "conv_sow_a_1794954032"
+      "verifiedApiConversationId": "conv_sow_a_1794955844"
     },
     "A06": {
       "status": "PASS",
-      "timestamp": "2026-11-17T22:20:37.507915Z",
+      "timestamp": "2026-11-17T22:50:50.566709Z",
       "conversations": [
-        "conv_sow_a_1794954032",
-        "conv_sow_b_1794954032",
-        "conv_sow_c_1794954032"
+        "conv_sow_a_1794955844",
+        "conv_sow_b_1794955844",
+        "conv_sow_c_1794955844"
       ],
-      "gatedConversationId": "conv_sow_b_1794954032",
+      "gatedConversationId": "conv_sow_b_1794955844",
       "heldActionIds": [
-        "act_8204b403bd08",
-        "act_4eda0465e3b2"
+        "act_91a473ff1e55",
+        "act_61a4870973e3"
       ],
-      "independentConvCJobId": "01a1eb99-03dc-3a18-d9a8-c286ab3f0233",
+      "independentConvAFollowupExecId": "76",
+      "independentConvCJobId": "01a1ebb4-ac4c-126f-23ba-321788bf9213",
+      "ambiguousSubjectLine409Verified": [
+        "conv_sow_dup1_1794955844",
+        "conv_sow_dup2_1794955844"
+      ],
       "perConversationIdempotencyIsolationVerified": true
     },
     "A10": {
       "status": "PASS",
-      "timestamp": "2026-11-17T22:20:50.950446Z",
+      "timestamp": "2026-11-17T22:51:04.678647Z",
       "scope": "FULL_DOCKER_COMPOSE_STACK_RESTART (gate-adapter, n8n, calnode, windmill-server, windmill-worker, windmill-db, nats)",
-      "conversationId": "conv_sow_b_1794954032",
+      "conversationId": "conv_sow_b_1794955844",
       "recoveryReport": {
         "interruptedConversationsFailedClosed": [],
         "failedClosedDetails": [],
         "failedClosedCount": 0,
         "interruptedDispatchingActions": [],
         "interruptedPreDispatchActions": [],
-        "heldActionsPreserved": 6
+        "heldActionsPreserved": 9
       },
       "modeAfterRestart": "GATED",
       "heldCountAfterRestart": 2,
-      "calnodeBookingSurvivedRestart": true
+      "calnodeBookingSurvivedRestart": true,
+      "postRestartBookingRetryReplay": true,
+      "calnodeConfirmedCountUnchanged": true
     },
     "A07": {
       "status": "PASS",
-      "timestamp": "2026-11-17T22:20:51.372196Z",
-      "conversationId": "conv_sow_b_1794954032",
-      "releasedActionId": "act_8204b403bd08",
-      "releasedExecId": "62",
+      "timestamp": "2026-11-17T22:51:05.639133Z",
+      "conversationId": "conv_sow_b_1794955844",
+      "releasedActionId": "act_91a473ff1e55",
+      "releasedExecId": "79",
+      "releasedRetryIdempotentReplay": true,
       "cancelledActionIds": [
-        "act_4eda0465e3b2"
+        "act_61a4870973e3"
       ],
       "modeAfter": "UNGATED",
-      "cancelledRetryStatus": "CANCELLED"
+      "cancelledRetryStatus": "CANCELLED",
+      "liveApproveVerified": {
+        "actionId": "act_34225b12abb9",
+        "state": "DONE"
+      },
+      "liveRejectVerified": {
+        "actionId": "act_f94c20a6a4ba",
+        "state": "REJECTED"
+      }
     },
     "A08": {
       "status": "PASS",
-      "timestamp": "2026-11-17T22:20:52.024126Z",
-      "conversationId": "conv_sow_race_1794954032",
+      "timestamp": "2026-11-17T22:51:06.352217Z",
+      "conversationId": "conv_sow_race_1794955844",
+      "timestamps": {
+        "inflightStarted": "2026-11-17T22:51:05.843476Z",
+        "bargeInStarted": "2026-11-17T22:51:05.909554Z",
+        "inflightFinished": "2026-11-17T22:51:06.323817Z",
+        "bargeInConfirmed": "2026-11-17T22:51:06.333426Z"
+      },
       "inflightActionState": "DONE",
       "bargeInMode": "GATED",
       "reconciledInFlight": [
         {
-          "actionId": "act_8f1ec2172545",
+          "actionId": "act_f1913c939584",
           "engine": "windmill",
           "operation": "start_assignment",
           "finalState": "DONE",
@@ -136,90 +158,326 @@
     },
     "A09": {
       "status": "BLOCKED",
-      "timestamp": "2026-11-17T22:20:52.618818Z",
+      "timestamp": "2026-11-17T22:51:07.445647Z",
       "localFailClosedVerification": "PASS",
-      "reason": "All local fail-closed authz, anti-DoS, Subject-Line isolation, Windmill job IDOR, revocation, and allowlist checks passed live; live SAFI Cognito endpoint (V-08 / SAFI_AUTHZ_URL) remains BLOCKED awaiting SAFI infrastructure.",
+      "reason": "All local fail-closed authz, anti-DoS, Subject-Line isolation, Windmill job IDOR, revocation, allowlist bypass, script/calendar scope escape, and reconcile checks passed live; live SAFI Cognito endpoint (V-08 / SAFI_AUTHZ_URL) remains BLOCKED awaiting SAFI infrastructure.",
       "observedStatuses": {
         "missingBearerToken": 403,
         "missingCallbackSecret": 403,
         "unlistedStranger": 403,
         "crossUserConversationAccess": 403,
+        "crossUserApprove": 403,
+        "crossUserReject": 403,
+        "crossUserUngate": 403,
+        "crossUserHeld": 403,
         "crossUserSubjectEnumeration": 403,
         "crossUserIncompleteContextDos": 403,
         "crossConversationJobStatusIdor": 404,
         "revokedActor": 403,
         "nonAllowlistedRecipient": 403,
-        "ownerIncompleteContextFailClosed": 401
+        "dispatchPayloadRecipientBypass": 403,
+        "windmillScriptPathEscape": 403,
+        "calnodeCalendarScopeEscape": 403,
+        "ownerIncompleteContextFailClosed": 401,
+        "liveReconcileFromFailedClosed": 200
       }
     },
     "A11": {
       "status": "BLOCKED",
-      "timestamp": "2026-11-17T22:20:53.627194Z",
+      "timestamp": "2026-11-17T22:51:09.018528Z",
       "localJetStreamVerification": "PASS",
-      "reason": "Verified real schema-validated ControlEvents persisted in local NATS JetStream stream SAFI_HISTORY; binding to SAFI's production NATS/JetStream cluster & verifying SAFI Subject naming (V-07) remains BLOCKED awaiting SAFI infrastructure.",
+      "reason": "Verified real schema-validated ControlEvents across all lifecycle types (with full Meeting/Port/Permission Context and un-clobbered PROXY portContext) persisted in local NATS JetStream stream SAFI_HISTORY; binding to SAFI's production NATS/JetStream cluster & verifying SAFI Subject naming (V-07) remains BLOCKED awaiting SAFI infrastructure.",
       "stream": "SAFI_HISTORY",
-      "totalPersistedControlEvents": 170,
-      "recentEvents": [
-        {
-          "seq": 166,
-          "subject": "safi.control.events.conv_sow_a_1794954032.action_failed",
-          "eventId": "evt_5b89d6ad639b",
-          "type": "ACTION_FAILED",
-          "conversationId": "conv_sow_a_1794954032",
-          "subjectLineDisplay": "Customer A - Marketing Sales Ops 1794954032",
-          "actorGuid": "user_safi_pilot_other_02",
-          "actorKind": "USER",
-          "outcome": "denied"
+      "totalPersistedControlEvents": 224,
+      "runEventCount": 40,
+      "proxyContextPreservationVerified": {
+        "seq": 186,
+        "subject": "safi.control.events.conv_sow_a_1794955844.action_dispatched",
+        "eventId": "evt_604b955235cb",
+        "type": "ACTION_DISPATCHED",
+        "conversationId": "conv_sow_a_1794955844",
+        "subjectLineDisplay": "Customer A - Marketing Sales Ops 1794955844",
+        "actorGuid": "proxy-n8n-workflow",
+        "actorKind": "PROXY",
+        "outcome": "ok",
+        "context": {
+          "meetingContext": {
+            "proxySource": "n8n-lead-intake",
+            "proxyExecutionId": "72",
+            "meetingId": "mtg_sow_1794955844",
+            "channel": "safichat-pilot"
+          },
+          "portContext": {
+            "proxyPort": "n8n-internal",
+            "port": "safichat-local-api",
+            "host": "127.0.0.1"
+          },
+          "permissionProvenance": {
+            "proxyRole": "WORKFLOW_PROXY",
+            "delegatedBy": "user_safi_pilot_owner_01",
+            "role": "BUSINESS_OWNER",
+            "scope": "conversation:admin"
+          }
         },
-        {
-          "seq": 167,
-          "subject": "safi.control.events.conv_sow_a_1794954032.action_failed",
-          "eventId": "evt_10bbee64a8ba",
-          "type": "ACTION_FAILED",
-          "conversationId": "conv_sow_a_1794954032",
-          "subjectLineDisplay": "Customer A - Marketing Sales Ops 1794954032",
-          "actorGuid": "user_safi_revoked_03",
-          "actorKind": "USER",
-          "outcome": "denied"
-        },
-        {
-          "seq": 168,
-          "subject": "safi.control.events.conv_sow_a_1794954032.action_failed",
-          "eventId": "evt_dd4a865cc9c7",
-          "type": "ACTION_FAILED",
-          "conversationId": "conv_sow_a_1794954032",
-          "subjectLineDisplay": "Customer A - Marketing Sales Ops 1794954032",
-          "actorGuid": "user_safi_pilot_owner_01",
-          "actorKind": "USER",
-          "outcome": "denied"
-        },
-        {
-          "seq": 169,
-          "subject": "safi.control.events.conv_sow_uncertain_1794954032.action_dispatched",
-          "eventId": "evt_94455376d933",
+        "ts": "2026-11-17T22:50:45.274439Z"
+      },
+      "lifecycleEventsByType": {
+        "ACTION_DISPATCHED": {
+          "seq": 222,
+          "subject": "safi.control.events.conv_sow_uncertain_1794955844.action_dispatched",
+          "eventId": "evt_7b0fcb9f46e7",
           "type": "ACTION_DISPATCHED",
-          "conversationId": "conv_sow_uncertain_1794954032",
-          "subjectLineDisplay": "Uncertain Identity 1794954032",
+          "conversationId": "conv_sow_uncertain_1794955844",
+          "subjectLineDisplay": "Uncertain Identity 1794955844",
           "actorGuid": "user_safi_pilot_owner_01",
           "actorKind": "USER",
-          "outcome": "ok"
+          "outcome": "ok",
+          "context": {
+            "meetingContext": {
+              "meetingId": "mtg_sow_1794955844",
+              "channel": "safichat-pilot"
+            },
+            "portContext": {
+              "port": "safichat-local-api",
+              "host": "127.0.0.1"
+            },
+            "permissionProvenance": {
+              "role": "BUSINESS_OWNER",
+              "scope": "conversation:admin"
+            }
+          },
+          "ts": "2026-11-17T22:51:07.638715Z"
         },
-        {
-          "seq": 170,
-          "subject": "safi.control.events.conv_sow_uncertain_1794954032.gate_failed_closed",
-          "eventId": "evt_4fc8261f7f0f",
-          "type": "GATE_FAILED_CLOSED",
-          "conversationId": "conv_sow_uncertain_1794954032",
-          "subjectLineDisplay": "Uncertain Identity 1794954032",
+        "ACTION_FAILED": {
+          "seq": 221,
+          "subject": "safi.control.events.conv_sow_a_1794955844.action_failed",
+          "eventId": "evt_4e651b984ec6",
+          "type": "ACTION_FAILED",
+          "conversationId": "conv_sow_a_1794955844",
+          "subjectLineDisplay": "Customer A - Marketing Sales Ops 1794955844",
           "actorGuid": "user_safi_pilot_owner_01",
           "actorKind": "USER",
-          "outcome": "unknown"
+          "outcome": "denied",
+          "context": {
+            "meetingContext": {
+              "meetingId": "mtg_sow_1794955844",
+              "channel": "safichat-pilot"
+            },
+            "portContext": {
+              "port": "safichat-local-api",
+              "host": "127.0.0.1"
+            },
+            "permissionProvenance": {
+              "role": "BUSINESS_OWNER",
+              "scope": "conversation:admin"
+            }
+          },
+          "ts": "2026-11-17T22:51:07.262103Z"
+        },
+        "MODE_GATED": {
+          "seq": 224,
+          "subject": "safi.control.events.conv_sow_uncertain_1794955844.mode_gated",
+          "eventId": "evt_c3da151cce71",
+          "type": "MODE_GATED",
+          "conversationId": "conv_sow_uncertain_1794955844",
+          "subjectLineDisplay": "Uncertain Identity 1794955844",
+          "actorGuid": "user_safi_pilot_owner_01",
+          "actorKind": "USER",
+          "outcome": "ok",
+          "context": {
+            "meetingContext": {
+              "meetingId": "mtg_sow_1794955844",
+              "channel": "safichat-pilot"
+            },
+            "portContext": {
+              "port": "safichat-local-api",
+              "host": "127.0.0.1"
+            },
+            "permissionProvenance": {
+              "role": "BUSINESS_OWNER",
+              "scope": "conversation:admin"
+            }
+          },
+          "ts": "2026-11-17T22:51:07.716795Z"
+        },
+        "ACTION_HELD": {
+          "seq": 212,
+          "subject": "safi.control.events.conv_sow_race_1794955844.action_held",
+          "eventId": "evt_7ded1e28fe7e",
+          "type": "ACTION_HELD",
+          "conversationId": "conv_sow_race_1794955844",
+          "subjectLineDisplay": "Race Live 1794955844",
+          "actorGuid": "user_safi_pilot_owner_01",
+          "actorKind": "USER",
+          "outcome": "ok",
+          "context": {
+            "meetingContext": {
+              "meetingId": "mtg_sow_1794955844",
+              "channel": "safichat-pilot"
+            },
+            "portContext": {
+              "port": "safichat-local-api",
+              "host": "127.0.0.1"
+            },
+            "permissionProvenance": {
+              "role": "BUSINESS_OWNER",
+              "scope": "conversation:admin"
+            }
+          },
+          "ts": "2026-11-17T22:51:06.580693Z"
+        },
+        "ACTION_RELEASED": {
+          "seq": 199,
+          "subject": "safi.control.events.conv_sow_b_1794955844.action_released",
+          "eventId": "evt_64bb8a6624e0",
+          "type": "ACTION_RELEASED",
+          "conversationId": "conv_sow_b_1794955844",
+          "subjectLineDisplay": "Customer B - Selective Gate 1794955844",
+          "actorGuid": "user_safi_pilot_owner_01",
+          "actorKind": "USER",
+          "outcome": "ok",
+          "context": {
+            "meetingContext": {
+              "meetingId": "mtg_sow_1794955844",
+              "channel": "safichat-pilot"
+            },
+            "portContext": {
+              "port": "safichat-local-api",
+              "host": "127.0.0.1"
+            },
+            "permissionProvenance": {
+              "role": "BUSINESS_OWNER",
+              "scope": "conversation:admin"
+            }
+          },
+          "ts": "2026-11-17T22:51:04.907448Z"
+        },
+        "ACTION_CANCELLED": {
+          "seq": 201,
+          "subject": "safi.control.events.conv_sow_b_1794955844.action_cancelled",
+          "eventId": "evt_ff2cdde31351",
+          "type": "ACTION_CANCELLED",
+          "conversationId": "conv_sow_b_1794955844",
+          "subjectLineDisplay": "Customer B - Selective Gate 1794955844",
+          "actorGuid": "user_safi_pilot_owner_01",
+          "actorKind": "USER",
+          "outcome": "ok",
+          "context": {
+            "meetingContext": {
+              "meetingId": "mtg_sow_1794955844",
+              "channel": "safichat-pilot"
+            },
+            "portContext": {
+              "port": "safichat-local-api",
+              "host": "127.0.0.1"
+            },
+            "permissionProvenance": {
+              "role": "BUSINESS_OWNER",
+              "scope": "conversation:admin"
+            }
+          },
+          "ts": "2026-11-17T22:51:05.338362Z"
+        },
+        "MODE_UNGATED": {
+          "seq": 202,
+          "subject": "safi.control.events.conv_sow_b_1794955844.mode_ungated",
+          "eventId": "evt_1b6e760763e4",
+          "type": "MODE_UNGATED",
+          "conversationId": "conv_sow_b_1794955844",
+          "subjectLineDisplay": "Customer B - Selective Gate 1794955844",
+          "actorGuid": "user_safi_pilot_owner_01",
+          "actorKind": "USER",
+          "outcome": "ok",
+          "context": {
+            "meetingContext": {
+              "meetingId": "mtg_sow_1794955844",
+              "channel": "safichat-pilot"
+            },
+            "portContext": {
+              "port": "safichat-local-api",
+              "host": "127.0.0.1"
+            },
+            "permissionProvenance": {
+              "role": "BUSINESS_OWNER",
+              "scope": "conversation:admin"
+            }
+          },
+          "ts": "2026-11-17T22:51:05.348820Z"
+        },
+        "ACTION_APPROVED": {
+          "seq": 206,
+          "subject": "safi.control.events.conv_sow_dup1_1794955844.action_approved",
+          "eventId": "evt_44042760c37d",
+          "type": "ACTION_APPROVED",
+          "conversationId": "conv_sow_dup1_1794955844",
+          "subjectLineDisplay": "Shared Renewal Subject 1794955844",
+          "actorGuid": "user_safi_pilot_owner_01",
+          "actorKind": "USER",
+          "outcome": "ok",
+          "context": {
+            "meetingContext": {
+              "meetingId": "mtg_sow_1794955844",
+              "channel": "safichat-pilot"
+            },
+            "portContext": {
+              "port": "safichat-local-api",
+              "host": "127.0.0.1"
+            },
+            "permissionProvenance": {
+              "role": "BUSINESS_OWNER",
+              "scope": "conversation:admin"
+            }
+          },
+          "ts": "2026-11-17T22:51:05.667863Z"
+        },
+        "ACTION_REJECTED": {
+          "seq": 208,
+          "subject": "safi.control.events.conv_sow_dup1_1794955844.action_rejected",
+          "eventId": "evt_859db709a4c4",
+          "type": "ACTION_REJECTED",
+          "conversationId": "conv_sow_dup1_1794955844",
+          "subjectLineDisplay": "Shared Renewal Subject 1794955844",
+          "actorGuid": "user_safi_pilot_owner_01",
+          "actorKind": "USER",
+          "outcome": "ok",
+          "context": {
+            "meetingContext": {
+              "meetingId": "mtg_sow_1794955844",
+              "channel": "safichat-pilot"
+            },
+            "portContext": {
+              "port": "safichat-local-api",
+              "host": "127.0.0.1"
+            },
+            "permissionProvenance": {
+              "role": "BUSINESS_OWNER",
+              "scope": "conversation:admin"
+            }
+          },
+          "ts": "2026-11-17T22:51:05.838409Z"
+        },
+        "GATE_FAILED_CLOSED": {
+          "seq": 223,
+          "subject": "safi.control.events.conv_sow_uncertain_1794955844.gate_failed_closed",
+          "eventId": "evt_ceafabea5f57",
+          "type": "GATE_FAILED_CLOSED",
+          "conversationId": "conv_sow_uncertain_1794955844",
+          "subjectLineDisplay": "Uncertain Identity 1794955844",
+          "actorGuid": "user_safi_pilot_owner_01",
+          "actorKind": "USER",
+          "outcome": "unknown",
+          "context": {
+            "meetingContext": {},
+            "portContext": {},
+            "permissionProvenance": {}
+          },
+          "ts": "2026-11-17T22:51:07.654863Z"
         }
-      ]
+      }
     },
     "A12": {
       "status": "BLOCKED",
-      "timestamp": "2026-11-17T22:20:53.627217Z",
+      "timestamp": "2026-11-17T22:51:09.018557Z",
       "reason": "Awaiting independent SAFI tester execution using docs/safichat_user_guide.md (SOW \u00a78 A12)."
     }
   }

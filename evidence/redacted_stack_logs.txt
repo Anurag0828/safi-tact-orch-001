@@ -1,42 +1,42 @@
-# Redacted Stack Logs Captured 2026-11-17T22:20:53.627239Z (Git SHA: bd5039252009cc3f9379613a3c8cd60f2d70e812)
+# Redacted Stack Logs Captured 2026-11-17T22:51:09.018589Z (Git SHA: 9e7d5265f5b307a015ccd8da261f729d3b95452c)
 
 
 === safi-gate-adapter ===
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-Access DENIED: Actor 'total_stranger_attacker_999' not authorized for conversation 'conv_sow_a_1794954032'
-INFO:     172.18.0.1:53074 - "GET /health HTTP/1.1" 200 OK
-INFO:     172.18.0.1:53074 - "POST /safichat/ops/gate/held HTTP/1.1" 200 OK
-INFO:     172.18.0.1:53074 - "POST /safichat/ops/gate/ungate HTTP/1.1" 200 OK
-INFO:     172.18.0.1:53074 - "POST /safichat/ops/marketing/followup HTTP/1.1" 200 OK
-INFO:     172.18.0.1:53074 - "POST /safichat/ops/marketing/followup HTTP/1.1" 200 OK
-INFO:     172.18.0.1:53074 - "POST /safichat/ops/operations/assign HTTP/1.1" 200 OK
-INFO:     172.18.0.1:53078 - "POST /safichat/ops/gate/barge-in HTTP/1.1" 200 OK
-INFO:     172.18.0.1:53074 - "POST /safichat/ops/marketing/followup HTTP/1.1" 200 OK
-INFO:     172.18.0.1:53074 - "POST /safichat/ops/gate/barge-in HTTP/1.1" 403 Forbidden
-INFO:     172.18.0.1:53074 - "POST /gate/dispatch HTTP/1.1" 403 Forbidden
-INFO:     172.18.0.1:53074 - "POST /safichat/ops/gate/barge-in HTTP/1.1" 403 Forbidden
-INFO:     172.18.0.1:53074 - "POST /safichat/ops/gate/barge-in HTTP/1.1" 403 Forbidden
-INFO:     172.18.0.1:53074 - "POST /safichat/ops/gate/barge-in HTTP/1.1" 403 Forbidden
-INFO:     172.18.0.1:53074 - "POST /safichat/ops/gate/barge-in HTTP/1.1" 403 Forbidden
-INFO:     172.18.0.1:53074 - "POST /safichat/ops/operations/job-status HTTP/1.1" 404 Not Found
-INFO:     172.18.0.1:53074 - "POST /safichat/ops/gate/barge-in HTTP/1.1" 403 Forbidden
-INFO:     172.18.0.1:53074 - "POST /safichat/ops/marketing/followup HTTP/1.1" 403 Forbidden
-Access DENIED: Actor 'user_safi_pilot_other_02' not authorized for conversation 'conv_sow_a_1794954032'
-Access DENIED: Actor 'user_safi_pilot_other_02' not authorized for conversation 'conv_sow_a_1794954032'
+2026-11-17T22:51:06+0000 INFO:     172.18.0.1:47790 - "POST /safichat/ops/gate/barge-in HTTP/1.1" 403 Forbidden
+2026-11-17T22:51:06+0000 INFO:     172.18.0.1:47790 - "POST /safichat/ops/gate/barge-in HTTP/1.1" 403 Forbidden
+Access DENIED: Actor 'total_stranger_attacker_999' not authorized for conversation 'conv_sow_a_1794955844'
+2026-11-17T22:51:06+0000 INFO:     172.18.0.1:47790 - "POST /safichat/ops/gate/approve HTTP/1.1" 403 Forbidden
+2026-11-17T22:51:06+0000 INFO:     172.18.0.1:47790 - "POST /safichat/ops/gate/reject HTTP/1.1" 403 Forbidden
+2026-11-17T22:51:06+0000 INFO:     172.18.0.1:47790 - "POST /safichat/ops/gate/ungate HTTP/1.1" 403 Forbidden
+2026-11-17T22:51:07+0000 INFO:     172.18.0.1:47790 - "POST /safichat/ops/gate/held HTTP/1.1" 403 Forbidden
+2026-11-17T22:51:07+0000 INFO:     172.18.0.1:47790 - "POST /safichat/ops/gate/barge-in HTTP/1.1" 403 Forbidden
+2026-11-17T22:51:07+0000 INFO:     172.18.0.1:47790 - "POST /safichat/ops/gate/barge-in HTTP/1.1" 403 Forbidden
+2026-11-17T22:51:07+0000 INFO:     172.18.0.1:47790 - "POST /safichat/ops/operations/job-status HTTP/1.1" 404 Not Found
+2026-11-17T22:51:07+0000 INFO:     172.18.0.1:47790 - "POST /safichat/ops/gate/barge-in HTTP/1.1" 403 Forbidden
+Access DENIED: Actor 'user_safi_pilot_other_02' not authorized for conversation 'conv_sow_a_1794955844'
+Access DENIED: Actor 'user_safi_pilot_other_02' not authorized for conversation 'conv_sow_race_1794955844'
+Access DENIED: Actor 'user_safi_pilot_other_02' not authorized for conversation 'conv_sow_race_1794955844'
+Access DENIED: Actor 'user_safi_pilot_other_02' not authorized for conversation 'conv_sow_race_1794955844'
+Access DENIED: Actor 'user_safi_pilot_other_02' not authorized for conversation 'conv_sow_race_1794955844'
+Access DENIED: Actor 'user_safi_pilot_other_02' not authorized for conversation 'conv_sow_a_1794955844'
 Access DENIED: Actor 'user_safi_revoked_03' has revoked permissions
-INFO:     172.18.0.1:53074 - "POST /safichat/ops/marketing/followup HTTP/1.1" 200 OK
-INFO:     172.18.0.1:53074 - "POST /safichat/ops/gate/barge-in HTTP/1.1" 401 Unauthorized
+2026-11-17T22:51:07+0000 INFO:     172.18.0.1:47790 - "POST /safichat/ops/marketing/followup HTTP/1.1" 403 Forbidden
+2026-11-17T22:51:07+0000 INFO:     172.18.0.1:47790 - "POST /gate/dispatch HTTP/1.1" 403 Forbidden
+2026-11-17T22:51:07+0000 INFO:     172.18.0.1:47790 - "POST /gate/dispatch HTTP/1.1" 403 Forbidden
+2026-11-17T22:51:07+0000 INFO:     172.18.0.1:47790 - "POST /safichat/ops/sales/slots HTTP/1.1" 403 Forbidden
+2026-11-17T22:51:07+0000 INFO:     172.18.0.1:47790 - "POST /safichat/ops/marketing/followup HTTP/1.1" 200 OK
+2026-11-17T22:51:07+0000 INFO:     172.18.0.1:47790 - "POST /safichat/ops/gate/barge-in HTTP/1.1" 401 Unauthorized
+2026-11-17T22:51:07+0000 INFO:     172.18.0.1:47790 - "POST /safichat/ops/gate/reconcile HTTP/1.1" 200 OK
 
 
 === safi-n8n ===
-- "SAFI Lead Intake & Gated Follow-Up (R-MKT-01, R-MKT-02)" (ID: 6CYhWGm6mI7j8FtT)
+================================
+   - "SAFI Lead Intake & Gated Follow-Up (R-MKT-01, R-MKT-02)" (ID: HM5t3oqirLYahAjV)
      => Started
-   - "SAFI Approved Follow-Up Dispatcher (Gate-Authorized Only - R-MKT-02)" (ID: pfEOFPwRKXGUfSPE)
+   - "SAFI Approved Follow-Up Dispatcher (Gate-Authorized Only - R-MKT-02)" (ID: XqtqyM88s1yRtRPO)
      => Started
 
 Editor is now accessible via:
-Permissions 0644 for n8n settings file /home/node/.n8n/config are too wide. This is ignored for now, but in the future n8n will attempt to change the permissions automatically. To automatically enforce correct permissions now set N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true (recommended), or turn this check off set N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false.
 http://127.0.0.1:5678/
 Received SIGTERM. Shutting down...
 
@@ -58,84 +58,84 @@ http://127.0.0.1:5678/
 
 
 === safi-calnode ===
-{"time":"2026-11-17T22:20:32.383893493Z","level":"INFO","msg":"request","method":"GET","path":"/healthz","status":200,"duration_ms":0,"remote_addr":"172.18.0.1:56788","request_id":"975e2efb0662a968"}
-{"time":"2026-11-17T22:20:34.507100889Z","level":"INFO","msg":"request","method":"GET","path":"/v1/bookings","status":200,"duration_ms":15,"remote_addr":"172.18.0.1:56788","request_id":"7426c3ab8f4ad0b6"}
-{"time":"2026-11-17T22:20:34.561462939Z","level":"INFO","msg":"request","method":"POST","path":"/v1/bookings/30898978-a272-49c9-8ce2-ed165bca4a87/cancel","status":200,"duration_ms":50,"remote_addr":"172.18.0.1:56788","request_id":"b8e4494438e9146d"}
-{"time":"2026-11-17T22:20:34.626819246Z","level":"INFO","msg":"request","method":"GET","path":"/v1/event-types/consultation-30m/slots","status":200,"duration_ms":1,"remote_addr":"172.18.0.5:37114","request_id":"1620c4fdfbfac842"}
-{"time":"2026-11-17T22:20:34.639435776Z","level":"INFO","msg":"request","method":"GET","path":"/v1/bookings","status":200,"duration_ms":6,"remote_addr":"172.18.0.1:56788","request_id":"f0b77f421413eaa3"}
-{"time":"2026-11-17T22:20:34.742778786Z","level":"INFO","msg":"request","method":"POST","path":"/v1/bookings","status":201,"duration_ms":15,"remote_addr":"172.18.0.5:37118","request_id":"b67158d8c678b3f9"}
-{"time":"2026-11-17T22:20:34.774211163Z","level":"INFO","msg":"request","method":"GET","path":"/v1/bookings","status":200,"duration_ms":5,"remote_addr":"172.18.0.1:56788","request_id":"01d9b76cd852ddb9"}
-{"time":"2026-11-17T22:20:37.750669132Z","level":"INFO","msg":"shutting down — draining worker and in-flight requests"}
-{"time":"2026-11-17T22:20:37.751858083Z","level":"INFO","msg":"server stopped"}
-{"time":"2026-11-17T22:20:38.980981903Z","level":"INFO","msg":"starting calnode","version":"0.14.0","commit":"9b363351501e3883d7bb70b67edf9746ed5a0c42","build_time":"unknown","dirty":false}
-{"time":"2026-11-17T22:20:38.981415359Z","level":"WARN","msg":"Google OAuth NOT configured — GOOGLE_CLIENT_ID is empty"}
-{"time":"2026-11-17T22:20:38.987104697Z","level":"INFO","msg":"goose: no migrations to run. current version: 71"}
-{"time":"2026-11-17T22:20:38.987155755Z","level":"INFO","msg":"database migrations applied"}
-{"time":"2026-11-17T22:20:39.226649172Z","level":"INFO","msg":"keyvault: DEK unwrapped from keystore (primary)"}
-{"time":"2026-11-17T22:20:39.227221103Z","level":"INFO","msg":"mailer: not configured — configure SMTP in Settings or set EMAIL_SMTP_HOST"}
-{"time":"2026-11-17T22:20:39.227314217Z","level":"INFO","msg":"webhook worker started"}
-{"time":"2026-11-17T22:20:39.227503994Z","level":"INFO","msg":"Google OAuth not configured — add credentials in Settings or set GOOGLE_CLIENT_ID"}
-{"time":"2026-11-17T22:20:39.227593211Z","level":"INFO","msg":"CalDAV calendar configured"}
-{"time":"2026-11-17T22:20:39.227948516Z","level":"INFO","msg":"LLM layer not enabled — configure it in Settings → AI"}
-{"time":"2026-11-17T22:20:39.228803678Z","level":"INFO","msg":"Zoom not configured — add credentials in Settings → Zoom"}
-{"time":"2026-11-17T22:20:39.229432278Z","level":"INFO","msg":"Stripe not configured — add credentials in Settings → Payments"}
-{"time":"2026-11-17T22:20:39.22986943Z","level":"INFO","msg":"LiveKit not configured — add a server in Settings → Video"}
-{"time":"2026-11-17T22:20:39.240386925Z","level":"INFO","msg":"server listening","port":"3000","base_url":"http://127.0.0.1:3000"}
-{"time":"2026-11-17T22:20:51.174540685Z","level":"INFO","msg":"request","method":"GET","path":"/healthz","status":200,"duration_ms":0,"remote_addr":"172.18.0.1:47948","request_id":"c7258a245a70bd93"}
-{"time":"2026-11-17T22:20:51.269277584Z","level":"INFO","msg":"request","method":"GET","path":"/v1/bookings","status":200,"duration_ms":8,"remote_addr":"172.18.0.1:47948","request_id":"5cb7129de41c9b90"}
+{"time":"2026-11-17T22:50:46.621152082Z","level":"INFO","msg":"request","method":"GET","path":"/v1/bookings","status":200,"duration_ms":21,"remote_addr":"172.18.0.1:38704","request_id":"8074c4ec9077db1e"}
+{"time":"2026-11-17T22:50:46.673350981Z","level":"INFO","msg":"request","method":"POST","path":"/v1/bookings/37ec5d3d-c8fa-4070-b0ad-1bafe12d0aa0/cancel","status":200,"duration_ms":47,"remote_addr":"172.18.0.1:38704","request_id":"65404377648aa3ac"}
+{"time":"2026-11-17T22:50:46.746089455Z","level":"INFO","msg":"request","method":"GET","path":"/v1/event-types/consultation-30m/slots","status":200,"duration_ms":2,"remote_addr":"172.18.0.2:42716","request_id":"fb76649fb21e0c6e"}
+{"time":"2026-11-17T22:50:46.76211498Z","level":"INFO","msg":"request","method":"GET","path":"/v1/bookings","status":200,"duration_ms":6,"remote_addr":"172.18.0.1:38704","request_id":"addab61833baa9b2"}
+{"time":"2026-11-17T22:50:46.882174165Z","level":"INFO","msg":"request","method":"POST","path":"/v1/bookings","status":201,"duration_ms":22,"remote_addr":"172.18.0.2:42722","request_id":"31d3a5b454efd845"}
+{"time":"2026-11-17T22:50:46.92183871Z","level":"INFO","msg":"request","method":"GET","path":"/v1/bookings","status":200,"duration_ms":6,"remote_addr":"172.18.0.1:38704","request_id":"d882b4d1b1e5dbef"}
+{"time":"2026-11-17T22:50:51.18759017Z","level":"INFO","msg":"shutting down — draining worker and in-flight requests"}
+{"time":"2026-11-17T22:50:51.188024245Z","level":"INFO","msg":"server stopped"}
+{"time":"2026-11-17T22:50:52.563570995Z","level":"INFO","msg":"starting calnode","version":"0.14.0","commit":"9b363351501e3883d7bb70b67edf9746ed5a0c42","build_time":"unknown","dirty":false}
+{"time":"2026-11-17T22:50:52.563791284Z","level":"WARN","msg":"Google OAuth NOT configured — GOOGLE_CLIENT_ID is empty"}
+{"time":"2026-11-17T22:50:52.572687574Z","level":"INFO","msg":"goose: no migrations to run. current version: 71"}
+{"time":"2026-11-17T22:50:52.572756496Z","level":"INFO","msg":"database migrations applied"}
+{"time":"2026-11-17T22:50:52.855919604Z","level":"INFO","msg":"keyvault: DEK unwrapped from keystore (primary)"}
+{"time":"2026-11-17T22:50:52.85630019Z","level":"INFO","msg":"mailer: not configured — configure SMTP in Settings or set EMAIL_SMTP_HOST"}
+{"time":"2026-11-17T22:50:52.856401897Z","level":"INFO","msg":"webhook worker started"}
+{"time":"2026-11-17T22:50:52.856484789Z","level":"INFO","msg":"Google OAuth not configured — add credentials in Settings or set GOOGLE_CLIENT_ID"}
+{"time":"2026-11-17T22:50:52.85650015Z","level":"INFO","msg":"CalDAV calendar configured"}
+{"time":"2026-11-17T22:50:52.856683629Z","level":"INFO","msg":"LLM layer not enabled — configure it in Settings → AI"}
+{"time":"2026-11-17T22:50:52.856843699Z","level":"INFO","msg":"Zoom not configured — add credentials in Settings → Zoom"}
+{"time":"2026-11-17T22:50:52.857007544Z","level":"INFO","msg":"Stripe not configured — add credentials in Settings → Payments"}
+{"time":"2026-11-17T22:50:52.857768652Z","level":"INFO","msg":"LiveKit not configured — add a server in Settings → Video"}
+{"time":"2026-11-17T22:50:52.869173167Z","level":"INFO","msg":"server listening","port":"3000","base_url":"http://127.0.0.1:3000"}
+{"time":"2026-11-17T22:51:04.658334864Z","level":"INFO","msg":"request","method":"GET","path":"/healthz","status":200,"duration_ms":0,"remote_addr":"172.18.0.1:57464","request_id":"91fdae671951f371"}
+{"time":"2026-11-17T22:51:04.776521563Z","level":"INFO","msg":"request","method":"GET","path":"/v1/bookings","status":200,"duration_ms":17,"remote_addr":"172.18.0.1:57464","request_id":"a052143c068d2ae4"}
+{"time":"2026-11-17T22:51:04.842070795Z","level":"INFO","msg":"request","method":"GET","path":"/v1/bookings","status":200,"duration_ms":6,"remote_addr":"172.18.0.1:57464","request_id":"0b41089ce074338d"}
 
 
 === safi-windmill-server ===
-[2m2026-11-17T22:20:39.437695Z[0m [32m INFO[0m [2mwindmill-api/src/db.rs[0m[2m:[0m[2m114[0m[2m:[0m Released PG lock
-[2m2026-11-17T22:20:39.443888Z[0m [32m INFO[0m [2msrc/main.rs[0m[2m:[0m[2m418[0m[2m:[0m 
+[2m2026-11-17T22:50:53.010873Z[0m [32m INFO[0m [2mwindmill-api/src/db.rs[0m[2m:[0m[2m114[0m[2m:[0m Released PG lock
+[2m2026-11-17T22:50:53.016489Z[0m [32m INFO[0m [2msrc/main.rs[0m[2m:[0m[2m418[0m[2m:[0m 
 ##############################
 Windmill Community Edition v1.425.0
 ##############################
-[2m2026-11-17T22:20:39.443998Z[0m [32m INFO[0m [2msrc/main.rs[0m[2m:[0m[2m941[0m[2m:[0m config: MODE: server, BASE_URL: http://127.0.0.1:8001, GO_PATH: /usr/local/go/bin/go, PATH: /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin, HOME: /root
-[2m2026-11-17T22:20:39.460037Z[0m [33m WARN[0m [2mwindmill-api/src/oauth2_ee.rs[0m[2m:[0m[2m198[0m[2m:[0m oauth.json not found, no OAuth clients loaded
-[2m2026-11-17T22:20:39.473032Z[0m [32m INFO[0m [2mwindmill-common/src/worker.rs[0m[2m:[0m[2m258[0m[2m:[0m Loaded setting custom_tags, common: ["chromium"], per-workspace: {}
-[2m2026-11-17T22:20:39.479344Z[0m [33m WARN[0m [2mwindmill-common/src/server.rs[0m[2m:[0m[2m81[0m[2m:[0m SMTP not configured
-[2m2026-11-17T22:20:39.479446Z[0m [32m INFO[0m [2msrc/monitor.rs[0m[2m:[0m[2m1184[0m[2m:[0m Reloading smtp config...
-[2m2026-11-17T22:20:39.482049Z[0m [32m INFO[0m [2msrc/monitor.rs[0m[2m:[0m[2m948[0m[2m:[0m Loaded saml_metadata setting to None
-[2m2026-11-17T22:20:39.482843Z[0m [32m INFO[0m [2msrc/monitor.rs[0m[2m:[0m[2m948[0m[2m:[0m Loaded scim_token setting to None
-[2m2026-11-17T22:20:39.492330Z[0m [32m INFO[0m [2msrc/monitor.rs[0m[2m:[0m[2m341[0m[2m:[0m 6.338653564453125 mb allocated/17.73046875 mb resident
-[2m2026-11-17T22:20:39.535394Z[0m [32m INFO[0m [2mwindmill-api/src/smtp_server_ee.rs[0m[2m:[0m[2m93[0m[2m:[0m SMTP server listening on 0.0.0.0:2525
-[2m2026-11-17T22:20:39.535484Z[0m [32m INFO[0m [2mwindmill-api/src/embeddings.rs[0m[2m:[0m[2m223[0m[2m:[0m Loading embedding model...
-[2m2026-11-17T22:20:39.536332Z[0m [32m INFO[0m [2msrc/main.rs[0m[2m:[0m[2m934[0m[2m:[0m Successfully connected to pg listen
-[2m2026-11-17T22:20:39.547418Z[0m [32m INFO[0m [2mwindmill-api/src/lib.rs[0m[2m:[0m[2m400[0m[2m:[0m server started on port=8000 and addr=0.0.0.0 [3minstance[0m[2m=[0mYc9oU
-[2m2026-11-17T22:20:39.551140Z[0m [32m INFO[0m [2mwindmill-api/src/embeddings.rs[0m[2m:[0m[2m197[0m[2m:[0m Found embedding model in cache
-[2m2026-11-17T22:20:40.049642Z[0m [32m INFO[0m [2mwindmill-api/src/embeddings.rs[0m[2m:[0m[2m239[0m[2m:[0m Loaded embedding model
-[2m2026-11-17T22:20:40.049773Z[0m [32m INFO[0m [2mwindmill-api/src/embeddings.rs[0m[2m:[0m[2m629[0m[2m:[0m Creating embeddings DB...
-[2m2026-11-17T22:20:51.180548Z[0m [32m INFO[0m [1mrequest[0m: [2mwindmill-api/src/tracing_init.rs[0m[2m:[0m[2m32[0m[2m:[0m response [3mlatency[0m[2m=[0m0 [3mstatus[0m[2m=[0m200 [2m[3mmethod[0m[2m=[0mGET [3muri[0m[2m=[0m/api/version [3mtrace_id[0m[2m=[0m"8b2e9da0-8fb5-49c8-a04f-1ff5b26c7b58"[0m
-[2m2026-11-17T22:20:52.028688Z[0m [32m INFO[0m [1mrequest[0m:[1mjob_run[0m: [2mwindmill-audit/./src/audit_ee.rs[0m[2m:[0m[2m131[0m[2m:[0m [3mkind[0m[2m=[0m"audit" [3moperation[0m[2m=[0m"redacted" [3maction_kind[0m[2m=[0mExecute [3mresource[0m[2m=[0m"EE only" [3mparameters[0m[2m=[0m{"redacted":"-"} [3mworkspace_id[0m[2m=[0m"safi-ops" [3musername[0m[2m=[0m"safi_ops_runner" [2m[3mmethod[0m[2m=[0mPOST [3muri[0m[2m=[0m/api/w/safi-ops/jobs/run/p/f/safi/ops_task_assignment [3mtrace_id[0m[2m=[0m"867751a8-84c7-452a-89f0-1255ff87bbf9" [3musername[0m[2m=[0m"safi_ops_runner" [3memail[0m[2m=[0m"safi_ops_runner@local.test" [3mworkspace_id[0m[2m=[0m"safi-ops"[0m [2m[3memail[0m[2m=[0m"safi_ops_runner@local.test"[0m
-[2m2026-11-17T22:20:52.037219Z[0m [32m INFO[0m [1mrequest[0m: [2mwindmill-api/src/tracing_init.rs[0m[2m:[0m[2m32[0m[2m:[0m response [3mlatency[0m[2m=[0m91 [3mstatus[0m[2m=[0m201 [2m[3mmethod[0m[2m=[0mPOST [3muri[0m[2m=[0m/api/w/safi-ops/jobs/run/p/f/safi/ops_task_assignment [3mtrace_id[0m[2m=[0m"867751a8-84c7-452a-89f0-1255ff87bbf9" [3musername[0m[2m=[0m"safi_ops_runner" [3memail[0m[2m=[0m"safi_ops_runner@local.test" [3mworkspace_id[0m[2m=[0m"safi-ops"[0m
-[2m2026-11-17T22:20:52.087488Z[0m [32m INFO[0m [1mrequest[0m: [2mwindmill-api/src/tracing_init.rs[0m[2m:[0m[2m32[0m[2m:[0m response [3mlatency[0m[2m=[0m33 [3mstatus[0m[2m=[0m200 [2m[3mmethod[0m[2m=[0mGET [3muri[0m[2m=[0m/api/w/safi-ops/jobs_u/get/01a1eb99-41a8-973f-dc38-17ba1e28b3ba [3mtrace_id[0m[2m=[0m"cb4dac86-6a9d-4cbb-9212-1a0cfde4a385" [3musername[0m[2m=[0m"safi_ops_runner" [3memail[0m[2m=[0m"safi_ops_runner@local.test" [3mworkspace_id[0m[2m=[0m"safi-ops"[0m
-[2m2026-11-17T22:20:52.369997Z[0m [32m INFO[0m [1mrequest[0m: [2mwindmill-api/src/tracing_init.rs[0m[2m:[0m[2m32[0m[2m:[0m response [3mlatency[0m[2m=[0m9 [3mstatus[0m[2m=[0m200 [2m[3mmethod[0m[2m=[0mGET [3muri[0m[2m=[0m/api/w/safi-ops/jobs_u/get/01a1eb99-41a8-973f-dc38-17ba1e28b3ba [3mtrace_id[0m[2m=[0m"65e9e110-8294-4e45-b2e4-62de01fa8d88" [3musername[0m[2m=[0m"safi_ops_runner" [3memail[0m[2m=[0m"safi_ops_runner@local.test" [3mworkspace_id[0m[2m=[0m"safi-ops"[0m
+[2m2026-11-17T22:50:53.016615Z[0m [32m INFO[0m [2msrc/main.rs[0m[2m:[0m[2m941[0m[2m:[0m config: MODE: server, BASE_URL: http://127.0.0.1:8001, GO_PATH: /usr/local/go/bin/go, PATH: /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin, HOME: /root
+[2m2026-11-17T22:50:53.032275Z[0m [33m WARN[0m [2mwindmill-api/src/oauth2_ee.rs[0m[2m:[0m[2m198[0m[2m:[0m oauth.json not found, no OAuth clients loaded
+[2m2026-11-17T22:50:53.051522Z[0m [32m INFO[0m [2mwindmill-common/src/worker.rs[0m[2m:[0m[2m258[0m[2m:[0m Loaded setting custom_tags, common: ["chromium"], per-workspace: {}
+[2m2026-11-17T22:50:53.057459Z[0m [33m WARN[0m [2mwindmill-common/src/server.rs[0m[2m:[0m[2m81[0m[2m:[0m SMTP not configured
+[2m2026-11-17T22:50:53.057540Z[0m [32m INFO[0m [2msrc/monitor.rs[0m[2m:[0m[2m1184[0m[2m:[0m Reloading smtp config...
+[2m2026-11-17T22:50:53.060942Z[0m [32m INFO[0m [2msrc/monitor.rs[0m[2m:[0m[2m948[0m[2m:[0m Loaded saml_metadata setting to None
+[2m2026-11-17T22:50:53.062027Z[0m [32m INFO[0m [2msrc/monitor.rs[0m[2m:[0m[2m948[0m[2m:[0m Loaded scim_token setting to None
+[2m2026-11-17T22:50:53.070087Z[0m [32m INFO[0m [2msrc/monitor.rs[0m[2m:[0m[2m341[0m[2m:[0m 6.36669921875 mb allocated/17.796875 mb resident
+[2m2026-11-17T22:50:53.127401Z[0m [32m INFO[0m [2mwindmill-api/src/smtp_server_ee.rs[0m[2m:[0m[2m93[0m[2m:[0m SMTP server listening on 0.0.0.0:2525
+[2m2026-11-17T22:50:53.127461Z[0m [32m INFO[0m [2mwindmill-api/src/embeddings.rs[0m[2m:[0m[2m223[0m[2m:[0m Loading embedding model...
+[2m2026-11-17T22:50:53.128061Z[0m [32m INFO[0m [2mwindmill-api/src/embeddings.rs[0m[2m:[0m[2m197[0m[2m:[0m Found embedding model in cache
+[2m2026-11-17T22:50:53.129513Z[0m [32m INFO[0m [2msrc/main.rs[0m[2m:[0m[2m934[0m[2m:[0m Successfully connected to pg listen
+[2m2026-11-17T22:50:53.140719Z[0m [32m INFO[0m [2mwindmill-api/src/lib.rs[0m[2m:[0m[2m400[0m[2m:[0m server started on port=8000 and addr=0.0.0.0 [3minstance[0m[2m=[0momNVL
+[2m2026-11-17T22:50:53.526459Z[0m [32m INFO[0m [2mwindmill-api/src/embeddings.rs[0m[2m:[0m[2m239[0m[2m:[0m Loaded embedding model
+[2m2026-11-17T22:50:53.526558Z[0m [32m INFO[0m [2mwindmill-api/src/embeddings.rs[0m[2m:[0m[2m629[0m[2m:[0m Creating embeddings DB...
+[2m2026-11-17T22:51:04.666755Z[0m [32m INFO[0m [1mrequest[0m: [2mwindmill-api/src/tracing_init.rs[0m[2m:[0m[2m32[0m[2m:[0m response [3mlatency[0m[2m=[0m0 [3mstatus[0m[2m=[0m200 [2m[3mmethod[0m[2m=[0mGET [3muri[0m[2m=[0m/api/version [3mtrace_id[0m[2m=[0m"c2891a48-0616-4bc8-8a84-12827fdb466c"[0m
+[2m2026-11-17T22:51:06.176270Z[0m [32m INFO[0m [1mrequest[0m:[1mjob_run[0m: [2mwindmill-audit/./src/audit_ee.rs[0m[2m:[0m[2m131[0m[2m:[0m [3mkind[0m[2m=[0m"audit" [3moperation[0m[2m=[0m"redacted" [3maction_kind[0m[2m=[0mExecute [3mresource[0m[2m=[0m"EE only" [3mparameters[0m[2m=[0m{"redacted":"-"} [3mworkspace_id[0m[2m=[0m"safi-ops" [3musername[0m[2m=[0m"safi_ops_runner" [2m[3mmethod[0m[2m=[0mPOST [3muri[0m[2m=[0m/api/w/safi-ops/jobs/run/p/f/safi/ops_task_assignment [3mtrace_id[0m[2m=[0m"1ea5e260-7fdd-40a1-94f1-88485ba882a0" [3musername[0m[2m=[0m"safi_ops_runner" [3memail[0m[2m=[0m"safi_ops_runner@local.test" [3mworkspace_id[0m[2m=[0m"safi-ops"[0m [2m[3memail[0m[2m=[0m"safi_ops_runner@local.test"[0m
+[2m2026-11-17T22:51:06.184193Z[0m [32m INFO[0m [1mrequest[0m: [2mwindmill-api/src/tracing_init.rs[0m[2m:[0m[2m32[0m[2m:[0m response [3mlatency[0m[2m=[0m74 [3mstatus[0m[2m=[0m201 [2m[3mmethod[0m[2m=[0mPOST [3muri[0m[2m=[0m/api/w/safi-ops/jobs/run/p/f/safi/ops_task_assignment [3mtrace_id[0m[2m=[0m"1ea5e260-7fdd-40a1-94f1-88485ba882a0" [3musername[0m[2m=[0m"safi_ops_runner" [3memail[0m[2m=[0m"safi_ops_runner@local.test" [3mworkspace_id[0m[2m=[0m"safi-ops"[0m
+[2m2026-11-17T22:51:06.241305Z[0m [32m INFO[0m [1mrequest[0m: [2mwindmill-api/src/tracing_init.rs[0m[2m:[0m[2m32[0m[2m:[0m response [3mlatency[0m[2m=[0m29 [3mstatus[0m[2m=[0m200 [2m[3mmethod[0m[2m=[0mGET [3muri[0m[2m=[0m/api/w/safi-ops/jobs_u/get/01a1ebb4-f02d-24a6-9bd3-6bba4bc4bfbe [3mtrace_id[0m[2m=[0m"4bac3d27-6404-458a-ab5a-e9372c37777c" [3musername[0m[2m=[0m"safi_ops_runner" [3memail[0m[2m=[0m"safi_ops_runner@local.test" [3mworkspace_id[0m[2m=[0m"safi-ops"[0m
+[2m2026-11-17T22:51:06.531740Z[0m [32m INFO[0m [1mrequest[0m: [2mwindmill-api/src/tracing_init.rs[0m[2m:[0m[2m32[0m[2m:[0m response [3mlatency[0m[2m=[0m13 [3mstatus[0m[2m=[0m200 [2m[3mmethod[0m[2m=[0mGET [3muri[0m[2m=[0m/api/w/safi-ops/jobs_u/get/01a1ebb4-f02d-24a6-9bd3-6bba4bc4bfbe [3mtrace_id[0m[2m=[0m"ba2fb3a1-3b22-4d53-9ce8-21855212e13c" [3musername[0m[2m=[0m"safi_ops_runner" [3memail[0m[2m=[0m"safi_ops_runner@local.test" [3mworkspace_id[0m[2m=[0m"safi-ops"[0m
 
 
 === safi-local-nats ===
-[1] 2026/11/17 22:20:37.757439 [INF] Server Exiting..
-[1] 2026/11/17 22:20:38.688753 [INF] Starting nats-server
-[1] 2026/11/17 22:20:38.689047 [INF]   Version:  2.10.29
-[1] 2026/11/17 22:20:38.689069 [INF]   Git:      [f91ddd8]
-[1] 2026/11/17 22:20:38.689074 [INF]   Name:     NC4H5OEAER7F6LSILU4HADCCR2FBRYECF5QLZWYJI5GMKSDJHCQJRFAB
-[1] 2026/11/17 22:20:38.689085 [INF]   Node:     eqzwjOwB
-[1] 2026/11/17 22:20:38.689087 [INF]   ID:       NC4H5OEAER7F6LSILU4HADCCR2FBRYECF5QLZWYJI5GMKSDJHCQJRFAB
-[1] 2026/11/17 22:20:38.692566 [INF] Starting http monitor on 0.0.0.0:8222
-[1] 2026/11/17 22:20:38.692902 [INF] Starting JetStream
-[1] 2026/11/17 22:20:38.693321 [INF]     _ ___ _____ ___ _____ ___ ___   _   __  __
-[1] 2026/11/17 22:20:38.693360 [INF]  _ | | __|_   _/ __|_   _| _ \ __| /_\ |  \/  |
-[1] 2026/11/17 22:20:38.693363 [INF] | || | _|  | | \__ \ | | |   / _| / _ \| |\/| |
-[1] 2026/11/17 22:20:38.693365 [INF]  \__/|___| |_| |___/ |_| |_|_\___/_/ \_\_|  |_|
-[1] 2026/11/17 22:20:38.693367 [INF] 
-[1] 2026/11/17 22:20:38.693369 [INF]          https://docs.nats.io/jetstream
-[1] 2026/11/17 22:20:38.693371 [INF] 
-[1] 2026/11/17 22:20:38.693398 [INF] ---------------- JETSTREAM ----------------
-[1] 2026/11/17 22:20:38.693405 [INF]   Max Memory:      5.60 GB
-[1] 2026/11/17 22:20:38.693408 [INF]   Max Storage:     711.01 GB
-[1] 2026/11/17 22:20:38.693411 [INF]   Store Directory: "/data/jetstream"
-[1] 2026/11/17 22:20:38.693413 [INF] -------------------------------------------
-[1] 2026/11/17 22:20:38.695306 [INF]   Starting restore for stream '$G > SAFI_HISTORY'
-[1] 2026/11/17 22:20:38.697240 [INF]   Restored 155 messages for stream '$G > SAFI_HISTORY' in 2ms
-[1] 2026/11/17 22:20:38.698181 [INF] Listening for client connections on 0.0.0.0:4222
-[1] 2026/11/17 22:20:38.698621 [INF] Server is ready
+[1] 2026/11/17 22:50:51.191994 [INF] Server Exiting..
+[1] 2026/11/17 22:50:52.315686 [INF] Starting nats-server
+[1] 2026/11/17 22:50:52.315955 [INF]   Version:  2.10.29
+[1] 2026/11/17 22:50:52.315964 [INF]   Git:      [f91ddd8]
+[1] 2026/11/17 22:50:52.315971 [INF]   Name:     NBUFTTGWGICGGJY5GX7Q6THE3CXOROVRQZWH3MRJFXEHKH5GTE5Q2B2C
+[1] 2026/11/17 22:50:52.315991 [INF]   Node:     hSq1ZcqZ
+[1] 2026/11/17 22:50:52.315996 [INF]   ID:       NBUFTTGWGICGGJY5GX7Q6THE3CXOROVRQZWH3MRJFXEHKH5GTE5Q2B2C
+[1] 2026/11/17 22:50:52.318216 [INF] Starting http monitor on 0.0.0.0:8222
+[1] 2026/11/17 22:50:52.318546 [INF] Starting JetStream
+[1] 2026/11/17 22:50:52.319086 [INF]     _ ___ _____ ___ _____ ___ ___   _   __  __
+[1] 2026/11/17 22:50:52.319128 [INF]  _ | | __|_   _/ __|_   _| _ \ __| /_\ |  \/  |
+[1] 2026/11/17 22:50:52.319133 [INF] | || | _|  | | \__ \ | | |   / _| / _ \| |\/| |
+[1] 2026/11/17 22:50:52.319136 [INF]  \__/|___| |_| |___/ |_| |_|_\___/_/ \_\_|  |_|
+[1] 2026/11/17 22:50:52.319139 [INF] 
+[1] 2026/11/17 22:50:52.319142 [INF]          https://docs.nats.io/jetstream
+[1] 2026/11/17 22:50:52.319145 [INF] 
+[1] 2026/11/17 22:50:52.319150 [INF] ---------------- JETSTREAM ----------------
+[1] 2026/11/17 22:50:52.319162 [INF]   Max Memory:      5.60 GB
+[1] 2026/11/17 22:50:52.319171 [INF]   Max Storage:     711.00 GB
+[1] 2026/11/17 22:50:52.319176 [INF]   Store Directory: "/data/jetstream"
+[1] 2026/11/17 22:50:52.319182 [INF] -------------------------------------------
+[1] 2026/11/17 22:50:52.320327 [INF]   Starting restore for stream '$G > SAFI_HISTORY'
+[1] 2026/11/17 22:50:52.321351 [INF]   Restored 198 messages for stream '$G > SAFI_HISTORY' in 1ms
+[1] 2026/11/17 22:50:52.321661 [INF] Listening for client connections on 0.0.0.0:4222
+[1] 2026/11/17 22:50:52.322144 [INF] Server is ready

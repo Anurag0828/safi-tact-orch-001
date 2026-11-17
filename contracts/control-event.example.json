@@ -1,16 +1,16 @@
 {
-  "eventId": "evt_b57a8f3c053d",
-  "conversationId": "conv_sow_race_1794954032",
-  "subjectLineDisplay": "Race Live 1794954032",
+  "eventId": "evt_9c3afdc0d388",
+  "conversationId": "conv_sow_a_1794955844",
+  "subjectLineDisplay": "Customer A - Marketing Sales Ops 1794955844",
   "actorGuid": "user_safi_pilot_owner_01",
   "actorKind": "USER",
   "type": "ACTION_DISPATCHED",
-  "operationId": "windmill:start_assignment",
-  "idempotencyKey": "race:wm:1794954032",
+  "operationId": "n8n:ingest_lead",
+  "idempotencyKey": "intake:conv_sow_a_1794955844:1",
   "outcome": "ok",
   "context": {
     "meetingContext": {
-      "meetingId": "mtg_sow_1794954032",
+      "meetingId": "mtg_sow_1794955844",
       "channel": "safichat-pilot"
     },
     "portContext": {
@@ -22,5 +22,6 @@
       "scope": "conversation:admin"
     }
   },
-  "ts": "2026-11-17T22:20:52.377937Z"
+  "correlationId": "corr_a_1794955844",
+  "ts": "2026-11-17T22:50:45.009382Z"
 }
