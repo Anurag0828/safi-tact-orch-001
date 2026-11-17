@@ -69,12 +69,20 @@ class CalnodeAdapter(EngineAdapter):
                 date_to=payload.get("to"),
             )
         if operation == "create_booking":
+            slot_id = payload.get("slotId")
+            attendee_email = payload.get("attendeeEmail")
+            if not slot_id or not attendee_email:
+                raise DownstreamError(
+                    "calnode",
+                    "Missing required booking fields: 'slotId' and 'attendeeEmail' are required",
+                    {"missingFields": [f for f in ("slotId", "attendeeEmail") if not payload.get(f)]},
+                )
             slug = payload.get("calendarId") or self.config.calnode_calendar_id
             booking_body = {
                 "event_type_slug": slug,
-                "start_at": payload["slotId"],
+                "start_at": slot_id,
                 "name": payload.get("attendeeName") or "SAFI Pilot Guest",
-                "email": payload["attendeeEmail"],
+                "email": attendee_email,
                 "timezone": payload.get("timezone", "UTC"),
                 "notes": payload.get("notes", ""),
             }

@@ -65,9 +65,20 @@ class GateDispatcher:
         idempotency_key: str,
         subject_line_display: str = "",
         correlation_id: str | None = None,
+        allow_create: bool = False,
     ) -> None:
-        """Transitions conversation to FAILED_CLOSED and emits GATE_FAILED_CLOSED (E4, R-SEC-04)."""
-        conv = await self.store.get_or_create_conversation(conversation_id, subject_line_display)
+        """Transitions conversation to FAILED_CLOSED and emits GATE_FAILED_CLOSED (E4, R-SEC-04).
+
+        By default (`allow_create=False`), NEVER creates a new conversation row for a nonexistent
+        conversationId (prevents bogus FAILED_CLOSED row injection by unauthenticated/malformed callers).
+        """
+        conv = await self.store.get_conversation(conversation_id)
+        if conv is None:
+            if not allow_create:
+                return
+            conv = await self.store.get_or_create_conversation(
+                conversation_id, subject_line_display
+            )
         effective_subject = subject_line_display or conv["subject_line"] or ""
         await self.store.update_conversation_mode(
             conversation_id, ConversationMode.FAILED_CLOSED
@@ -108,6 +119,7 @@ class GateDispatcher:
             )
             raise
         except (PermissionCheckFailedError, IdentityUncertainError):
+            # Only fail-close an existing conversation (never create bogus rows on bad caller context)
             await self.fail_closed(
                 conversation_id=conversation_id,
                 actor=actor,
@@ -115,30 +127,35 @@ class GateDispatcher:
                 idempotency_key=idempotency_key,
                 subject_line_display=subject_line_display,
                 correlation_id=correlation_id,
+                allow_create=False,
             )
             raise
 
     async def _check_existing_idempotency(
         self,
-        idempotency_key: str,
-        payload: dict[str, Any],
         conversation_id: str,
+        idempotency_key: str,
+        operation: str,
+        payload: dict[str, Any],
     ) -> dict[str, Any] | None:
-        """Evaluates existing idempotency records safely under lock (E5 Invariant 1 & 8)."""
-        existing = await self.store.get_idempotency_record(idempotency_key)
+        """Evaluates per-conversation idempotency records safely under lock (E5 Invariant 1 & 8, A06 isolation)."""
+        existing = await self.store.get_idempotency_record(conversation_id, idempotency_key)
         if existing is None:
             return None
+
+        if existing["conversation_id"] != conversation_id or existing["operation"] != operation:
+            raise IdempotencyConflictError(idempotency_key)
 
         payload_hash = compute_payload_hash(payload)
         if existing["payload_hash"] != payload_hash:
             raise IdempotencyConflictError(idempotency_key)
 
         existing_action = await self.store.get_action(existing["action_id"])
-        if existing_action is None:
+        if existing_action is None or existing_action["conversation_id"] != conversation_id:
             raise DownstreamOutcomeUnknownError(
                 existing["action_id"],
                 idempotency_key,
-                "Idempotency record exists without action row; reconcile before retry",
+                "Idempotency record exists without matching action row; reconcile before retry",
             )
 
         state = existing_action["state"]
@@ -211,12 +228,15 @@ class GateDispatcher:
             correlation_id=submission.correlationId,
         )
 
-        # Ensure conversation exists and persist owner_guid only AFTER actor is authorized
-        owner_to_pin = (
-            submission.actor.actorGuid
-            if submission.actor.actorKind.value == "USER"
-            else None
-        )
+        # Persist owner_guid for USER or delegated PROXY so ownership survives restarts (A09/A10)
+        owner_to_pin: str | None = None
+        if submission.actor.actorKind.value == "USER":
+            owner_to_pin = submission.actor.actorGuid
+        else:
+            delegated = (submission.actor.permissionProvenance or {}).get("delegatedBy")
+            if isinstance(delegated, str) and delegated.strip():
+                owner_to_pin = delegated.strip()
+
         conv = await self.store.get_or_create_conversation(
             conv_id, submission.subjectLineDisplay, owner_guid=owner_to_pin
         )
@@ -237,21 +257,20 @@ class GateDispatcher:
                 )
                 raise RecipientNotAllowlistedError(recipient)
 
-        # 3. Fast admission & idempotency check under state_lock before waiting on dispatch_lock
-        #    If GATED or TRANSITIONING, hold immediately (R-GATE-05, Invariant 3)
+        # 3. Fast admission check under state_lock: check FAILED_CLOSED BEFORE idempotency replay!
         action_id = f"act_{uuid4().hex[:12]}"
         async with runtime.state_lock:
-            replay = await self._check_existing_idempotency(
-                submission.idempotencyKey, submission.payload, conv_id
-            )
-            if replay is not None:
-                return replay
-
             conv = await self.store.get_conversation(conv_id)
             mode = ConversationMode(conv["mode"])
 
             if mode == ConversationMode.FAILED_CLOSED:
                 raise GateFailedClosedError(conv_id)
+
+            replay = await self._check_existing_idempotency(
+                conv_id, submission.idempotencyKey, submission.operation, submission.payload
+            )
+            if replay is not None:
+                return replay
 
             if mode in (ConversationMode.GATED, ConversationMode.TRANSITIONING):
                 await self.store.record_action(
@@ -288,19 +307,18 @@ class GateDispatcher:
 
         # 4. UNGATED path: serialize execution per conversation (R-GATE-07)
         async with runtime.dispatch_lock:
-            # Re-check idempotency & mode inside BOTH locks (prevents duplicate-key & barge_in TOCTOU races)
             async with runtime.state_lock:
-                replay = await self._check_existing_idempotency(
-                    submission.idempotencyKey, submission.payload, conv_id
-                )
-                if replay is not None:
-                    return replay
-
                 conv = await self.store.get_conversation(conv_id)
                 mode = ConversationMode(conv["mode"])
 
                 if mode == ConversationMode.FAILED_CLOSED:
                     raise GateFailedClosedError(conv_id)
+
+                replay = await self._check_existing_idempotency(
+                    conv_id, submission.idempotencyKey, submission.operation, submission.payload
+                )
+                if replay is not None:
+                    return replay
 
                 if mode in (ConversationMode.GATED, ConversationMode.TRANSITIONING):
                     await self.store.record_action(
@@ -335,7 +353,6 @@ class GateDispatcher:
                         "idempotencyKey": submission.idempotencyKey,
                     }
 
-                # Record action RECEIVED
                 await self.store.record_action(
                     action_id=action_id,
                     conversation_id=conv_id,
@@ -351,7 +368,6 @@ class GateDispatcher:
                     payload_ref=submission.payloadRef,
                 )
 
-                # Immediately recheck SAFI permission right before dispatch (R-GATE-09)
                 await self._recheck_permission_or_fail(
                     action_id=action_id,
                     conversation_id=conv_id,
@@ -362,12 +378,10 @@ class GateDispatcher:
                     correlation_id=submission.correlationId,
                 )
 
-                # Mark AUTHORIZED -> DISPATCHING & register in-flight
                 await self.store.update_action_state(action_id, ActionState.AUTHORIZED)
                 await self.store.update_action_state(action_id, ActionState.DISPATCHING)
                 runtime.mark_inflight(action_id)
 
-            # Execute downstream outside state_lock (so barge_in can enter TRANSITIONING)
             return await self._execute_downstream(
                 action_id=action_id,
                 conversation_id=conv_id,
@@ -396,7 +410,10 @@ class GateDispatcher:
 
         async with runtime.dispatch_lock:
             async with runtime.state_lock:
-                # Re-read action state INSIDE both locks so concurrent approvals can NEVER double-dispatch (A07)
+                conv = await self.store.get_conversation(conv_id)
+                if ConversationMode(conv["mode"]) == ConversationMode.FAILED_CLOSED:
+                    raise GateFailedClosedError(conv_id)
+
                 action = await self.store.get_action(action_id)
                 if action is None:
                     raise ActionNotFoundError(action_id)
@@ -407,8 +424,6 @@ class GateDispatcher:
                 idempotency_key = action["idempotency_key"]
                 payload = action["payload"]
                 recipients = action["recipients"]
-
-                conv = await self.store.get_conversation(conv_id)
                 subject_line_display = (conv["subject_line"] if conv else "") or ""
 
                 if action["state"] == ActionState.DONE.value:
@@ -426,10 +441,6 @@ class GateDispatcher:
                         action_id, action["state"], ActionState.APPROVED.value
                     )
 
-                if ConversationMode(conv["mode"]) == ConversationMode.FAILED_CLOSED:
-                    raise GateFailedClosedError(conv_id)
-
-                # Re-verify recipient allowlist before dispatch
                 for recipient in recipients:
                     if not self.config.is_recipient_allowed(recipient):
                         await self.store.update_action_state(
@@ -450,7 +461,6 @@ class GateDispatcher:
                         )
                         raise RecipientNotAllowlistedError(recipient)
 
-                # Mandatory fresh permission recheck right before dispatch (R-GATE-09)
                 await self._recheck_permission_or_fail(
                     action_id=action_id,
                     conversation_id=conv_id,
@@ -521,6 +531,7 @@ class GateDispatcher:
                 idempotency_key=idempotency_key,
                 subject_line_display=subject_line_display,
                 correlation_id=correlation_id,
+                allow_create=False,
             )
             raise
 
@@ -561,7 +572,6 @@ class GateDispatcher:
                     correlation_id=correlation_id,
                 )
             except StoreError as exc:
-                # Downstream succeeded, but JetStream audit write failed -> fail closed for future actions
                 logger.error(
                     "Audit publish failed after downstream success for action '%s': %s",
                     action_id,
@@ -582,11 +592,10 @@ class GateDispatcher:
             }
 
         except DownstreamOutcomeUnknownError as exc:
-            # Invariant 8: record as 'unknown', NOT guessed as success; fail closed (R-SEC-04)
             await self.store.update_action_state(
                 action_id,
                 ActionState.FAILED,
-                error={"code": exc.code, "message": exc.message, "outcome": "unknown"},
+                error={"code": exc.code, "message": exc.message, "outcome": "unknown", "details": exc.details},
                 outcome_override=Outcome.UNKNOWN,
             )
             await self.history.record_control_event(
@@ -606,6 +615,7 @@ class GateDispatcher:
                 idempotency_key=idempotency_key,
                 subject_line_display=subject_line_display,
                 correlation_id=correlation_id,
+                allow_create=False,
             )
             raise
 
@@ -627,6 +637,39 @@ class GateDispatcher:
                 correlation_id=correlation_id,
             )
             raise
+
+        except Exception as exc:
+            # Fail-closed catch-all: NEVER leave an action permanently stuck in DISPATCHING (SOW §9, A10)
+            logger.exception("Unexpected error during downstream execution for action '%s'", action_id)
+            unknown_err = DownstreamOutcomeUnknownError(
+                action_id, idempotency_key, f"Unexpected adapter error: {type(exc).__name__}: {exc}"
+            )
+            await self.store.update_action_state(
+                action_id,
+                ActionState.FAILED,
+                error={"code": unknown_err.code, "message": unknown_err.message, "outcome": "unknown"},
+                outcome_override=Outcome.UNKNOWN,
+            )
+            await self.history.record_control_event(
+                conversation_id=conversation_id,
+                actor=actor,
+                event_type=ControlEventType.ACTION_FAILED,
+                operation_id=operation_id,
+                idempotency_key=idempotency_key,
+                outcome=Outcome.UNKNOWN,
+                subject_line_display=subject_line_display,
+                correlation_id=correlation_id,
+            )
+            await self.fail_closed(
+                conversation_id=conversation_id,
+                actor=actor,
+                operation_id=operation_id,
+                idempotency_key=idempotency_key,
+                subject_line_display=subject_line_display,
+                correlation_id=correlation_id,
+                allow_create=False,
+            )
+            raise unknown_err from exc
 
         finally:
             async with runtime.state_lock:

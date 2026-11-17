@@ -19,6 +19,24 @@ from gate.models import ActorContext, ActorKind
 
 logger = logging.getLogger("gate.authz")
 
+_READ_ONLY_OPERATIONS = frozenset(
+    {
+        "calnode:list_slots",
+        "windmill:get_job_status",
+        "gate:list_held",
+    }
+)
+
+_HUMAN_ONLY_GATE_OPERATIONS = frozenset(
+    {
+        "gate:barge_in",
+        "gate:approve_action",
+        "gate:reject_action",
+        "gate:return_to_ungated",
+        "gate:reconcile",
+    }
+)
+
 
 def validate_actor_context(actor: ActorContext) -> None:
     """Fails closed with IdentityUncertainError if GUID or mandatory Context is missing (R-CTX-01, R-SEC-04)."""
@@ -32,6 +50,27 @@ def validate_actor_context(actor: ActorContext) -> None:
         raise IdentityUncertainError("permissionProvenance is required on every action (R-CTX-01)")
 
 
+def _check_operation_scope(actor: ActorContext, operation: str) -> None:
+    """Enforces authorized workflow/operation scope from permissionProvenance (SOW §4)."""
+    prov = actor.permissionProvenance or {}
+    allowed_ops = prov.get("allowedOperations")
+    if isinstance(allowed_ops, list):
+        if "*" not in allowed_ops and operation not in allowed_ops:
+            raise UnauthorizedError(
+                f"Actor '{actor.actorGuid}' is not permitted to invoke operation '{operation}'"
+            )
+    elif actor.actorKind == ActorKind.PROXY and operation in _HUMAN_ONLY_GATE_OPERATIONS:
+        raise UnauthorizedError(
+            f"Proxy actor '{actor.actorGuid}' cannot perform human gate operation '{operation}'"
+        )
+
+    scope = str(prov.get("scope", "")).strip().lower()
+    if scope in ("read_only", "conversation:read") and operation not in _READ_ONLY_OPERATIONS:
+        raise UnauthorizedError(
+            f"Actor '{actor.actorGuid}' has read-only scope and cannot perform '{operation}'"
+        )
+
+
 class PermissionProvider(ABC):
     @abstractmethod
     async def check_permission(
@@ -43,18 +82,25 @@ class PermissionProvider(ABC):
         """Returns True if authorized; raises UnauthorizedError, IdentityUncertainError, or PermissionCheckFailedError."""
         pass
 
+    async def can_access_conversation(
+        self,
+        actor: ActorContext,
+        conversation_id: str,
+        owner_guid: str | None = None,
+    ) -> bool:
+        """Non-mutating visibility check used to scope Subject-Line lookups to caller-owned conversations."""
+        return True
+
 
 class LocalPolicyPermissionProvider(PermissionProvider):
     """Fail-closed (default-DENY) local policy engine for local pilot & automated tests.
 
-    Security model (R-AUTH-01, R-AUTH-02, R-SEC-04):
-    - Every actor must present complete GUID + Meeting/Port/Permission Context.
-    - Revoked actors are denied immediately (including proxies acting on their behalf).
-    - If a conversation already has an explicit access list in `conversation_access_map`,
-      ONLY actors in that list (or authorized proxies acting for an allowed, non-revoked owner) are permitted.
-    - If a conversation has no access list yet, ONLY actors in `bootstrap_actors` may initialize it,
-      which automatically pins ownership to that actor so other users cannot access it.
-    - Any unknown actor is DENIED by default.
+    Security ordering (prevents cross-conversation DoS via IdentityUncertainError):
+    1. Reject empty actorGuid immediately (IdentityUncertainError without mutating conversations).
+    2. Check actor revocation & conversation ACL / bootstrap ownership FIRST -> unauthorized callers
+       always receive 403 UNAUTHORIZED and can NEVER trigger FAILED_CLOSED on another user's conversation.
+    3. Validate mandatory Meeting/Port/Permission Context for the authorized actor (R-CTX-01, R-SEC-04).
+    4. Enforce operation/role scope (SOW §4).
     """
 
     def __init__(
@@ -111,6 +157,37 @@ class LocalPolicyPermissionProvider(PermissionProvider):
     def restore_actor(self, actor_guid: str) -> None:
         self.revoked_actors.discard(actor_guid)
 
+    async def can_access_conversation(
+        self,
+        actor: ActorContext,
+        conversation_id: str,
+        owner_guid: str | None = None,
+    ) -> bool:
+        """Non-mutating check: returns True iff actor already owns/can access this existing conversation."""
+        if not actor.actorGuid or actor.actorGuid in self.revoked_actors:
+            return False
+        allowed = self.conversation_access_map.get(conversation_id)
+        if allowed is not None:
+            if actor.actorKind == ActorKind.PROXY:
+                if actor.actorGuid not in self.proxy_actors:
+                    return False
+                delegated_by = (actor.permissionProvenance or {}).get("delegatedBy")
+                if delegated_by:
+                    return delegated_by not in self.revoked_actors and delegated_by in allowed
+                return actor.actorGuid in allowed
+            return actor.actorGuid in allowed
+        if owner_guid:
+            if actor.actorKind == ActorKind.PROXY:
+                if actor.actorGuid not in self.proxy_actors:
+                    return False
+                delegated_by = (actor.permissionProvenance or {}).get("delegatedBy")
+                return bool(delegated_by and delegated_by == owner_guid and delegated_by not in self.revoked_actors)
+            return actor.actorGuid == owner_guid
+        # Unowned legacy row: only bootstrap actors may view/claim
+        if actor.actorKind == ActorKind.USER:
+            return actor.actorGuid in self.bootstrap_actors
+        return False
+
     async def check_permission(
         self,
         actor: ActorContext,
@@ -122,74 +199,89 @@ class LocalPolicyPermissionProvider(PermissionProvider):
                 "Simulated SAFI authz service timeout/uncertainty (R-SEC-04)"
             )
 
-        validate_actor_context(actor)
+        if not actor.actorGuid or not actor.actorGuid.strip():
+            raise IdentityUncertainError("Actor GUID is required and cannot be empty")
 
-        # R-AUTH-02: Revoked permission blocks subsequent actions immediately
+        # 1. R-AUTH-02: Revoked permission blocks subsequent actions immediately
         if actor.actorGuid in self.revoked_actors:
             logger.warning("Access DENIED: Actor '%s' has revoked permissions", actor.actorGuid)
             raise UnauthorizedError(
                 f"Actor '{actor.actorGuid}' permissions have been revoked"
             )
 
-        # PROXY actor validation: must be explicitly registered & delegating user must be authorized/unrevoked
+        # 2. Check ownership / ACL BEFORE context validation so unauthorized callers cannot DoS another conversation
+        pin_owner: str | None = None
         if actor.actorKind == ActorKind.PROXY:
             if actor.actorGuid not in self.proxy_actors:
                 logger.warning("Access DENIED: Unregistered proxy actor '%s'", actor.actorGuid)
                 raise UnauthorizedError(
                     f"Proxy actor '{actor.actorGuid}' is not authorized"
                 )
-            delegated_by = actor.permissionProvenance.get("delegatedBy")
+            delegated_by = (actor.permissionProvenance or {}).get("delegatedBy")
+            allowed = self.conversation_access_map.get(conversation_id)
             if delegated_by:
                 if delegated_by in self.revoked_actors:
                     raise UnauthorizedError(
                         f"Delegating actor '{delegated_by}' permissions have been revoked"
                     )
-                allowed = self.conversation_access_map.get(conversation_id)
-                if allowed is not None and delegated_by not in allowed:
-                    raise UnauthorizedError(
-                        f"Delegating actor '{delegated_by}' is unauthorized for conversation '{conversation_id}'"
-                    )
+                if allowed is not None:
+                    if delegated_by not in allowed:
+                        raise UnauthorizedError(
+                            f"Delegating actor '{delegated_by}' is unauthorized for conversation '{conversation_id}'"
+                        )
+                else:
+                    # Fail-closed: unmapped conversation via proxy requires bootstrap-authorized delegator
+                    if delegated_by not in self.bootstrap_actors:
+                        raise UnauthorizedError(
+                            f"Delegating actor '{delegated_by}' is not authorized to initialize conversation '{conversation_id}'"
+                        )
+                    pin_owner = delegated_by
             else:
-                # Without delegatedBy, proxy may only act on conversations where it is explicitly listed
-                allowed = self.conversation_access_map.get(conversation_id)
                 if allowed is None or actor.actorGuid not in allowed:
                     raise UnauthorizedError(
                         f"Proxy actor '{actor.actorGuid}' lacks explicit access for conversation '{conversation_id}'"
                     )
-            return True
-
-        # USER actor validation (R-AUTH-01): strict per-conversation isolation & default-deny
-        allowed = self.conversation_access_map.get(conversation_id)
-        if allowed is not None:
-            if actor.actorGuid not in allowed:
+        else:
+            # USER actor validation (R-AUTH-01): strict per-conversation isolation & default-deny
+            allowed = self.conversation_access_map.get(conversation_id)
+            if allowed is not None:
+                if actor.actorGuid not in allowed:
+                    logger.warning(
+                        "Access DENIED: Actor '%s' not authorized for conversation '%s'",
+                        actor.actorGuid,
+                        conversation_id,
+                    )
+                    raise UnauthorizedError(
+                        f"Actor '{actor.actorGuid}' is unauthorized for conversation '{conversation_id}'"
+                    )
+            elif actor.actorGuid in self.bootstrap_actors:
+                pin_owner = actor.actorGuid
+            else:
                 logger.warning(
-                    "Access DENIED: Actor '%s' not authorized for conversation '%s'",
+                    "Access DENIED (default-deny): Actor '%s' not authorized for conversation '%s'",
                     actor.actorGuid,
                     conversation_id,
                 )
                 raise UnauthorizedError(
-                    f"Actor '{actor.actorGuid}' is unauthorized for conversation '{conversation_id}'"
+                    f"Actor '{actor.actorGuid}' is not authorized for conversation '{conversation_id}'"
                 )
-            return True
 
-        # New conversation not yet mapped: only bootstrap actors can claim/initialize ownership
-        if actor.actorGuid in self.bootstrap_actors:
-            self.conversation_access_map[conversation_id] = {actor.actorGuid}
+        # 3. Now that actor is confirmed authorized for this conversation, verify mandatory historical context (R-CTX-01)
+        validate_actor_context(actor)
+
+        # 4. Verify operation scope (SOW §4)
+        _check_operation_scope(actor, operation)
+
+        # 5. Pin ownership only after ALL checks pass
+        if pin_owner is not None:
+            self.conversation_access_map[conversation_id] = {pin_owner}
             logger.debug(
-                "Pinned conversation '%s' ownership to bootstrap actor '%s'",
+                "Pinned conversation '%s' ownership to actor '%s'",
                 conversation_id,
-                actor.actorGuid,
+                pin_owner,
             )
-            return True
 
-        logger.warning(
-            "Access DENIED (default-deny): Actor '%s' not authorized for conversation '%s'",
-            actor.actorGuid,
-            conversation_id,
-        )
-        raise UnauthorizedError(
-            f"Actor '{actor.actorGuid}' is not authorized for conversation '{conversation_id}'"
-        )
+        return True
 
 
 class HttpPermissionProvider(PermissionProvider):
@@ -211,21 +303,30 @@ class HttpPermissionProvider(PermissionProvider):
         if not self.config.safi_authz_url and self.config.authz_mode == "local_acl":
             self.local_policy = LocalPolicyPermissionProvider.from_json(self.config.local_acl_json)
 
-    async def check_permission(
+    async def can_access_conversation(
+        self,
+        actor: ActorContext,
+        conversation_id: str,
+        owner_guid: str | None = None,
+    ) -> bool:
+        if not self.config.safi_authz_url:
+            if self.local_policy is not None:
+                return await self.local_policy.can_access_conversation(
+                    actor, conversation_id, owner_guid=owner_guid
+                )
+            return False
+        try:
+            await self._call_remote_authz(actor, conversation_id, "gate:list_held")
+            return True
+        except Exception:
+            return False
+
+    async def _call_remote_authz(
         self,
         actor: ActorContext,
         conversation_id: str,
         operation: str,
     ) -> bool:
-        validate_actor_context(actor)
-
-        if not self.config.safi_authz_url:
-            if self.local_policy is not None:
-                return await self.local_policy.check_permission(actor, conversation_id, operation)
-            raise PermissionCheckFailedError(
-                "SAFI_AUTHZ_URL is not configured and AUTHZ_MODE is not 'local_acl'; failing closed (R-SEC-04)"
-            )
-
         url = f"{self.config.safi_authz_url}/check"
         headers = {"Content-Type": "application/json"}
         if self.config.safi_authz_token:
@@ -267,3 +368,25 @@ class HttpPermissionProvider(PermissionProvider):
         raise PermissionCheckFailedError(
             f"SAFI authz returned unexpected status {resp.status_code}"
         )
+
+    async def check_permission(
+        self,
+        actor: ActorContext,
+        conversation_id: str,
+        operation: str,
+    ) -> bool:
+        if not self.config.safi_authz_url:
+            if self.local_policy is not None:
+                return await self.local_policy.check_permission(actor, conversation_id, operation)
+            raise PermissionCheckFailedError(
+                "SAFI_AUTHZ_URL is not configured and AUTHZ_MODE is not 'local_acl'; failing closed (R-SEC-04)"
+            )
+
+        if not actor.actorGuid or not actor.actorGuid.strip():
+            raise IdentityUncertainError("Actor GUID is required and cannot be empty")
+
+        # Check remote SAFI authorization FIRST so unauthorized callers cannot fail-close a victim's conversation
+        await self._call_remote_authz(actor, conversation_id, operation)
+        validate_actor_context(actor)
+        _check_operation_scope(actor, operation)
+        return True

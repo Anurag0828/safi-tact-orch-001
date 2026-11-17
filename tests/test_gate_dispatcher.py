@@ -123,7 +123,10 @@ async def test_non_allowlisted_recipient_blocked_before_dispatch(
 async def test_invariant_4_permission_uncertainty_fails_closed(
     dispatcher, gate_store, authz_provider, mock_adapters, history_publisher, test_actor
 ):
-    """R-SEC-04 / Invariant 4: Uncertain permission check transitions conversation to FAILED_CLOSED."""
+    """R-SEC-04 / Invariant 4: Uncertain permission check transitions existing conversation to FAILED_CLOSED."""
+    await gate_store.get_or_create_conversation(
+        "conv_uncertain_01", "Customer B", owner_guid=test_actor.actorGuid
+    )
     authz_provider.simulate_check_failure = True
 
     sub = ActionSubmission(
@@ -184,7 +187,7 @@ async def test_invariant_8_unknown_downstream_outcome_recorded_and_fails_closed(
     with pytest.raises(DownstreamOutcomeUnknownError):
         await dispatcher.submit_action(sub)
 
-    idem = await gate_store.get_idempotency_record("book:timeout_key_01")
+    idem = await gate_store.get_idempotency_record("conv_timeout_01", "book:timeout_key_01")
     assert idem["outcome"] == Outcome.UNKNOWN.value
 
     conv = await gate_store.get_conversation("conv_timeout_01")
@@ -195,9 +198,9 @@ async def test_invariant_8_unknown_downstream_outcome_recorded_and_fails_closed(
         for e in history_publisher.events
     )
 
-    # Retrying with same idempotency key does NOT blindly re-dispatch
+    # Retrying while FAILED_CLOSED is blocked by GateFailedClosedError (never 200 OK replay)
     mock_adapters[EngineName.CALNODE].simulate_network_failure = False
-    with pytest.raises(DownstreamOutcomeUnknownError):
+    with pytest.raises(GateFailedClosedError):
         await dispatcher.submit_action(sub)
     assert len(mock_adapters[EngineName.CALNODE].call_log) == 1
 

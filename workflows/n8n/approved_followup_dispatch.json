@@ -5,7 +5,7 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "safi-approved-followup",
-        "authentication": "none",
+        "authentication": "headerAuth",
         "responseMode": "responseNode",
         "options": {}
       },
@@ -14,8 +14,14 @@
       "name": "Gate-Authorized Follow-Up Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [240, 300],
-      "notes": "Bound to 127.0.0.1/local network and strictly guarded by Verify Gate Secret & Approval node (R-GATE-01, R-SEC-02)."
+      "position": [180, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "safi-webhook-header-auth",
+          "name": "SAFI Webhook Header Auth"
+        }
+      },
+      "notes": "Protected via native n8n Header Auth credential (X-SAFI-Webhook-Secret); zero $env access (R-GATE-01, R-SEC-02, R-SEC-03)."
     },
     {
       "parameters": {
@@ -26,24 +32,6 @@
             "typeValidation": "strict"
           },
           "conditions": [
-            {
-              "id": "cond-secret-nonempty",
-              "leftValue": "={{ $env.N8N_WEBHOOK_SECRET || '' }}",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "notEmpty"
-              }
-            },
-            {
-              "id": "cond-secret-match",
-              "leftValue": "={{ $json.headers['x-safi-webhook-secret'] || '' }}",
-              "rightValue": "={{ $env.N8N_WEBHOOK_SECRET || '' }}",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            },
             {
               "id": "cond-gate-approved",
               "leftValue": "={{ $json.body.gateApproved === true }}",
@@ -59,17 +47,28 @@
         },
         "options": {}
       },
-      "id": "node-verify-gate-auth",
-      "name": "Verify Gate Secret & Approval",
+      "id": "node-verify-gate-approval",
+      "name": "Verify Gate Approval Flag",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [480, 300],
-      "notes": "Blocks direct unauthenticated calls or gateApproved!=true bypass attempts (R-GATE-01, R-SEC-02)."
+      "position": [420, 300],
+      "notes": "Blocks any call missing explicit gateApproved=true flag from the Local Gate Adapter."
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || {};\nconst staticData = $getWorkflowStaticData('global');\nif (!Array.isArray(staticData.deliveryReceipts)) {\n  staticData.deliveryReceipts = [];\n}\nconst receipt = {\n  receiptId: `rcpt_${$execution.id}_${Date.now()}`,\n  executionId: String($execution.id),\n  conversationId: String(body.conversationId || ''),\n  recipientEmail: String(body.recipientEmail || ''),\n  idempotencyKey: String(body.idempotencyKey || ''),\n  messagePreview: String(body.messageBody || '').slice(0, 120),\n  gateApproved: true,\n  dispatchedAt: new Date().toISOString()\n};\nstaticData.deliveryReceipts.push(receipt);\n// Cap retained receipts to last 200 to prevent unbounded growth\nif (staticData.deliveryReceipts.length > 200) {\n  staticData.deliveryReceipts = staticData.deliveryReceipts.slice(-200);\n}\nreturn [{ json: { ...receipt, status: 'dispatched', deliveredCount: staticData.deliveryReceipts.length } }];"
+      },
+      "id": "node-record-delivery-receipt",
+      "name": "Record Verified Allowlisted Delivery Receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 200],
+      "notes": "Persists a verifiable delivery receipt in n8n persistent SQLite static data without sending unsolicited external mail (R-SEC-01)."
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ status: 'dispatched', executionId: $execution.id, conversationId: $json.body.conversationId, recipientEmail: $json.body.recipientEmail, idempotencyKey: $json.body.idempotencyKey, gateApproved: true, dispatchedAt: new Date().toISOString() }) }}",
+        "responseBody": "={{ JSON.stringify($json) }}",
         "options": {
           "responseCode": 200
         }
@@ -78,12 +77,12 @@
       "name": "Confirm Verified Follow-Up Status",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [760, 200]
+      "position": [940, 200]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ errorCode: 'GATE_BYPASS_REJECTED', message: 'Direct webhook call rejected: valid X-SAFI-Webhook-Secret and gateApproved=true are required' }) }}",
+        "responseBody": "={{ JSON.stringify({ errorCode: 'GATE_BYPASS_REJECTED', message: 'Direct webhook call rejected: gateApproved=true from Local Gate Adapter is required' }) }}",
         "options": {
           "responseCode": 403
         }
@@ -92,19 +91,24 @@
       "name": "Reject Direct Gate Bypass",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [760, 420]
+      "position": [680, 420]
     }
   ],
   "connections": {
     "Gate-Authorized Follow-Up Webhook": {
       "main": [
-        [{ "node": "Verify Gate Secret & Approval", "type": "main", "index": 0 }]
+        [{ "node": "Verify Gate Approval Flag", "type": "main", "index": 0 }]
       ]
     },
-    "Verify Gate Secret & Approval": {
+    "Verify Gate Approval Flag": {
       "main": [
-        [{ "node": "Confirm Verified Follow-Up Status", "type": "main", "index": 0 }],
+        [{ "node": "Record Verified Allowlisted Delivery Receipt", "type": "main", "index": 0 }],
         [{ "node": "Reject Direct Gate Bypass", "type": "main", "index": 0 }]
+      ]
+    },
+    "Record Verified Allowlisted Delivery Receipt": {
+      "main": [
+        [{ "node": "Confirm Verified Follow-Up Status", "type": "main", "index": 0 }]
       ]
     }
   },

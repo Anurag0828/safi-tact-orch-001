@@ -6,6 +6,13 @@ import os
 from dataclasses import dataclass, field
 
 
+def _parse_bool_env(name: str, default: bool) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in ("1", "true", "yes")
+
+
 @dataclass(frozen=True)
 class GateConfig:
     # Local Gate Adapter operational store (SQLite WAL - R-CTX-03: NOT authoritative chat history)
@@ -26,10 +33,12 @@ class GateConfig:
     windmill_base_url: str = "http://127.0.0.1:8001"
     windmill_token: str = ""
     windmill_workspace: str = "safi-ops"
+    windmill_max_poll_attempts: int = 60
+    windmill_poll_interval_seconds: float = 0.25
 
-    # Gate Adapter endpoint authentication (R-SEC-02, R-SEC-03)
+    # Gate Adapter endpoint authentication — FAIL-CLOSED by default (R-SEC-02, R-SEC-03)
     gate_api_token: str = ""
-    gate_require_auth: bool = False
+    gate_require_auth: bool = True
 
     # Authorization mode: 'http' (requires SAFI_AUTHZ_URL, fails closed if missing)
     # or 'local_acl' (explicit default-deny ACL from LOCAL_ACL_JSON for local pilot)
@@ -45,7 +54,9 @@ class GateConfig:
     nats_token: str = ""
     jetstream_stream: str = "SAFI_HISTORY"
     jetstream_control_subject_prefix: str = "safi.control.events"
-    jetstream_required: bool = False
+    # Fail-closed by default; never auto-mutate production NATS streams unless explicitly opted in
+    jetstream_required: bool = True
+    jetstream_auto_create_stream: bool = False
 
     # Timeouts (seconds)
     http_timeout_seconds: float = 10.0
@@ -72,8 +83,10 @@ class GateConfig:
             windmill_base_url=os.getenv("WINDMILL_BASE_URL", "http://127.0.0.1:8001").rstrip("/"),
             windmill_token=os.getenv("WINDMILL_TOKEN", ""),
             windmill_workspace=os.getenv("WINDMILL_WORKSPACE", "safi-ops"),
+            windmill_max_poll_attempts=int(os.getenv("WINDMILL_MAX_POLL_ATTEMPTS", "60")),
+            windmill_poll_interval_seconds=float(os.getenv("WINDMILL_POLL_INTERVAL_SECONDS", "0.25")),
             gate_api_token=os.getenv("GATE_API_TOKEN", ""),
-            gate_require_auth=os.getenv("GATE_REQUIRE_AUTH", "false").strip().lower() in ("1", "true", "yes"),
+            gate_require_auth=_parse_bool_env("GATE_REQUIRE_AUTH", True),
             authz_mode=os.getenv("AUTHZ_MODE", "http").strip().lower(),
             local_acl_json=os.getenv("LOCAL_ACL_JSON", ""),
             safi_authz_url=os.getenv("SAFI_AUTHZ_URL", "").rstrip("/"),
@@ -86,7 +99,8 @@ class GateConfig:
             jetstream_control_subject_prefix=os.getenv(
                 "JETSTREAM_CONTROL_SUBJECT_PREFIX", "safi.control.events"
             ),
-            jetstream_required=os.getenv("JETSTREAM_REQUIRED", "false").strip().lower() in ("1", "true", "yes"),
+            jetstream_required=_parse_bool_env("JETSTREAM_REQUIRED", True),
+            jetstream_auto_create_stream=_parse_bool_env("JETSTREAM_AUTO_CREATE_STREAM", False),
             http_timeout_seconds=float(os.getenv("GATE_HTTP_TIMEOUT_SECONDS", "10.0")),
             authz_timeout_seconds=float(os.getenv("GATE_AUTHZ_TIMEOUT_SECONDS", "3.0")),
             inflight_reconcile_timeout_seconds=float(

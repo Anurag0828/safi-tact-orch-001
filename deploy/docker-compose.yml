@@ -37,6 +37,7 @@ services:
       JETSTREAM_STREAM: ${JETSTREAM_STREAM:-SAFI_HISTORY}
       JETSTREAM_CONTROL_SUBJECT_PREFIX: ${JETSTREAM_CONTROL_SUBJECT_PREFIX:-safi.control.events}
       JETSTREAM_REQUIRED: ${JETSTREAM_REQUIRED:-true}
+      JETSTREAM_AUTO_CREATE_STREAM: ${JETSTREAM_AUTO_CREATE_STREAM:-false}
     volumes:
       - gate_state_data:/app/data
     networks:
@@ -57,9 +58,9 @@ services:
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?N8N_ENCRYPTION_KEY must be set}
       N8N_DIAGNOSTICS_ENABLED: "false"
       N8N_PERSONALIZATION_ENABLED: "false"
-      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
-      N8N_WEBHOOK_SECRET: ${N8N_WEBHOOK_SECRET:?N8N_WEBHOOK_SECRET must be set}
-      GATE_ADAPTER_INTERNAL_URL: http://gate-adapter:8000
+      # R-SEC-03: Block $env access inside workflow nodes so N8N_ENCRYPTION_KEY is never exposed;
+      # webhooks & gate callbacks authenticate via native n8n Header Auth credentials.
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "true"
     volumes:
       - n8n_data:/home/node/.n8n
     networks:

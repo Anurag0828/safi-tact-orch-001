@@ -70,6 +70,7 @@ class ConversationRuntime:
     dispatch_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     inflight_action_ids: set[str] = field(default_factory=set)
     inflight_zero: asyncio.Event = field(default_factory=asyncio.Event)
+    barge_in_requested: bool = False
 
     def __post_init__(self) -> None:
         self.inflight_zero.set()

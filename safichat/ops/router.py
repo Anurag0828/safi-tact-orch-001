@@ -217,7 +217,12 @@ async def start_assignment(req: AssignmentRequest, request: Request) -> dict[str
 
 @router.post("/operations/job-status")
 async def check_job_status(req: JobStatusRequest, request: Request) -> dict[str, Any]:
-    """R-OPS-02: Reports Windmill job ID, state, assignee, completion result, and retry/error status."""
+    """R-OPS-02: Reports Windmill job ID, state, assignee, completion result, and retry/error status.
+
+    Enforces conversation-to-job ownership binding (prevents cross-conversation Windmill job IDOR - A09).
+    """
+    from gate.errors import ActionNotFoundError
+
     modes = request.app.state.modes
     await modes.authorize_read_operation(
         req.actor,
@@ -225,6 +230,10 @@ async def check_job_status(req: JobStatusRequest, request: Request) -> dict[str,
         "windmill:get_job_status",
         subject_line_display=req.subjectLineDisplay,
     )
+    store = request.app.state.store
+    if not await store.has_external_ref(req.conversationId, EngineName.WINDMILL.value, req.jobId):
+        raise ActionNotFoundError(req.jobId)
+
     windmill = request.app.state.adapters[EngineName.WINDMILL]
     status = await windmill.get_job_status(req.jobId)
     return {

@@ -206,10 +206,11 @@ async def test_a09_revoked_permission_blocks_subsequent_and_held_release(
 async def test_identity_uncertain_fails_closed_in_modes_and_dispatch(
     authz_suite, gate_store, history_publisher
 ):
-    """R-SEC-04 / R-CTX-01: Missing Meeting/Port Context raises IdentityUncertainError and fails closed."""
-    dispatcher, modes, _, _ = authz_suite
+    """R-SEC-04 / R-CTX-01: Authorized actor with missing Meeting/Port Context raises IdentityUncertainError and fails closed."""
+    dispatcher, modes, authz_provider, _ = authz_suite
     conv_id = "conv_identity_uncertain"
-    await gate_store.get_or_create_conversation(conv_id, "Uncertain Identity")
+    await gate_store.get_or_create_conversation(conv_id, "Uncertain Identity", owner_guid="user_incomplete_01")
+    authz_provider.authorize_actor_for_conversation(conv_id, "user_incomplete_01")
 
     incomplete_actor = ActorContext(
         actorGuid="user_incomplete_01",

@@ -137,12 +137,21 @@ class IdempotencyConflictError(GateError):
 
 
 class DownstreamOutcomeUnknownError(GateError):
-    def __init__(self, action_id: str, idempotency_key: str, reason: str) -> None:
+    def __init__(
+        self,
+        action_id: str,
+        idempotency_key: str,
+        reason: str,
+        extra_details: dict[str, Any] | None = None,
+    ) -> None:
+        details: dict[str, Any] = {"actionId": action_id, "idempotencyKey": idempotency_key}
+        if extra_details:
+            details.update(extra_details)
         super().__init__(
             "DOWNSTREAM_OUTCOME_UNKNOWN",
             f"Downstream outcome for action '{action_id}' is unknown: {reason}",
             504,
-            {"actionId": action_id, "idempotencyKey": idempotency_key},
+            details,
         )
 
 

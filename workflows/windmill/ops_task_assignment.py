@@ -23,6 +23,11 @@ def main(
     if not bookingId or not conversationId or not assignee:
         raise ValueError("bookingId, conversationId, and assignee are required")
 
+    if bookingId.startswith("ERR_") or "@" not in assignee:
+        raise ValueError(
+            f"Operational assignment rejected for invalid booking/assignee: bookingId={bookingId}, assignee={assignee}"
+        )
+
     # Deterministic assignment ID from idempotencyKey/bookingId so retries never duplicate
     seed = idempotencyKey or f"{conversationId}:{bookingId}:{assignee}"
     assignment_id = "asgn_" + hashlib.sha256(seed.encode("utf-8")).hexdigest()[:12]

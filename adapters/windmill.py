@@ -25,13 +25,19 @@ class WindmillAdapter(EngineAdapter):
         self,
         config: GateConfig,
         http_client: httpx.AsyncClient | None = None,
-        max_poll_attempts: int = 30,
-        poll_interval_seconds: float = 0.25,
+        max_poll_attempts: int | None = None,
+        poll_interval_seconds: float | None = None,
     ) -> None:
         self.config = config
         self._client = http_client
-        self.max_poll_attempts = max_poll_attempts
-        self.poll_interval_seconds = poll_interval_seconds
+        self.max_poll_attempts = (
+            max_poll_attempts if max_poll_attempts is not None else config.windmill_max_poll_attempts
+        )
+        self.poll_interval_seconds = (
+            poll_interval_seconds
+            if poll_interval_seconds is not None
+            else config.windmill_poll_interval_seconds
+        )
 
     async def execute(
         self,
@@ -41,6 +47,13 @@ class WindmillAdapter(EngineAdapter):
     ) -> dict[str, Any]:
         ws = self.config.windmill_workspace
         if operation == "start_assignment":
+            missing = [k for k in ("bookingId", "conversationId", "assignee") if not payload.get(k)]
+            if missing:
+                raise DownstreamError(
+                    "windmill",
+                    f"Missing required assignment fields: {', '.join(missing)}",
+                    {"missingFields": missing},
+                )
             script_path = payload.get("scriptPath", "f/safi/ops_task_assignment")
             job_payload = {
                 "bookingId": payload["bookingId"],
@@ -66,11 +79,12 @@ class WindmillAdapter(EngineAdapter):
                 await asyncio.sleep(self.poll_interval_seconds)
 
             if job_data.get("type") != "CompletedJob":
-                # Never falsely mark an unfinished job as DONE (Invariant 8)
+                # Never falsely mark an unfinished job as DONE (Invariant 8); include structured jobId for reconciliation
                 raise DownstreamOutcomeUnknownError(
                     "windmill",
                     idempotency_key,
                     f"Windmill job '{job_id}' did not finish within poll timeout (state={job_data.get('type')})",
+                    extra_details={"jobId": job_id, "state": job_data.get("type")},
                 )
 
             result_obj = job_data.get("result") or {}
@@ -108,8 +122,11 @@ class WindmillAdapter(EngineAdapter):
             }
 
         if operation == "get_job_status":
+            job_id = payload.get("jobId")
+            if not job_id:
+                raise DownstreamError("windmill", "Missing required field 'jobId'", {"missingFields": ["jobId"]})
             return await self.get_job_status(
-                payload["jobId"], idempotency_key=idempotency_key
+                job_id, idempotency_key=idempotency_key
             )
 
         raise DownstreamError("windmill", f"Unsupported Windmill operation '{operation}'")

@@ -133,6 +133,8 @@ def test_config(temp_db_path: str) -> GateConfig:
             ]
         ),
         calnode_calendar_id="cal_test_bounded_01",
+        gate_require_auth=False,
+        jetstream_required=False,
         inflight_reconcile_timeout_seconds=2.0,
     )
 
