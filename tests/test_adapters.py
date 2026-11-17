@@ -16,7 +16,7 @@ from workflows.windmill.ops_task_assignment import main as windmill_assign_scrip
 
 
 @pytest.mark.asyncio
-async def test_calnode_adapter_suppresses_notifications_and_passes_idempotency():
+async def test_calnode_adapter_real_v1_path_and_idempotency():
     captured: dict = {}
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -24,24 +24,38 @@ async def test_calnode_adapter_suppresses_notifications_and_passes_idempotency()
         captured["path"] = request.url.path
         captured["headers"] = dict(request.headers)
         captured["body"] = json.loads(request.content.decode()) if request.content else None
-        return httpx.Response(200, json={"bookingId": "bkg_real_01", "status": "CONFIRMED"})
+        return httpx.Response(
+            201,
+            json={
+                "id": "95a85e0b-4df8-4c36-ba40-5244c34835a6",
+                "status": "confirmed",
+                "start_at": "2026-11-18T14:00:00Z",
+                "end_at": "2026-11-18T14:30:00Z",
+                "invite_delivery": "none",
+            },
+        )
 
     client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
-    cfg = GateConfig(calnode_base_url="http://calnode.local", calnode_api_key="test-key")
+    cfg = GateConfig(
+        calnode_base_url="http://calnode.local",
+        calnode_api_key="cno_test",
+        calnode_calendar_id="consultation-30m",
+    )
     adapter = CalnodeAdapter(cfg, http_client=client)
 
     res = await adapter.execute(
         "create_booking",
-        {"slotId": "slot_1", "attendeeEmail": "customer-a@allowlist.test.local"},
+        {"slotId": "2026-11-18T14:00:00Z", "attendeeEmail": "customer-a@allowlist.test.local"},
         idempotency_key="idem:cal:01",
     )
     await client.aclose()
 
-    assert res["bookingId"] == "bkg_real_01"
-    assert captured["path"] == "/api/v1/bookings"
+    assert res["bookingId"] == "95a85e0b-4df8-4c36-ba40-5244c34835a6"
+    assert res["inviteDelivery"] == "none"
+    assert captured["path"] == "/v1/bookings"
     assert captured["headers"]["idempotency-key"] == "idem:cal:01"
-    # R-GATE-02: auto-notifications suppressed
-    assert captured["body"]["suppressNotifications"] is True
+    assert captured["body"]["event_type_slug"] == "consultation-30m"
+    assert captured["body"]["start_at"] == "2026-11-18T14:00:00Z"
 
 
 @pytest.mark.asyncio
@@ -87,7 +101,11 @@ async def test_windmill_adapter_error_and_script_determinism():
     with pytest.raises(DownstreamError):
         await adapter.execute(
             "start_assignment",
-            {"bookingId": "bkg_1", "conversationId": "conv_1", "assignee": "ops@test"},
+            {
+                "bookingId": "bkg_1",
+                "conversationId": "conv_1",
+                "assignee": "ops@test",
+            },
             "idem:wm:err",
         )
     await client.aclose()

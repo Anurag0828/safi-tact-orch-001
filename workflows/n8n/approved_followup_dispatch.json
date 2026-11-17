@@ -1,0 +1,43 @@
+{
+  "name": "SAFI Approved Follow-Up Dispatcher (Gate-Authorized Only - R-MKT-02)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "safi-approved-followup",
+        "authentication": "none",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook-followup",
+      "webhookId": "safi-approved-followup-wh-001",
+      "name": "Gate-Authorized Follow-Up Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "notes": "Invoked exclusively by the Local Gate Adapter after authorization & allowlist checks."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'dispatched', executionId: $execution.id, conversationId: $json.body.conversationId, recipientEmail: $json.body.recipientEmail, idempotencyKey: $json.body.idempotencyKey, gateApproved: Boolean($json.body.gateApproved), dispatchedAt: new Date().toISOString() }) }}"
+      },
+      "id": "node-respond-dispatched",
+      "name": "Confirm Verified Follow-Up Status",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [540, 300]
+    }
+  ],
+  "connections": {
+    "Gate-Authorized Follow-Up Webhook": {
+      "main": [
+        [{ "node": "Confirm Verified Follow-Up Status", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

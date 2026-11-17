@@ -1,19 +1,25 @@
 {
-  "_meta": "UNVERIFIED_TEMPLATE: Replace with REAL captured response from live Calnode instance during Phase 1 T-02",
-  "calendarId": "cal_test_bounded_01",
-  "timezone": "UTC",
+  "hosts": {
+    "be8d5074-b918-4373-af0c-86c8526226c2": {
+      "avatar_url": "",
+      "name": "SAFI Admin"
+    }
+  },
   "slots": [
     {
-      "slotId": "slot_20261118_1400",
       "start": "2026-11-18T14:00:00Z",
       "end": "2026-11-18T14:30:00Z",
-      "available": true
+      "host_ids": ["be8d5074-b918-4373-af0c-86c8526226c2"]
     },
     {
-      "slotId": "slot_20261118_1500",
+      "start": "2026-11-18T14:30:00Z",
+      "end": "2026-11-18T15:00:00Z",
+      "host_ids": ["be8d5074-b918-4373-af0c-86c8526226c2"]
+    },
+    {
       "start": "2026-11-18T15:00:00Z",
       "end": "2026-11-18T15:30:00Z",
-      "available": true
+      "host_ids": ["be8d5074-b918-4373-af0c-86c8526226c2"]
     }
   ]
 }

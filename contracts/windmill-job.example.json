@@ -1,15 +1,35 @@
 {
-  "_meta": "UNVERIFIED_TEMPLATE: Replace with REAL captured response from live Windmill instance during Phase 1 T-02",
-  "jobId": "01933c9e-7a12-7b40-9e1a-f81122334455",
-  "workspace": "safi-ops",
-  "scriptPath": "f/safi/ops_task_assignment",
-  "state": "COMPLETED",
-  "assignee": "ops-specialist-1@allowlist.test.local",
-  "result": {
-    "assignmentId": "asgn_20261117_001",
-    "bookingId": "bkg_9f82a10c",
-    "status": "ASSIGNED"
+  "type": "CompletedJob",
+  "workspace_id": "safi-ops",
+  "id": "01a1eae8-ee12-310e-c187-7890f4d92dfa",
+  "created_by": "label-safi-gate-adapter",
+  "created_at": "2026-11-17T19:08:16.272453Z",
+  "started_at": "2026-11-17T19:08:16.312480Z",
+  "duration_ms": 57,
+  "success": true,
+  "script_hash": "d15156198ce127f0",
+  "script_path": "f/safi/ops_task_assignment",
+  "args": {
+    "assignee": "ops-specialist-1@allowlist.test.local",
+    "taskSummary": "Verify real Windmill job",
+    "bookingId": "bkg_verify_01",
+    "idempotencyKey": "wm:verify:01",
+    "conversationId": "conv_verify_01"
   },
-  "retryCount": 0,
-  "error": null
+  "result": {
+    "error": null,
+    "state": "COMPLETED",
+    "assignee": "ops-specialist-1@allowlist.test.local",
+    "bookingId": "bkg_verify_01",
+    "retryCount": 0,
+    "completedAt": "2026-11-17T19:08:16.364491Z",
+    "taskSummary": "Verify real Windmill job",
+    "assignmentId": "asgn_b810587e1eec",
+    "conversationId": "conv_verify_01"
+  },
+  "deleted": false,
+  "canceled": false,
+  "job_kind": "script",
+  "permissioned_as": "safi_admin@local.test",
+  "language": "python3"
 }

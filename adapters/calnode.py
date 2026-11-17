@@ -1,11 +1,15 @@
 """Calnode Sales Scheduling Adapter (R-CAL-01, R-CAL-02, R-CAL-03, R-GATE-02, A04).
 
-UNVERIFIED API PATHS: Verify V-01/V-02/V-03 against live Calnode container in T-02.
-Auto-notifications that cannot be routed through the Gate MUST be disabled (R-GATE-02).
+Verified against live Calnode v0.14.0 (ghcr.io/calnode/calnode@sha256:120f1434d02c409b25f981a163cd4408db3e3f3ea571abc4c1e3e922f292af80):
+- V-01: GET  /v1/event-types/{slug}/slots?from=YYYY-MM-DD&to=YYYY-MM-DD&tz=UTC
+- V-02: POST /v1/bookings (Authorization: Bearer <key>, Idempotency-Key: <key>)
+- V-03: Duplicate POST /v1/bookings with same Idempotency-Key returns original booking ID without double-booking.
+- R-GATE-02: Event type configured with invite_delivery='none', reminders=[], SMTP unconfigured.
 """
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import httpx
@@ -27,16 +31,30 @@ class CalnodeAdapter(EngineAdapter):
         self.config = config
         self._client = http_client
 
-    async def list_slots(self, calendar_id: str | None = None, date_from: str | None = None, date_to: str | None = None) -> dict[str, Any]:
-        """Read-only availability query (R-CAL-01)."""
-        cal_id = calendar_id or self.config.calnode_calendar_id
-        params: dict[str, Any] = {"calendarId": cal_id}
-        if date_from:
-            params["from"] = date_from
-        if date_to:
-            params["to"] = date_to
-
-        return await self._request("GET", "/api/v1/slots", params=params)
+    async def list_slots(
+        self,
+        calendar_id: str | None = None,
+        date_from: str | None = None,
+        date_to: str | None = None,
+    ) -> dict[str, Any]:
+        """Read-only availability query against live Calnode /v1/event-types/{slug}/slots (R-CAL-01)."""
+        slug = calendar_id or self.config.calnode_calendar_id
+        today = datetime.now(timezone.utc).date()
+        params: dict[str, Any] = {
+            "from": date_from or today.isoformat(),
+            "to": date_to or (today + timedelta(days=5)).isoformat(),
+            "tz": "UTC",
+        }
+        data = await self._request(
+            "GET", f"/v1/event-types/{slug}/slots", params=params
+        )
+        # Normalize slotId to slot start timestamp for uniform SafiChat UX
+        raw_slots = data.get("slots", [])
+        normalized = []
+        for s in raw_slots:
+            if isinstance(s, dict):
+                normalized.append({**s, "slotId": s.get("slotId") or s.get("start")})
+        return {**data, "eventTypeSlug": slug, "slots": normalized}
 
     async def execute(
         self,
@@ -51,22 +69,29 @@ class CalnodeAdapter(EngineAdapter):
                 date_to=payload.get("to"),
             )
         if operation == "create_booking":
+            slug = payload.get("calendarId") or self.config.calnode_calendar_id
             booking_body = {
-                "calendarId": payload.get("calendarId", self.config.calnode_calendar_id),
-                "slotId": payload["slotId"],
-                "attendeeEmail": payload["attendeeEmail"],
-                "attendeeName": payload.get("attendeeName", ""),
+                "event_type_slug": slug,
+                "start_at": payload["slotId"],
+                "name": payload.get("attendeeName") or "SAFI Pilot Guest",
+                "email": payload["attendeeEmail"],
+                "timezone": payload.get("timezone", "UTC"),
                 "notes": payload.get("notes", ""),
-                "idempotencyKey": idempotency_key,
-                # R-GATE-02: suppress ungated Calnode auto-notifications
-                "suppressNotifications": True,
             }
-            return await self._request(
+            data = await self._request(
                 "POST",
-                "/api/v1/bookings",
+                "/v1/bookings",
                 json_body=booking_body,
                 idempotency_key=idempotency_key,
             )
+            return {
+                "bookingId": data.get("id") or data.get("bookingId"),
+                "status": data.get("status", "confirmed"),
+                "startAt": data.get("start_at"),
+                "endAt": data.get("end_at"),
+                "inviteDelivery": data.get("invite_delivery", "none"),
+                "raw": data,
+            }
         raise DownstreamError("calnode", f"Unsupported Calnode operation '{operation}'")
 
     async def _request(

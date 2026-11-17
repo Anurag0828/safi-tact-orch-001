@@ -47,6 +47,7 @@ services:
       N8N_HOST: 127.0.0.1
       N8N_PORT: 5678
       N8N_PROTOCOL: http
+      N8N_SECURE_COOKIE: "false"
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?N8N_ENCRYPTION_KEY must be set}
       N8N_BASIC_AUTH_ACTIVE: "true"
       N8N_BASIC_AUTH_USER: ${N8N_ADMIN_USER:?N8N_ADMIN_USER must be set}
@@ -60,23 +61,39 @@ services:
       - safi_local_net
 
   calnode:
-    # UNVERIFIED: Pin exact Calnode image tag/digest or local build path during Phase 1 T-01
-    # Source reference: https://github.com/Calnode/calnode
+    # Official Calnode image (https://github.com/Calnode/calnode)
+    # Pin exact release digest in deploy/.env (CALNODE_PINNED_IMAGE) during Phase 1 T-01
     image: ${CALNODE_PINNED_IMAGE:?CALNODE_PINNED_IMAGE must be pinned in .env during T-01}
     container_name: safi-calnode
     restart: unless-stopped
     ports:
       - "127.0.0.1:3000:3000"
     environment:
-      NODE_ENV: production
-      CALNODE_ADMIN_EMAIL: ${CALNODE_ADMIN_EMAIL:?CALNODE_ADMIN_EMAIL must be set}
-      CALNODE_ADMIN_PASSWORD: ${CALNODE_ADMIN_PASSWORD:?CALNODE_ADMIN_PASSWORD must be set}
-      CALNODE_API_KEY: ${CALNODE_API_KEY:?CALNODE_API_KEY must be set}
-      # R-GATE-02: Disable ungated automatic email/SMS notifications
-      DISABLE_NOTIFICATIONS: "true"
+      PORT: "3000"
+      BASE_URL: http://127.0.0.1:3000
+      DATABASE_URL: sqlite:///data/calnode.db
+      CALNODE_ENCRYPTION_KEY: ${CALNODE_ENCRYPTION_KEY:?CALNODE_ENCRYPTION_KEY must be set}
+      CALNODE_RECOVERY_SECRET: ${CALNODE_RECOVERY_SECRET:?CALNODE_RECOVERY_SECRET must be set}
+      # R-GATE-02: Leave SMTP unconfigured so ungated auto-emails cannot bypass the Gate
       SMTP_HOST: ""
     volumes:
-      - calnode_data:/app/data
+      - calnode_data:/data
+    networks:
+      - safi_local_net
+
+  # Optional local NATS JetStream for solo testing (use: docker compose --profile local-nats up -d)
+  # When deploying against SAFI's existing NATS backend, omit --profile local-nats and set NATS_URL in .env
+  nats:
+    profiles: ["local-nats"]
+    image: nats:2.10-alpine
+    container_name: safi-local-nats
+    restart: unless-stopped
+    command: ["--jetstream", "--store_dir", "/data", "-m", "8222"]
+    ports:
+      - "127.0.0.1:4222:4222"
+      - "127.0.0.1:8222:8222"
+    volumes:
+      - nats_data:/data
     networks:
       - safi_local_net
 
@@ -139,6 +156,7 @@ volumes:
   calnode_data:
   windmill_db_data:
   windmill_worker_logs:
+  nats_data:
 
 networks:
   safi_local_net:
