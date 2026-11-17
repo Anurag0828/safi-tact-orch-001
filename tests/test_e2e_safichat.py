@@ -83,10 +83,15 @@ async def test_a02_safichat_only_control_full_connected_flow(app_client, test_ac
     job_id = assign_data["result"]["jobId"]
     assert job_id is not None
 
-    # Step 5 (Operations / Windmill - R-OPS-02, A05): Check status via SafiChat
+    # Step 5 (Operations / Windmill - R-OPS-02, A05): Check status via SafiChat camelCase JSON body
     status_resp = await client.post(
-        f"/safichat/ops/operations/job-status?conversation_id={conv_id}&job_id={job_id}",
-        json=actor_dict,
+        "/safichat/ops/operations/job-status",
+        json={
+            "conversationId": conv_id,
+            "jobId": job_id,
+            "subjectLineDisplay": "Customer A - High Value Inquiry",
+            "actor": actor_dict,
+        },
     )
     assert status_resp.status_code == 200
     status_data = status_resp.json()
@@ -186,4 +191,106 @@ async def test_e2e_internal_engine_callback_never_bypasses_gate(app_client, prox
     assert resp.status_code == 200
     assert resp.json()["state"] == ActionState.HELD.value
     # Downstream n8n adapter was NOT executed while GATED
-    assert len(app.state.adapters[app.state.adapters.__iter__().__next__()].call_log) == 0
+    from gate.models import EngineName
+    assert len(app.state.adapters[EngineName.N8N].call_log) == 0
+
+
+@pytest.mark.asyncio
+async def test_e2e_http_endpoint_auth_and_approve_reject(
+    temp_db_path, history_publisher, authz_provider, mock_adapters, test_actor, proxy_actor
+):
+    """R-SEC-02/03: HTTP endpoints enforce Bearer GATE_API_TOKEN & X-SAFI-Gate-Secret; /approve & /reject work E2E."""
+    from httpx import ASGITransport, AsyncClient
+    from gate.app import create_app
+    from gate.config import GateConfig
+    from gate.store import GateStore
+
+    cfg = GateConfig(
+        store_path=temp_db_path,
+        allowed_recipients=frozenset(["customer-a@allowlist.test.local"]),
+        gate_api_token="secret_gate_tok_123",
+        gate_require_auth=True,
+        n8n_webhook_secret="secret_wh_456",
+    )
+    store = GateStore(cfg.store_path)
+    await store.initialize()
+    app = create_app(
+        config=cfg,
+        store=store,
+        history=history_publisher,
+        authz=authz_provider,
+        adapters=mock_adapters,
+    )
+    actor_dict = test_actor.model_dump(mode="json")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        # Missing Bearer token -> 403 UNAUTHORIZED
+        unauth = await client.post(
+            "/safichat/ops/sales/slots",
+            json={"conversationId": "conv_auth_http", "actor": actor_dict},
+        )
+        assert unauth.status_code == 403
+
+        # Missing X-SAFI-Gate-Secret on /gate/dispatch -> 403 UNAUTHORIZED
+        unauth_cb = await client.post(
+            "/gate/dispatch",
+            json={
+                "conversationId": "conv_auth_http",
+                "engine": "n8n",
+                "operation": "dispatch_followup",
+                "idempotencyKey": "cb:unauth:1",
+                "payload": {"messageBody": "x"},
+                "recipients": ["customer-a@allowlist.test.local"],
+                "actor": proxy_actor.model_dump(mode="json"),
+            },
+        )
+        assert unauth_cb.status_code == 403
+
+        # Valid Bearer token -> full barge-in + hold + approve + reject works
+        headers = {"Authorization": "Bearer secret_gate_tok_123"}
+        await store.get_or_create_conversation("conv_auth_http", "Auth HTTP Test")
+        barge = await client.post(
+            "/safichat/ops/gate/barge-in",
+            json={"conversationId": "conv_auth_http", "actor": actor_dict},
+            headers=headers,
+        )
+        assert barge.status_code == 200
+
+        h1 = await client.post(
+            "/safichat/ops/marketing/followup",
+            json={
+                "conversationId": "conv_auth_http",
+                "recipientEmail": "customer-a@allowlist.test.local",
+                "messageBody": "Approve me",
+                "idempotencyKey": "http:app:1",
+                "actor": actor_dict,
+            },
+            headers=headers,
+        )
+        h2 = await client.post(
+            "/safichat/ops/marketing/followup",
+            json={
+                "conversationId": "conv_auth_http",
+                "recipientEmail": "customer-a@allowlist.test.local",
+                "messageBody": "Reject me",
+                "idempotencyKey": "http:rej:2",
+                "actor": actor_dict,
+            },
+            headers=headers,
+        )
+        r_app = await client.post(
+            "/safichat/ops/gate/approve",
+            json={"conversationId": "conv_auth_http", "actionId": h1.json()["actionId"], "actor": actor_dict},
+            headers=headers,
+        )
+        assert r_app.status_code == 200
+        assert r_app.json()["state"] == "DONE"
+
+        r_rej = await client.post(
+            "/safichat/ops/gate/reject",
+            json={"conversationId": "conv_auth_http", "actionId": h2.json()["actionId"], "actor": actor_dict},
+            headers=headers,
+        )
+        assert r_rej.status_code == 200
+        assert r_rej.json()["state"] == "REJECTED"
+
+    await store.close()

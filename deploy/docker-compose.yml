@@ -1,5 +1,6 @@
 # SAFI-TACT-ORCH-001 Local UNIX Docker Compose Stack (R-ENV-01, R-ENV-02, R-ENV-03, R-SEC-03)
 # All ports are bound strictly to 127.0.0.1 (local-only administration).
+# All service images are pinned by exact verified SHA256 digest.
 # All secrets/credentials MUST be provided via deploy/.env (copied from .env.template).
 
 services:
@@ -13,13 +14,17 @@ services:
       - "127.0.0.1:8000:8000"
     environment:
       GATE_STORE_PATH: /app/data/gate_state.db
+      GATE_API_TOKEN: ${GATE_API_TOKEN:?GATE_API_TOKEN must be set}
+      GATE_REQUIRE_AUTH: ${GATE_REQUIRE_AUTH:-true}
+      AUTHZ_MODE: ${AUTHZ_MODE:-http}
+      LOCAL_ACL_JSON: ${LOCAL_ACL_JSON:-}
       SAFI_ALLOWED_RECIPIENTS: ${SAFI_ALLOWED_RECIPIENTS:?SAFI_ALLOWED_RECIPIENTS must be set}
       N8N_BASE_URL: http://n8n:5678
       N8N_API_KEY: ${N8N_API_KEY:?N8N_API_KEY must be set}
       N8N_WEBHOOK_SECRET: ${N8N_WEBHOOK_SECRET:?N8N_WEBHOOK_SECRET must be set}
       CALNODE_BASE_URL: http://calnode:3000
       CALNODE_API_KEY: ${CALNODE_API_KEY:?CALNODE_API_KEY must be set}
-      CALNODE_CALENDAR_ID: ${CALNODE_CALENDAR_ID:-cal_test_bounded_01}
+      CALNODE_CALENDAR_ID: ${CALNODE_CALENDAR_ID:-consultation-30m}
       WINDMILL_BASE_URL: http://windmill-server:8000
       WINDMILL_TOKEN: ${WINDMILL_TOKEN:?WINDMILL_TOKEN must be set}
       WINDMILL_WORKSPACE: ${WINDMILL_WORKSPACE:-safi-ops}
@@ -31,14 +36,15 @@ services:
       NATS_PASSWORD: ${NATS_PASSWORD:-}
       JETSTREAM_STREAM: ${JETSTREAM_STREAM:-SAFI_HISTORY}
       JETSTREAM_CONTROL_SUBJECT_PREFIX: ${JETSTREAM_CONTROL_SUBJECT_PREFIX:-safi.control.events}
+      JETSTREAM_REQUIRED: ${JETSTREAM_REQUIRED:-true}
     volumes:
       - gate_state_data:/app/data
     networks:
       - safi_local_net
 
   n8n:
-    # Pinned release tag (verify exact digest in T-01)
-    image: docker.n8n.io/n8nio/n8n:1.68.0
+    # Pinned exact release + SHA256 digest (v1.68.0)
+    image: docker.n8n.io/n8nio/n8n:1.68.0@sha256:d468689474fdea94304047da35e59e9e591c98110106a2f302dc5509f7ce2f4b
     container_name: safi-n8n
     restart: unless-stopped
     ports:
@@ -49,11 +55,10 @@ services:
       N8N_PROTOCOL: http
       N8N_SECURE_COOKIE: "false"
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?N8N_ENCRYPTION_KEY must be set}
-      N8N_BASIC_AUTH_ACTIVE: "true"
-      N8N_BASIC_AUTH_USER: ${N8N_ADMIN_USER:?N8N_ADMIN_USER must be set}
-      N8N_BASIC_AUTH_PASSWORD: ${N8N_ADMIN_PASSWORD:?N8N_ADMIN_PASSWORD must be set}
       N8N_DIAGNOSTICS_ENABLED: "false"
       N8N_PERSONALIZATION_ENABLED: "false"
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+      N8N_WEBHOOK_SECRET: ${N8N_WEBHOOK_SECRET:?N8N_WEBHOOK_SECRET must be set}
       GATE_ADAPTER_INTERNAL_URL: http://gate-adapter:8000
     volumes:
       - n8n_data:/home/node/.n8n
@@ -61,9 +66,8 @@ services:
       - safi_local_net
 
   calnode:
-    # Official Calnode image (https://github.com/Calnode/calnode)
-    # Pin exact release digest in deploy/.env (CALNODE_PINNED_IMAGE) during Phase 1 T-01
-    image: ${CALNODE_PINNED_IMAGE:?CALNODE_PINNED_IMAGE must be pinned in .env during T-01}
+    # Official Calnode v0.14.0 pinned by exact SHA256 digest (https://github.com/Calnode/calnode)
+    image: ${CALNODE_PINNED_IMAGE:-ghcr.io/calnode/calnode@sha256:120f1434d02c409b25f981a163cd4408db3e3f3ea571abc4c1e3e922f292af80}
     container_name: safi-calnode
     restart: unless-stopped
     ports:
@@ -85,7 +89,7 @@ services:
   # When deploying against SAFI's existing NATS backend, omit --profile local-nats and set NATS_URL in .env
   nats:
     profiles: ["local-nats"]
-    image: nats:2.10-alpine
+    image: nats:2.10-alpine@sha256:b83efabe3e7def1e0a4a31ec6e078999bb17c80363f881df35edc70fcb6bb927
     container_name: safi-local-nats
     restart: unless-stopped
     command: ["--jetstream", "--store_dir", "/data", "-m", "8222"]
@@ -98,7 +102,7 @@ services:
       - safi_local_net
 
   windmill-db:
-    image: postgres:16.4-alpine
+    image: postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c
     container_name: safi-windmill-db
     restart: unless-stopped
     environment:
@@ -116,8 +120,8 @@ services:
       - safi_local_net
 
   windmill-server:
-    # Pinned release tag (verify exact digest in T-01)
-    image: ghcr.io/windmill-labs/windmill:1.425.0
+    # Pinned exact release + SHA256 digest (CE v1.425.0)
+    image: ghcr.io/windmill-labs/windmill:1.425.0@sha256:d90895fdf60891a7b09d5833c403e39d5ed30be8de78e2122e5053152b551ce2
     container_name: safi-windmill-server
     restart: unless-stopped
     depends_on:
@@ -135,7 +139,7 @@ services:
       - safi_local_net
 
   windmill-worker:
-    image: ghcr.io/windmill-labs/windmill:1.425.0
+    image: ghcr.io/windmill-labs/windmill:1.425.0@sha256:d90895fdf60891a7b09d5833c403e39d5ed30be8de78e2122e5053152b551ce2
     container_name: safi-windmill-worker
     restart: unless-stopped
     depends_on:

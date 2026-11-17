@@ -7,6 +7,7 @@
     "eventId",
     "conversationId",
     "actorGuid",
+    "actorKind",
     "type",
     "operationId",
     "idempotencyKey",
@@ -15,10 +16,10 @@
     "ts"
   ],
   "properties": {
-    "eventId": { "type": "string" },
-    "conversationId": { "type": "string" },
+    "eventId": { "type": "string", "minLength": 1 },
+    "conversationId": { "type": "string", "minLength": 1 },
     "subjectLineDisplay": { "type": "string" },
-    "actorGuid": { "type": "string" },
+    "actorGuid": { "type": "string", "minLength": 1 },
     "actorKind": { "enum": ["USER", "PROXY"] },
     "type": {
       "enum": [
@@ -34,13 +35,19 @@
         "GATE_FAILED_CLOSED"
       ]
     },
-    "operationId": { "type": "string" },
-    "idempotencyKey": { "type": "string" },
+    "operationId": { "type": "string", "minLength": 1 },
+    "idempotencyKey": { "type": "string", "minLength": 1 },
     "outcome": { "enum": ["ok", "denied", "error", "unknown"] },
     "context": {
       "type": "object",
-      "description": "Meeting/Port Context + provisioning/permission provenance",
-      "additionalProperties": true
+      "description": "Immutable historical Meeting/Port Context + provisioning/permission provenance (R-CTX-01)",
+      "required": ["meetingContext", "portContext", "permissionProvenance"],
+      "additionalProperties": false,
+      "properties": {
+        "meetingContext": { "type": "object" },
+        "portContext": { "type": "object" },
+        "permissionProvenance": { "type": "object" }
+      }
     },
     "correlationId": { "type": "string" },
     "ts": { "type": "string", "format": "date-time" }

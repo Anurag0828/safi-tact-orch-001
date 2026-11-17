@@ -1,0 +1,18 @@
+{
+  "operationType": "RETURN_TO_UNGATED",
+  "conversationId": "conv_sow_b_1794952473",
+  "subjectLine": "Customer B - Selective Gate 1794952473",
+  "actorGuid": "user_safi_pilot_owner_01",
+  "actorKind": "USER",
+  "resolutions": [
+    {
+      "actionId": "act_d1f39fed2a87",
+      "decision": "RELEASE"
+    },
+    {
+      "actionId": "act_b161209b38d4",
+      "decision": "CANCEL"
+    }
+  ],
+  "correlationId": "corr_a_1794952473"
+}

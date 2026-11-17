@@ -14,8 +14,60 @@
       "name": "Lead Intake Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [240, 300],
-      "notes": "Bound strictly to local Docker network / 127.0.0.1 (R-SEC-02)."
+      "position": [160, 300],
+      "notes": "Bound strictly to local Docker network / 127.0.0.1 and guarded by Verify Gate Secret (R-SEC-02)."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-intake-secret-nonempty",
+              "leftValue": "={{ $env.N8N_WEBHOOK_SECRET || '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "cond-intake-secret-match",
+              "leftValue": "={{ $json.headers['x-safi-webhook-secret'] || '' }}",
+              "rightValue": "={{ $env.N8N_WEBHOOK_SECRET || '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-verify-intake-secret",
+      "name": "Verify Gate Secret",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [380, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ errorCode: 'UNAUTHORIZED', message: 'Missing or invalid X-SAFI-Webhook-Secret' }) }}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "node-reject-intake",
+      "name": "Reject Unauthorized Intake",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [620, 480]
     },
     {
       "parameters": {
@@ -26,6 +78,12 @@
               "id": "assign-conv",
               "name": "conversationId",
               "value": "={{ $json.body.conversationId }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-subject",
+              "name": "subjectLineDisplay",
+              "value": "={{ $json.body.subjectLineDisplay || '' }}",
               "type": "string"
             },
             {
@@ -45,6 +103,18 @@
               "name": "followupIdempotencyKey",
               "value": "={{ 'followup:' + $json.body.conversationId + ':' + $json.body.idempotencyKey }}",
               "type": "string"
+            },
+            {
+              "id": "assign-corr",
+              "name": "correlationId",
+              "value": "={{ $json.body.correlationId || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-origin-actor",
+              "name": "originActor",
+              "value": "={{ $json.body.originActor || {} }}",
+              "type": "object"
             }
           ]
         }
@@ -53,27 +123,39 @@
       "name": "Prepare Approved Follow-Up Payload",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [480, 300]
+      "position": [620, 220]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ status: 'ingested', executionId: $execution.id, conversationId: $json.conversationId, recipientEmail: $json.recipientEmail, preparedFollowup: $json.preparedFollowup, followupIdempotencyKey: $json.followupIdempotencyKey }) }}"
+        "responseBody": "={{ JSON.stringify({ status: 'ingested', executionId: $execution.id, conversationId: $json.conversationId, subjectLineDisplay: $json.subjectLineDisplay, recipientEmail: $json.recipientEmail, preparedFollowup: $json.preparedFollowup, followupIdempotencyKey: $json.followupIdempotencyKey }) }}",
+        "options": {
+          "responseCode": 200
+        }
       },
       "id": "node-respond",
       "name": "Return Verified Intake Status to Gate",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [740, 300],
+      "position": [860, 220],
       "notes": "Responds before triggering outbound gate submission to avoid per-conversation dispatch lock re-entrancy."
     },
     {
       "parameters": {
         "method": "POST",
         "url": "={{ ($env.GATE_ADAPTER_INTERNAL_URL || 'http://gate-adapter:8000') + '/gate/dispatch' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-SAFI-Gate-Secret",
+              "value": "={{ $env.N8N_WEBHOOK_SECRET || '' }}"
+            }
+          ]
+        },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ conversationId: $json.conversationId, engine: 'n8n', operation: 'dispatch_followup', idempotencyKey: $json.followupIdempotencyKey, recipients: [$json.recipientEmail], payload: { conversationId: $json.conversationId, recipientEmail: $json.recipientEmail, messageBody: $json.preparedFollowup }, actor: { actorGuid: 'proxy-n8n-workflow', actorKind: 'PROXY', meetingContext: { source: 'n8n-lead-intake', executionId: $execution.id }, portContext: { port: 'n8n-internal' }, permissionProvenance: { role: 'WORKFLOW_PROXY' } } }) }}",
+        "jsonBody": "={{ JSON.stringify({ conversationId: $json.conversationId, subjectLineDisplay: $json.subjectLineDisplay, engine: 'n8n', operation: 'dispatch_followup', idempotencyKey: $json.followupIdempotencyKey, recipients: [$json.recipientEmail], correlationId: $json.correlationId || undefined, payload: { conversationId: $json.conversationId, recipientEmail: $json.recipientEmail, messageBody: $json.preparedFollowup }, actor: { actorGuid: 'proxy-n8n-workflow', actorKind: 'PROXY', meetingContext: Object.assign({ source: 'n8n-lead-intake', executionId: $execution.id }, ($json.originActor && $json.originActor.meetingContext) ? $json.originActor.meetingContext : {}), portContext: Object.assign({ port: 'n8n-internal' }, ($json.originActor && $json.originActor.portContext) ? $json.originActor.portContext : {}), permissionProvenance: Object.assign({ role: 'WORKFLOW_PROXY', delegatedBy: ($json.originActor && $json.originActor.actorGuid) ? $json.originActor.actorGuid : '' }, ($json.originActor && $json.originActor.permissionProvenance) ? $json.originActor.permissionProvenance : {}) } }) }}",
         "options": {
           "timeout": 10000
         }
@@ -82,14 +164,20 @@
       "name": "Submit Controlled Effect to Gate Adapter (NO Direct Send)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1000, 300],
-      "notes": "R-GATE-01: Never use direct SMTP/email/SMS nodes in n8n. Every controlled effect MUST pass through the Local Gate Adapter."
+      "position": [1120, 220],
+      "notes": "R-GATE-01: Never use direct SMTP/email/SMS nodes in n8n. Every controlled effect MUST pass through the authenticated Local Gate Adapter preserving full Meeting/Port Context."
     }
   ],
   "connections": {
     "Lead Intake Webhook": {
       "main": [
-        [{ "node": "Prepare Approved Follow-Up Payload", "type": "main", "index": 0 }]
+        [{ "node": "Verify Gate Secret", "type": "main", "index": 0 }]
+      ]
+    },
+    "Verify Gate Secret": {
+      "main": [
+        [{ "node": "Prepare Approved Follow-Up Payload", "type": "main", "index": 0 }],
+        [{ "node": "Reject Unauthorized Intake", "type": "main", "index": 0 }]
       ]
     },
     "Prepare Approved Follow-Up Payload": {
@@ -103,6 +191,7 @@
       ]
     }
   },
+  "active": true,
   "settings": {
     "executionOrder": "v1"
   }

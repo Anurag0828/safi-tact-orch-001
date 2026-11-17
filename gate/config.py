@@ -21,11 +21,20 @@ class GateConfig:
 
     calnode_base_url: str = "http://127.0.0.1:3000"
     calnode_api_key: str = ""
-    calnode_calendar_id: str = "cal_test_bounded_01"
+    calnode_calendar_id: str = "consultation-30m"
 
     windmill_base_url: str = "http://127.0.0.1:8001"
     windmill_token: str = ""
     windmill_workspace: str = "safi-ops"
+
+    # Gate Adapter endpoint authentication (R-SEC-02, R-SEC-03)
+    gate_api_token: str = ""
+    gate_require_auth: bool = False
+
+    # Authorization mode: 'http' (requires SAFI_AUTHZ_URL, fails closed if missing)
+    # or 'local_acl' (explicit default-deny ACL from LOCAL_ACL_JSON for local pilot)
+    authz_mode: str = "http"
+    local_acl_json: str = ""
 
     # SAFI backend endpoints (UNVERIFIED until Phase 0 V-06/V-07/V-08)
     safi_authz_url: str = ""
@@ -36,6 +45,7 @@ class GateConfig:
     nats_token: str = ""
     jetstream_stream: str = "SAFI_HISTORY"
     jetstream_control_subject_prefix: str = "safi.control.events"
+    jetstream_required: bool = False
 
     # Timeouts (seconds)
     http_timeout_seconds: float = 10.0
@@ -58,10 +68,14 @@ class GateConfig:
             n8n_webhook_secret=os.getenv("N8N_WEBHOOK_SECRET", ""),
             calnode_base_url=os.getenv("CALNODE_BASE_URL", "http://127.0.0.1:3000").rstrip("/"),
             calnode_api_key=os.getenv("CALNODE_API_KEY", ""),
-            calnode_calendar_id=os.getenv("CALNODE_CALENDAR_ID", "cal_test_bounded_01"),
+            calnode_calendar_id=os.getenv("CALNODE_CALENDAR_ID", "consultation-30m"),
             windmill_base_url=os.getenv("WINDMILL_BASE_URL", "http://127.0.0.1:8001").rstrip("/"),
             windmill_token=os.getenv("WINDMILL_TOKEN", ""),
             windmill_workspace=os.getenv("WINDMILL_WORKSPACE", "safi-ops"),
+            gate_api_token=os.getenv("GATE_API_TOKEN", ""),
+            gate_require_auth=os.getenv("GATE_REQUIRE_AUTH", "false").strip().lower() in ("1", "true", "yes"),
+            authz_mode=os.getenv("AUTHZ_MODE", "http").strip().lower(),
+            local_acl_json=os.getenv("LOCAL_ACL_JSON", ""),
             safi_authz_url=os.getenv("SAFI_AUTHZ_URL", "").rstrip("/"),
             safi_authz_token=os.getenv("SAFI_AUTHZ_TOKEN", ""),
             nats_url=os.getenv("NATS_URL", "nats://127.0.0.1:4222"),
@@ -72,6 +86,7 @@ class GateConfig:
             jetstream_control_subject_prefix=os.getenv(
                 "JETSTREAM_CONTROL_SUBJECT_PREFIX", "safi.control.events"
             ),
+            jetstream_required=os.getenv("JETSTREAM_REQUIRED", "false").strip().lower() in ("1", "true", "yes"),
             http_timeout_seconds=float(os.getenv("GATE_HTTP_TIMEOUT_SECONDS", "10.0")),
             authz_timeout_seconds=float(os.getenv("GATE_AUTHZ_TIMEOUT_SECONDS", "3.0")),
             inflight_reconcile_timeout_seconds=float(

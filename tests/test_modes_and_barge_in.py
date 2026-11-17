@@ -226,7 +226,20 @@ async def test_a08_race_and_barge_in_in_flight_reconciliation(
     conv_during = await dispatcher.store.get_conversation(conv_id)
     assert conv_during["mode"] == ConversationMode.TRANSITIONING.value
 
-    # Allow downstream execution to complete
+    # Submit Action #2 DURING TRANSITIONING -> must be HELD, NOT dispatched!
+    sub2 = ActionSubmission(
+        conversationId=conv_id,
+        engine=EngineName.N8N,
+        operation="dispatch_followup",
+        idempotencyKey="idem:race:during_transition",
+        payload={"messageBody": "Must be held during transition"},
+        recipients=["customer-a@allowlist.test.local"],
+        actor=test_actor,
+    )
+    res2 = await dispatcher.submit_action(sub2)
+    assert res2["state"] == ActionState.HELD.value
+
+    # Allow downstream execution of Action #1 to complete
     dispatch_can_finish.set()
     dispatch_res = await dispatch_task
     barge_res = await barge_task
@@ -237,6 +250,193 @@ async def test_a08_race_and_barge_in_in_flight_reconciliation(
     assert len(barge_res["reconciledInFlight"]) == 1
     assert barge_res["reconciledInFlight"][0]["finalState"] == ActionState.DONE.value
     assert barge_res["reconciledInFlight"][0]["undone"] is False
+
+    # Submit Action #3 AFTER GATED confirmed -> nothing new starts (Invariant 3)
+    sub3 = ActionSubmission(
+        conversationId=conv_id,
+        engine=EngineName.N8N,
+        operation="dispatch_followup",
+        idempotencyKey="idem:race:after_gated",
+        payload={"messageBody": "Must be held after GATED"},
+        recipients=["customer-a@allowlist.test.local"],
+        actor=test_actor,
+    )
+    res3 = await dispatcher.submit_action(sub3)
+    assert res3["state"] == ActionState.HELD.value
+    assert len(mock_adapters[EngineName.N8N].call_log) == 0
+
+
+@pytest.mark.asyncio
+async def test_a07_approve_reject_and_concurrent_approve_no_double_dispatch(
+    gate_system, mock_adapters, test_actor
+):
+    """A07: Approve & Reject work cleanly, and concurrent approve calls NEVER double-dispatch."""
+    from gate.errors import InvalidActionStateError
+
+    dispatcher, modes, _ = gate_system
+    conv_id = "conv_approve_race"
+    await dispatcher.store.get_or_create_conversation(conv_id, "Approve Race")
+    await modes.barge_in(actor=test_actor, conversation_id=conv_id)
+
+    sub1 = ActionSubmission(
+        conversationId=conv_id,
+        engine=EngineName.N8N,
+        operation="dispatch_followup",
+        idempotencyKey="idem:app:race1",
+        payload={"messageBody": "Approve once"},
+        recipients=["customer-a@allowlist.test.local"],
+        actor=test_actor,
+    )
+    sub2 = ActionSubmission(
+        conversationId=conv_id,
+        engine=EngineName.N8N,
+        operation="dispatch_followup",
+        idempotencyKey="idem:app:reject1",
+        payload={"messageBody": "Reject me"},
+        recipients=["customer-a@allowlist.test.local"],
+        actor=test_actor,
+    )
+    h1 = await dispatcher.submit_action(sub1)
+    h2 = await dispatcher.submit_action(sub2)
+
+    # Reject h2 and verify retrying its idempotencyKey returns clean REJECTED replay (not 504 or 500)
+    rej = await modes.reject_action(conv_id, h2["actionId"], actor=test_actor)
+    assert rej["state"] == ActionState.REJECTED.value
+    retry_rej = await dispatcher.submit_action(sub2)
+    assert retry_rej["state"] == ActionState.REJECTED.value
+    assert retry_rej["idempotentReplay"] is True
+
+    # Slow n8n adapter to widen race window on concurrent approve
+    orig_exec = mock_adapters[EngineName.N8N].execute
+
+    async def delayed_exec(op, payload, idem_key):
+        await asyncio.sleep(0.05)
+        return await orig_exec(op, payload, idem_key)
+
+    mock_adapters[EngineName.N8N].execute = delayed_exec
+
+    results = await asyncio.gather(
+        modes.approve_action(conv_id, h1["actionId"], actor=test_actor),
+        modes.approve_action(conv_id, h1["actionId"], actor=test_actor),
+        return_exceptions=True,
+    )
+    successes = [r for r in results if isinstance(r, dict)]
+    errors = [r for r in results if isinstance(r, InvalidActionStateError)]
+    assert len(successes) == 1
+    assert len(errors) == 1
+    assert len(mock_adapters[EngineName.N8N].call_log) == 1
+
+
+@pytest.mark.asyncio
+async def test_a07_return_to_ungated_downstream_error_never_bricks_in_transitioning(
+    gate_system, mock_adapters, test_actor
+):
+    """A07: Downstream error during return_to_ungated restores GATED (never permanently deadlocked in TRANSITIONING)."""
+    from gate.errors import DownstreamError
+
+    dispatcher, modes, _ = gate_system
+    conv_id = "conv_ungate_no_brick"
+    await dispatcher.store.get_or_create_conversation(conv_id, "No Brick Subject")
+    await modes.barge_in(actor=test_actor, conversation_id=conv_id)
+
+    sub = ActionSubmission(
+        conversationId=conv_id,
+        engine=EngineName.CALNODE,
+        operation="create_booking",
+        idempotencyKey="idem:nobrick:1",
+        payload={"slotId": "INVALID", "attendeeEmail": "customer-a@allowlist.test.local"},
+        recipients=["customer-a@allowlist.test.local"],
+        actor=test_actor,
+    )
+    h = await dispatcher.submit_action(sub)
+
+    mock_adapters[EngineName.CALNODE].simulate_downstream_error = True
+    with pytest.raises(DownstreamError):
+        await modes.return_to_ungated(
+            actor=test_actor,
+            conversation_id=conv_id,
+            resolutions=[
+                ActionResolution(actionId=h["actionId"], decision=ReleaseDecision.RELEASE)
+            ],
+        )
+
+    # Conversation must be safely back in GATED (NOT stuck in TRANSITIONING!)
+    conv = await dispatcher.store.get_conversation(conv_id)
+    assert conv["mode"] == ConversationMode.GATED.value
+
+    # Operator can cleanly return to UNGATED now that no held actions remain
+    ungate_ok = await modes.return_to_ungated(
+        actor=test_actor, conversation_id=conv_id, resolutions=[]
+    )
+    assert ungate_ok["mode"] == ConversationMode.UNGATED.value
+
+
+@pytest.mark.asyncio
+async def test_a10_restart_mid_dispatching_fails_closed_and_reconciles_cleanly(
+    test_config, history_publisher, authz_provider, mock_adapters, test_actor
+):
+    """A10: Crash mid-DISPATCHING fails closed, blocks duplicate retry, and does not re-fail on second restart after reconcile."""
+    from gate.errors import DownstreamOutcomeUnknownError
+
+    store1 = GateStore(test_config.store_path)
+    await store1.initialize()
+    await store1.get_or_create_conversation("conv_crash_disp", "Crash Mid-Dispatch")
+    await store1.record_action(
+        action_id="act_crashed_1",
+        conversation_id="conv_crash_disp",
+        engine=EngineName.CALNODE,
+        operation="create_booking",
+        idempotency_key="idem:crash:disp1",
+        initial_state=ActionState.RECEIVED,
+        payload={"slotId": "slot_1", "attendeeEmail": "customer-a@allowlist.test.local"},
+        recipients=["customer-a@allowlist.test.local"],
+        actor_guid=test_actor.actorGuid,
+        actor_kind=test_actor.actorKind.value,
+        context=test_actor.to_event_context(),
+    )
+    await store1.update_action_state("act_crashed_1", ActionState.AUTHORIZED)
+    await store1.update_action_state("act_crashed_1", ActionState.DISPATCHING)
+    await store1.close()
+
+    # Restart 1: recovers to FAILED_CLOSED and transitions crashed action out of DISPATCHING
+    store2 = GateStore(test_config.store_path)
+    await store2.initialize()
+    rec1 = await store2.recover_on_startup()
+    assert rec1["failedClosedCount"] == 1
+    assert "conv_crash_disp" in rec1["interruptedConversationsFailedClosed"]
+
+    conv = await store2.get_conversation("conv_crash_disp")
+    assert conv["mode"] == ConversationMode.FAILED_CLOSED.value
+
+    # Reconcile conversation back to UNGATED
+    runtimes2 = ConversationRuntimeRegistry()
+    disp2 = GateDispatcher(test_config, store2, history_publisher, authz_provider, runtimes2, mock_adapters)
+    modes2 = GateModeController(test_config, store2, history_publisher, authz_provider, runtimes2, disp2)
+    await modes2.reconcile_failed_closed("conv_crash_disp", ConversationMode.UNGATED, actor=test_actor)
+
+    # Retrying the crashed idempotency key does NOT blindly double-dispatch
+    sub = ActionSubmission(
+        conversationId="conv_crash_disp",
+        engine=EngineName.CALNODE,
+        operation="create_booking",
+        idempotencyKey="idem:crash:disp1",
+        payload={"slotId": "slot_1", "attendeeEmail": "customer-a@allowlist.test.local"},
+        recipients=["customer-a@allowlist.test.local"],
+        actor=test_actor,
+    )
+    with pytest.raises(DownstreamOutcomeUnknownError):
+        await disp2.submit_action(sub)
+    assert len(mock_adapters[EngineName.CALNODE].call_log) == 0
+    await store2.close()
+
+    # Restart 2: must NOT re-fail-closed the already-reconciled conversation!
+    store3 = GateStore(test_config.store_path)
+    await store3.initialize()
+    rec2 = await store3.recover_on_startup()
+    assert rec2["failedClosedCount"] == 0
+    conv_final = await store3.get_conversation("conv_crash_disp")
+    assert conv_final["mode"] == ConversationMode.UNGATED.value
+    await store3.close()
 
 
 @pytest.mark.asyncio

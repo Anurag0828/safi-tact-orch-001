@@ -224,3 +224,73 @@ async def test_confirmed_downstream_error_recorded(
         e.type == ControlEventType.ACTION_FAILED and e.outcome == Outcome.ERROR
         for e in history_publisher.events
     )
+
+    # Retrying a confirmed FAILED key returns clean terminal replay (NEVER HTTP 500 IntegrityError)
+    retry_res = await dispatcher.submit_action(sub)
+    assert retry_res["state"] == "FAILED"
+    assert retry_res["idempotentReplay"] is True
+    assert len(mock_adapters[EngineName.WINDMILL].call_log) == 1
+
+
+@pytest.mark.asyncio
+async def test_concurrent_duplicate_idempotency_key_executes_once(
+    dispatcher, mock_adapters, test_actor
+):
+    """Invariant 1: Two concurrent identical submissions never raise IntegrityError and execute once."""
+    import asyncio
+
+    sub = ActionSubmission(
+        conversationId="conv_concurrent_idem",
+        subjectLineDisplay="Concurrent Subject",
+        engine=EngineName.CALNODE,
+        operation="create_booking",
+        idempotencyKey="book:concurrent:same_key",
+        payload={"slotId": "slot_1", "attendeeEmail": "customer-a@allowlist.test.local"},
+        recipients=["customer-a@allowlist.test.local"],
+        actor=test_actor,
+    )
+
+    r1, r2 = await asyncio.gather(
+        dispatcher.submit_action(sub),
+        dispatcher.submit_action(sub),
+    )
+    assert r1["state"] == "DONE"
+    assert r2["state"] == "DONE"
+    assert r1["result"]["bookingId"] == r2["result"]["bookingId"]
+    assert {r1["idempotentReplay"], r2["idempotentReplay"]} == {False, True}
+    assert len(mock_adapters[EngineName.CALNODE].call_log) == 1
+
+
+@pytest.mark.asyncio
+async def test_subject_line_preserved_and_payload_redacted_after_done(
+    dispatcher, gate_store, history_publisher, test_actor
+):
+    """R-CTX-01 & R-CTX-03: Events preserve stored Subject Line even when omitted; terminal payload is purged from local store."""
+    conv_id = "conv_ctx_preserve"
+    await gate_store.get_or_create_conversation(conv_id, "Preserved Display Subject")
+
+    sub = ActionSubmission(
+        conversationId=conv_id,
+        subjectLineDisplay="",  # Omitted in callback
+        engine=EngineName.N8N,
+        operation="dispatch_followup",
+        idempotencyKey="idem:ctx:preserve1",
+        payload={"messageBody": "Sensitive customer text"},
+        recipients=["customer-a@allowlist.test.local"],
+        actor=test_actor,
+    )
+    res = await dispatcher.submit_action(sub)
+    assert res["state"] == "DONE"
+
+    # Subject line preserved in ControlEvent
+    dispatched_events = [
+        e for e in history_publisher.events
+        if e.conversationId == conv_id and e.type == ControlEventType.ACTION_DISPATCHED
+    ]
+    assert len(dispatched_events) == 1
+    assert dispatched_events[0].subjectLineDisplay == "Preserved Display Subject"
+
+    # Raw payload purged from local operational store after terminal DONE (R-CTX-03)
+    action_row = await gate_store.get_action(res["actionId"])
+    assert action_row["payload"] == {}
+    assert action_row["payload_ref"].startswith("sha256:")

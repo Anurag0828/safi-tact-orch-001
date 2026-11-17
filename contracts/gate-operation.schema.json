@@ -3,22 +3,28 @@
   "title": "GateOperation",
   "type": "object",
   "additionalProperties": false,
-  "required": ["operationType", "conversationId", "actorGuid"],
+  "required": ["operationType", "actorGuid", "actorKind"],
+  "anyOf": [
+    { "required": ["conversationId"] },
+    { "required": ["subjectLine"] }
+  ],
   "properties": {
     "operationType": {
       "enum": [
         "BARGE_IN",
+        "LIST_HELD",
         "APPROVE_ACTION",
         "REJECT_ACTION",
         "RETURN_TO_UNGATED",
         "RECONCILE"
       ]
     },
-    "conversationId": { "type": "string" },
-    "subjectLine": { "type": "string" },
-    "actorGuid": { "type": "string" },
+    "conversationId": { "type": "string", "minLength": 1 },
+    "subjectLine": { "type": "string", "minLength": 1 },
+    "actorGuid": { "type": "string", "minLength": 1 },
     "actorKind": { "enum": ["USER", "PROXY"] },
-    "actionId": { "type": "string" },
+    "actionId": { "type": "string", "minLength": 1 },
+    "targetMode": { "enum": ["UNGATED", "GATED"] },
     "resolutions": {
       "type": "array",
       "description": "Per-action resolution when returning to ungated mode",
@@ -27,7 +33,7 @@
         "additionalProperties": false,
         "required": ["actionId", "decision"],
         "properties": {
-          "actionId": { "type": "string" },
+          "actionId": { "type": "string", "minLength": 1 },
           "decision": { "enum": ["RELEASE", "CANCEL"] }
         }
       }

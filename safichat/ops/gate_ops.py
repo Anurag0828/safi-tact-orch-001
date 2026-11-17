@@ -7,7 +7,12 @@ from typing import Any
 from fastapi import APIRouter, Request
 from pydantic import BaseModel, ConfigDict
 
-from gate.models import ActionResolution, ActorContext, ConversationMode
+from gate.models import (
+    ActionResolution,
+    ActorContext,
+    ConversationMode,
+    GateOperationRequest,
+)
 
 router = APIRouter(prefix="/safichat/ops/gate", tags=["safichat-gate-controls"])
 
@@ -59,6 +64,14 @@ class ReconcileRequest(BaseModel):
 
 @router.post("/barge-in")
 async def barge_in(req: BargeInRequest, request: Request) -> dict[str, Any]:
+    GateOperationRequest(
+        operationType="BARGE_IN",
+        conversationId=req.conversationId,
+        subjectLine=req.subjectLine,
+        actorGuid=req.actor.actorGuid,
+        actorKind=req.actor.actorKind,
+        correlationId=req.correlationId,
+    ).to_schema_dict()
     modes = request.app.state.modes
     return await modes.barge_in(
         actor=req.actor,
@@ -70,6 +83,13 @@ async def barge_in(req: BargeInRequest, request: Request) -> dict[str, Any]:
 
 @router.post("/held")
 async def list_held(req: ListHeldRequest, request: Request) -> dict[str, Any]:
+    GateOperationRequest(
+        operationType="LIST_HELD",
+        conversationId=req.conversationId,
+        subjectLine=req.subjectLine,
+        actorGuid=req.actor.actorGuid,
+        actorKind=req.actor.actorKind,
+    ).to_schema_dict()
     modes = request.app.state.modes
     return await modes.list_held_actions(
         actor=req.actor,
@@ -80,6 +100,14 @@ async def list_held(req: ListHeldRequest, request: Request) -> dict[str, Any]:
 
 @router.post("/approve")
 async def approve_action(req: ActionDecisionRequest, request: Request) -> dict[str, Any]:
+    GateOperationRequest(
+        operationType="APPROVE_ACTION",
+        conversationId=req.conversationId,
+        actorGuid=req.actor.actorGuid,
+        actorKind=req.actor.actorKind,
+        actionId=req.actionId,
+        correlationId=req.correlationId,
+    ).to_schema_dict()
     modes = request.app.state.modes
     return await modes.approve_action(
         conversation_id=req.conversationId,
@@ -91,6 +119,14 @@ async def approve_action(req: ActionDecisionRequest, request: Request) -> dict[s
 
 @router.post("/reject")
 async def reject_action(req: ActionDecisionRequest, request: Request) -> dict[str, Any]:
+    GateOperationRequest(
+        operationType="REJECT_ACTION",
+        conversationId=req.conversationId,
+        actorGuid=req.actor.actorGuid,
+        actorKind=req.actor.actorKind,
+        actionId=req.actionId,
+        correlationId=req.correlationId,
+    ).to_schema_dict()
     modes = request.app.state.modes
     return await modes.reject_action(
         conversation_id=req.conversationId,
@@ -102,6 +138,15 @@ async def reject_action(req: ActionDecisionRequest, request: Request) -> dict[st
 
 @router.post("/ungate")
 async def return_to_ungated(req: ReturnToUngatedRequest, request: Request) -> dict[str, Any]:
+    GateOperationRequest(
+        operationType="RETURN_TO_UNGATED",
+        conversationId=req.conversationId,
+        subjectLine=req.subjectLine,
+        actorGuid=req.actor.actorGuid,
+        actorKind=req.actor.actorKind,
+        resolutions=req.resolutions,
+        correlationId=req.correlationId,
+    ).to_schema_dict()
     modes = request.app.state.modes
     return await modes.return_to_ungated(
         actor=req.actor,
@@ -114,6 +159,14 @@ async def return_to_ungated(req: ReturnToUngatedRequest, request: Request) -> di
 
 @router.post("/reconcile")
 async def reconcile(req: ReconcileRequest, request: Request) -> dict[str, Any]:
+    GateOperationRequest(
+        operationType="RECONCILE",
+        conversationId=req.conversationId,
+        actorGuid=req.actor.actorGuid,
+        actorKind=req.actor.actorKind,
+        targetMode=req.targetMode,
+        correlationId=req.correlationId,
+    ).to_schema_dict()
     modes = request.app.state.modes
     return await modes.reconcile_failed_closed(
         conversation_id=req.conversationId,

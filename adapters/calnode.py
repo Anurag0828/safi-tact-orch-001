@@ -128,4 +128,11 @@ class CalnodeAdapter(EngineAdapter):
                 f"HTTP {resp.status_code}: {resp.text}",
                 {"statusCode": resp.status_code},
             )
-        return resp.json()
+        try:
+            return resp.json()
+        except ValueError as exc:
+            raise DownstreamError(
+                "calnode",
+                f"Invalid JSON response from Calnode (HTTP {resp.status_code}): {exc}",
+                {"statusCode": resp.status_code},
+            ) from exc

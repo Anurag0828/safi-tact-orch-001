@@ -102,3 +102,26 @@ def test_gate_operation_schema_valid():
     data = op.to_schema_dict()
     assert data["operationType"] == "RETURN_TO_UNGATED"
     assert len(data["resolutions"]) == 2
+
+    # BARGE_IN by subjectLine alone (without conversationId) is valid per R-GATE-04
+    op_subject = GateOperationRequest(
+        operationType="BARGE_IN",
+        subjectLine="Customer B - Selective Gate",
+        actorGuid="user_01",
+    )
+    data_sub = op_subject.to_schema_dict()
+    assert data_sub["subjectLine"] == "Customer B - Selective Gate"
+
+
+def test_captured_contract_example_files_validate_against_schemas():
+    import json
+    from gate.models import CONTRACTS_DIR
+
+    pairs = [
+        ("control-event.schema.json", "control-event.example.json"),
+        ("gate-action.schema.json", "gate-action.example.json"),
+        ("gate-operation.schema.json", "gate-operation.example.json"),
+    ]
+    for schema_name, example_name in pairs:
+        payload = json.loads((CONTRACTS_DIR / example_name).read_text(encoding="utf-8"))
+        validate_against_schema(schema_name, payload)

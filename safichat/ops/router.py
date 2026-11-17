@@ -77,6 +77,15 @@ class AssignmentRequest(BaseModel):
     correlationId: str | None = None
 
 
+class JobStatusRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    conversationId: str = Field(..., min_length=1)
+    jobId: str = Field(..., min_length=1)
+    subjectLineDisplay: str = ""
+    actor: ActorContext
+
+
 @router.post("/marketing/ingest-lead")
 async def ingest_lead(req: LeadIngestRequest, request: Request) -> dict[str, Any]:
     """R-MKT-01: Ingests a consented sample lead via n8n through the Gate."""
@@ -89,9 +98,18 @@ async def ingest_lead(req: LeadIngestRequest, request: Request) -> dict[str, Any
         idempotencyKey=req.idempotencyKey,
         payload={
             "conversationId": req.conversationId,
+            "subjectLineDisplay": req.subjectLineDisplay,
             "leadEmail": req.leadEmail,
             "leadName": req.leadName,
             "inquiryText": req.inquiryText,
+            "correlationId": req.correlationId,
+            "originActor": {
+                "actorGuid": req.actor.actorGuid,
+                "actorKind": req.actor.actorKind.value,
+                "meetingContext": req.actor.meetingContext,
+                "portContext": req.actor.portContext,
+                "permissionProvenance": req.actor.permissionProvenance,
+            },
         },
         recipients=[req.leadEmail],
         actor=req.actor,
@@ -128,9 +146,14 @@ async def dispatch_followup(req: FollowupDispatchRequest, request: Request) -> d
 
 @router.post("/sales/slots")
 async def get_available_slots(req: SlotsQueryRequest, request: Request) -> dict[str, Any]:
-    """R-CAL-01: Retrieves actual configured available slots from Calnode."""
-    authz = request.app.state.authz
-    await authz.check_permission(req.actor, req.conversationId, "calnode:list_slots")
+    """R-CAL-01: Retrieves actual configured available slots from Calnode (authz + fail-closed enforced)."""
+    modes = request.app.state.modes
+    await modes.authorize_read_operation(
+        req.actor,
+        req.conversationId,
+        "calnode:list_slots",
+        subject_line_display=req.subjectLineDisplay,
+    )
     calnode = request.app.state.adapters[EngineName.CALNODE]
     result = await calnode.list_slots(
         calendar_id=req.calendarId,
@@ -193,19 +216,19 @@ async def start_assignment(req: AssignmentRequest, request: Request) -> dict[str
 
 
 @router.post("/operations/job-status")
-async def check_job_status(
-    conversation_id: str,
-    job_id: str,
-    actor: ActorContext,
-    request: Request,
-) -> dict[str, Any]:
+async def check_job_status(req: JobStatusRequest, request: Request) -> dict[str, Any]:
     """R-OPS-02: Reports Windmill job ID, state, assignee, completion result, and retry/error status."""
-    authz = request.app.state.authz
-    await authz.check_permission(actor, conversation_id, "windmill:get_job_status")
+    modes = request.app.state.modes
+    await modes.authorize_read_operation(
+        req.actor,
+        req.conversationId,
+        "windmill:get_job_status",
+        subject_line_display=req.subjectLineDisplay,
+    )
     windmill = request.app.state.adapters[EngineName.WINDMILL]
-    status = await windmill.get_job_status(job_id)
+    status = await windmill.get_job_status(req.jobId)
     return {
-        "conversationId": conversation_id,
+        "conversationId": req.conversationId,
         "engine": "windmill",
         "job": status,
     }

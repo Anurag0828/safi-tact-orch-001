@@ -25,9 +25,13 @@ class WindmillAdapter(EngineAdapter):
         self,
         config: GateConfig,
         http_client: httpx.AsyncClient | None = None,
+        max_poll_attempts: int = 30,
+        poll_interval_seconds: float = 0.25,
     ) -> None:
         self.config = config
         self._client = http_client
+        self.max_poll_attempts = max_poll_attempts
+        self.poll_interval_seconds = poll_interval_seconds
 
     async def execute(
         self,
@@ -53,57 +57,93 @@ class WindmillAdapter(EngineAdapter):
             )
             job_id = raw_job_id.strip().strip('"')
 
-            # Poll briefly until worker completes the job so SafiChat receives jobId + state + assignee + result
+            # Poll until worker completes the job so SafiChat receives verified jobId + state + assignee + result
             job_data: dict[str, Any] = {"id": job_id, "type": "QueuedJob"}
-            for _ in range(30):
-                job_data = await self.get_job_status(job_id)
+            for _ in range(self.max_poll_attempts):
+                job_data = await self.get_job_status(job_id, idempotency_key=idempotency_key)
                 if job_data.get("type") == "CompletedJob":
                     break
-                await asyncio.sleep(0.25)
+                await asyncio.sleep(self.poll_interval_seconds)
+
+            if job_data.get("type") != "CompletedJob":
+                # Never falsely mark an unfinished job as DONE (Invariant 8)
+                raise DownstreamOutcomeUnknownError(
+                    "windmill",
+                    idempotency_key,
+                    f"Windmill job '{job_id}' did not finish within poll timeout (state={job_data.get('type')})",
+                )
 
             result_obj = job_data.get("result") or {}
             success = bool(job_data.get("success", False))
-            if job_data.get("type") == "CompletedJob" and not success:
+            retry_count = (
+                job_data.get("retry_count")
+                if job_data.get("retry_count") is not None
+                else (result_obj.get("retryCount", 0) if isinstance(result_obj, dict) else 0)
+            )
+
+            if not success:
                 raise DownstreamError(
                     "windmill",
                     f"Windmill job {job_id} failed: {result_obj}",
-                    {"jobId": job_id, "result": result_obj},
+                    {
+                        "jobId": job_id,
+                        "retryCount": retry_count,
+                        "result": result_obj,
+                        "logs": job_data.get("logs"),
+                    },
                 )
 
             return {
                 "jobId": job_id,
-                "state": "COMPLETED" if success else job_data.get("type", "RUNNING"),
+                "state": "COMPLETED",
                 "assignee": (
                     result_obj.get("assignee")
-                    if isinstance(result_obj, dict)
+                    if isinstance(result_obj, dict) and result_obj.get("assignee")
                     else payload["assignee"]
                 ),
                 "result": result_obj,
                 "durationMs": job_data.get("duration_ms"),
-                "retryCount": result_obj.get("retryCount", 0) if isinstance(result_obj, dict) else 0,
-                "error": None if success else str(result_obj),
+                "retryCount": retry_count,
+                "error": None,
             }
 
         if operation == "get_job_status":
-            return await self.get_job_status(payload["jobId"])
+            return await self.get_job_status(
+                payload["jobId"], idempotency_key=idempotency_key
+            )
 
         raise DownstreamError("windmill", f"Unsupported Windmill operation '{operation}'")
 
-    async def get_job_status(self, job_id: str) -> dict[str, Any]:
+    async def get_job_status(
+        self, job_id: str, idempotency_key: str = ""
+    ) -> dict[str, Any]:
         ws = self.config.windmill_workspace
-        data = await self._request_json("GET", f"/api/w/{ws}/jobs_u/get/{job_id}")
-        result_obj = data.get("result") or {}
+        data = await self._request_json(
+            "GET",
+            f"/api/w/{ws}/jobs_u/get/{job_id}",
+            idempotency_key=idempotency_key,
+        )
+        result_obj = data.get("result")
+        is_completed = data.get("type") == "CompletedJob"
+        success = bool(data.get("success", False))
+        retry_count = (
+            data.get("retry_count")
+            if data.get("retry_count") is not None
+            else (result_obj.get("retryCount", 0) if isinstance(result_obj, dict) else 0)
+        )
         return {
             **data,
             "jobId": data.get("id", job_id),
             "state": (
                 "COMPLETED"
-                if data.get("type") == "CompletedJob" and data.get("success")
-                else ("FAILED" if data.get("type") == "CompletedJob" else data.get("type", "QUEUED"))
+                if is_completed and success
+                else ("FAILED" if is_completed else data.get("type", "QUEUED"))
             ),
             "assignee": (
                 result_obj.get("assignee") if isinstance(result_obj, dict) else None
             ),
+            "retryCount": retry_count,
+            "error": (result_obj if is_completed and not success else None),
         }
 
     async def _request_text(
@@ -124,7 +164,14 @@ class WindmillAdapter(EngineAdapter):
         idempotency_key: str = "",
     ) -> dict[str, Any]:
         resp = await self._send(method, path, json_body, idempotency_key)
-        return resp.json()
+        try:
+            return resp.json()
+        except ValueError as exc:
+            raise DownstreamError(
+                "windmill",
+                f"Invalid JSON response from Windmill (HTTP {resp.status_code}): {exc}",
+                {"statusCode": resp.status_code},
+            ) from exc
 
     async def _send(
         self,

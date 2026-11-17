@@ -1,0 +1,26 @@
+{
+  "eventId": "evt_a3d2648e6ab8",
+  "conversationId": "conv_sow_race_1794952473",
+  "subjectLineDisplay": "Race Live 1794952473",
+  "actorGuid": "user_safi_pilot_owner_01",
+  "actorKind": "USER",
+  "type": "ACTION_DISPATCHED",
+  "operationId": "windmill:start_assignment",
+  "idempotencyKey": "race:wm:1794952473",
+  "outcome": "ok",
+  "context": {
+    "meetingContext": {
+      "meetingId": "mtg_sow_1794952473",
+      "channel": "safichat-pilot"
+    },
+    "portContext": {
+      "port": "safichat-local-api",
+      "host": "127.0.0.1"
+    },
+    "permissionProvenance": {
+      "role": "BUSINESS_OWNER",
+      "scope": "conversation:admin"
+    }
+  },
+  "ts": "2026-11-17T21:54:40.117626Z"
+}

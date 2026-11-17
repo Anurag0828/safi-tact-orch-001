@@ -19,9 +19,10 @@ echo "deb [arch=${ARCH} signed-by=/etc/apt/keyrings/docker.asc] https://download
 apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# Add asus to docker group & allow clean sudo in local WSL dev environment
-if id asus >/dev/null 2>&1; then
-  usermod -aG docker asus
+# Add invoking non-root user to docker group in local WSL dev environment
+TARGET_USER="${SUDO_USER:-$USER}"
+if [[ -n "$TARGET_USER" && "$TARGET_USER" != "root" ]] && id "$TARGET_USER" >/dev/null 2>&1; then
+  usermod -aG docker "$TARGET_USER"
 fi
 
 service docker start || dockerd >/tmp/dockerd.log 2>&1 &

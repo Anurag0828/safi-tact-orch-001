@@ -56,6 +56,9 @@ async def test_action_persistence_and_queries(gate_store, test_actor):
     assert len(held) == 1
     assert held[0]["action_id"] == "act_100"
 
+    await gate_store.update_action_state("act_100", ActionState.APPROVED)
+    await gate_store.update_action_state("act_100", ActionState.AUTHORIZED)
+    await gate_store.update_action_state("act_100", ActionState.DISPATCHING)
     await gate_store.update_action_state("act_100", ActionState.DONE, result={"bookingId": "b1"})
     held_after = await gate_store.get_held_actions("conv_01")
     assert len(held_after) == 0

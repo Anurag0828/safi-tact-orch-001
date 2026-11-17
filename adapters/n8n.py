@@ -8,6 +8,7 @@ outbound send nodes; instead they prepare payloads and submit to the Gate.
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
 
@@ -28,6 +29,18 @@ class N8nAdapter(EngineAdapter):
         self.config = config
         self._client = http_client
 
+    def _validate_resume_url(self, resume_url: str) -> str:
+        """Prevents SSRF & credential leakage by requiring resumeUrl to match n8n_base_url origin."""
+        base = urlparse(self.config.n8n_base_url)
+        target = urlparse(resume_url)
+        if target.scheme not in ("http", "https") or target.netloc != base.netloc or target.scheme != base.scheme:
+            raise DownstreamError(
+                "n8n",
+                "Rejected resumeUrl: origin does not match configured n8n_base_url",
+                {"resumeUrl": resume_url},
+            )
+        return resume_url
+
     async def execute(
         self,
         operation: str,
@@ -44,8 +57,9 @@ class N8nAdapter(EngineAdapter):
             # Resumes a paused n8n Wait node OR executes the approved follow-up webhook
             resume_url = payload.get("resumeUrl")
             if resume_url:
+                safe_url = self._validate_resume_url(resume_url)
                 return await self._post(
-                    path=resume_url,
+                    path=safe_url,
                     body={**payload, "idempotencyKey": idempotency_key, "gateApproved": True},
                     idempotency_key=idempotency_key,
                     absolute_url=True,
@@ -89,4 +103,11 @@ class N8nAdapter(EngineAdapter):
                 f"HTTP {resp.status_code}: {resp.text}",
                 {"statusCode": resp.status_code},
             )
-        return resp.json()
+        try:
+            return resp.json()
+        except ValueError as exc:
+            raise DownstreamError(
+                "n8n",
+                f"Invalid JSON response from n8n (HTTP {resp.status_code}): {exc}",
+                {"statusCode": resp.status_code},
+            ) from exc

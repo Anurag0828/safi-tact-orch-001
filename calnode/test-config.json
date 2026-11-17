@@ -1,6 +1,6 @@
 {
-  "calendarId": "cal_test_bounded_01",
-  "displayName": "SAFI Pilot Bounded Test Calendar",
+  "calendarId": "consultation-30m",
+  "displayName": "SAFI Pilot Bounded Test Calendar (30m Consultation)",
   "timezone": "UTC",
   "slotDurationMinutes": 30,
   "workingHours": {
@@ -14,21 +14,21 @@
     "customer-c@allowlist.test.local"
   ],
   "notificationPolicy": {
-    "suppressAutomaticEmails": true,
-    "suppressAutomaticSms": true,
-    "suppressCalendarInvites": true,
+    "inviteDelivery": "none",
+    "reminders": [],
+    "smtpConfigured": false,
     "excludedUngateablePaths": [
       {
         "path": "calnode.builtin.email_confirmation",
         "status": "DISABLED_AND_EXCLUDED",
         "requirement": "R-GATE-02",
-        "reason": "Calnode built-in transactional SMTP confirmation bypasses the Local Gate Adapter; SMTP is unconfigured / disabled in Docker Compose."
+        "reason": "Calnode built-in transactional SMTP confirmation bypasses the Local Gate Adapter; event type configured with invite_delivery='none' and SMTP_HOST='' in Docker Compose."
       },
       {
         "path": "calnode.builtin.reminder_cron",
         "status": "DISABLED_AND_EXCLUDED",
         "requirement": "R-GATE-02",
-        "reason": "Autonomous scheduled reminders cannot be gated per conversation in this pilot."
+        "reason": "Autonomous scheduled reminders cannot be gated per conversation in this pilot; event type configured with reminders=[]."
       }
     ]
   }

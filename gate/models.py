@@ -152,11 +152,12 @@ class GateOperationRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     operationType: str
-    conversationId: str
+    conversationId: str | None = None
     subjectLine: str | None = None
     actorGuid: str
     actorKind: ActorKind = ActorKind.USER
     actionId: str | None = None
+    targetMode: ConversationMode | None = None
     resolutions: list[ActionResolution] | None = None
     idempotencyKey: str | None = None
     correlationId: str | None = None

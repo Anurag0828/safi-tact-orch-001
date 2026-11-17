@@ -152,7 +152,10 @@ def history_publisher() -> InMemoryHistoryPublisher:
 
 @pytest.fixture
 def authz_provider() -> LocalPolicyPermissionProvider:
-    return LocalPolicyPermissionProvider()
+    return LocalPolicyPermissionProvider(
+        bootstrap_actors={"user_test_guid_001"},
+        proxy_actors={"proxy_n8n_intake"},
+    )
 
 
 @pytest.fixture
@@ -182,7 +185,11 @@ def proxy_actor() -> ActorContext:
         actorKind=ActorKind.PROXY,
         meetingContext={"meetingId": "mtg_99182"},
         portContext={"port": "n8n-webhook"},
-        permissionProvenance={"role": "SYSTEM_PROXY", "scope": "intake:write"},
+        permissionProvenance={
+            "role": "SYSTEM_PROXY",
+            "scope": "intake:write",
+            "delegatedBy": "user_test_guid_001",
+        },
     )
 
 

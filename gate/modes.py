@@ -12,11 +12,16 @@ from gate.dispatch import GateDispatcher
 from gate.errors import (
     ActionNotFoundError,
     ConversationNotFoundError,
+    DownstreamError,
+    DownstreamOutcomeUnknownError,
+    GateError,
     GateFailedClosedError,
     HeldActionsUnresolvedError,
+    IdentityUncertainError,
     InvalidActionStateError,
     InvalidModeTransitionError,
     PermissionCheckFailedError,
+    RecipientNotAllowlistedError,
     UnauthorizedError,
 )
 from gate.history import HistoryPublisher
@@ -70,6 +75,27 @@ class GateModeController:
             return await self.store.resolve_conversation_by_subject(subject_line)
         raise ConversationNotFoundError("<empty>")
 
+    async def authorize_read_operation(
+        self,
+        actor: ActorContext,
+        conversation_id: str,
+        operation: str,
+        subject_line_display: str = "",
+    ) -> None:
+        """Enforces fail-closed authz & FAILED_CLOSED guard on read ops (/sales/slots, /job-status)."""
+        conv = await self.store.get_conversation(conversation_id)
+        effective_subject = subject_line_display or (conv["subject_line"] if conv else "") or ""
+        await self._check_authz(
+            actor,
+            conversation_id,
+            operation,
+            f"read:{operation}:{conversation_id}",
+            effective_subject,
+            None,
+        )
+        if conv and ConversationMode(conv["mode"]) == ConversationMode.FAILED_CLOSED:
+            raise GateFailedClosedError(conversation_id)
+
     async def barge_in(
         self,
         actor: ActorContext,
@@ -84,7 +110,9 @@ class GateModeController:
         op_id = f"barge_in:{uuid4().hex[:8]}"
         idem_key = f"mode:gated:{conv_id}:{op_id}"
 
-        await self._check_authz(actor, conv_id, "gate:barge_in", idem_key, display_subject, correlation_id)
+        await self._check_authz(
+            actor, conv_id, "gate:barge_in", idem_key, display_subject, correlation_id
+        )
 
         runtime = self.runtimes.get(conv_id)
         async with runtime.state_lock:
@@ -212,38 +240,46 @@ class GateModeController:
         actor: ActorContext,
         correlation_id: str | None = None,
     ) -> dict[str, Any]:
-        """Approves a HELD action, records ACTION_APPROVED, rechecks authz, and dispatches (E4, R-GATE-05/09)."""
+        """Approves a HELD action atomically under state_lock, rechecks authz, and dispatches (E4, R-GATE-05/09)."""
         conv = await self.resolve_conversation(conversation_id=conversation_id)
         conv_id = conv["conversation_id"]
         display_subject = conv["subject_line"] or ""
-
-        action = await self.store.get_action(action_id)
-        if not action or action["conversation_id"] != conv_id:
-            raise ActionNotFoundError(action_id)
 
         await self._check_authz(
             actor,
             conv_id,
             "gate:approve_action",
-            action["idempotency_key"],
+            f"approve:{action_id}",
             display_subject,
             correlation_id,
         )
 
-        if action["state"] != ActionState.HELD.value:
-            raise InvalidActionStateError(action_id, action["state"], ActionState.HELD.value)
+        runtime = self.runtimes.get(conv_id)
+        async with runtime.state_lock:
+            conv = await self.store.get_conversation(conv_id)
+            if ConversationMode(conv["mode"]) == ConversationMode.FAILED_CLOSED:
+                raise GateFailedClosedError(conv_id)
 
-        await self.store.update_action_state(action_id, ActionState.APPROVED)
-        await self.history.record_control_event(
-            conversation_id=conv_id,
-            actor=actor,
-            event_type=ControlEventType.ACTION_APPROVED,
-            operation_id=f"{action['engine']}:{action['operation']}",
-            idempotency_key=action["idempotency_key"],
-            outcome=Outcome.OK,
-            subject_line_display=display_subject,
-            correlation_id=correlation_id,
-        )
+            action = await self.store.get_action(action_id)
+            if not action or action["conversation_id"] != conv_id:
+                raise ActionNotFoundError(action_id)
+
+            if action["state"] != ActionState.HELD.value:
+                raise InvalidActionStateError(
+                    action_id, action["state"], ActionState.HELD.value
+                )
+
+            await self.store.update_action_state(action_id, ActionState.APPROVED)
+            await self.history.record_control_event(
+                conversation_id=conv_id,
+                actor=actor,
+                event_type=ControlEventType.ACTION_APPROVED,
+                operation_id=f"{action['engine']}:{action['operation']}",
+                idempotency_key=action["idempotency_key"],
+                outcome=Outcome.OK,
+                subject_line_display=display_subject,
+                correlation_id=correlation_id,
+            )
 
         # Immediately recheck permission & dispatch through single Gate Dispatcher
         return await self.dispatcher.dispatch_approved_action(
@@ -257,38 +293,46 @@ class GateModeController:
         actor: ActorContext,
         correlation_id: str | None = None,
     ) -> dict[str, Any]:
-        """Rejects a HELD action and records ACTION_REJECTED (E4, R-GATE-05)."""
+        """Rejects a HELD action atomically under state_lock and records ACTION_REJECTED (E4, R-GATE-05)."""
         conv = await self.resolve_conversation(conversation_id=conversation_id)
         conv_id = conv["conversation_id"]
         display_subject = conv["subject_line"] or ""
-
-        action = await self.store.get_action(action_id)
-        if not action or action["conversation_id"] != conv_id:
-            raise ActionNotFoundError(action_id)
 
         await self._check_authz(
             actor,
             conv_id,
             "gate:reject_action",
-            action["idempotency_key"],
+            f"reject:{action_id}",
             display_subject,
             correlation_id,
         )
 
-        if action["state"] != ActionState.HELD.value:
-            raise InvalidActionStateError(action_id, action["state"], ActionState.HELD.value)
+        runtime = self.runtimes.get(conv_id)
+        async with runtime.state_lock:
+            conv = await self.store.get_conversation(conv_id)
+            if ConversationMode(conv["mode"]) == ConversationMode.FAILED_CLOSED:
+                raise GateFailedClosedError(conv_id)
 
-        await self.store.update_action_state(action_id, ActionState.REJECTED)
-        await self.history.record_control_event(
-            conversation_id=conv_id,
-            actor=actor,
-            event_type=ControlEventType.ACTION_REJECTED,
-            operation_id=f"{action['engine']}:{action['operation']}",
-            idempotency_key=action["idempotency_key"],
-            outcome=Outcome.OK,
-            subject_line_display=display_subject,
-            correlation_id=correlation_id,
-        )
+            action = await self.store.get_action(action_id)
+            if not action or action["conversation_id"] != conv_id:
+                raise ActionNotFoundError(action_id)
+
+            if action["state"] != ActionState.HELD.value:
+                raise InvalidActionStateError(
+                    action_id, action["state"], ActionState.HELD.value
+                )
+
+            await self.store.update_action_state(action_id, ActionState.REJECTED)
+            await self.history.record_control_event(
+                conversation_id=conv_id,
+                actor=actor,
+                event_type=ControlEventType.ACTION_REJECTED,
+                operation_id=f"{action['engine']}:{action['operation']}",
+                idempotency_key=action["idempotency_key"],
+                outcome=Outcome.OK,
+                subject_line_display=display_subject,
+                correlation_id=correlation_id,
+            )
 
         return {
             "actionId": action_id,
@@ -312,7 +356,12 @@ class GateModeController:
         idem_key = f"mode:ungated:{conv_id}:{op_id}"
 
         await self._check_authz(
-            actor, conv_id, "gate:return_to_ungated", idem_key, display_subject, correlation_id
+            actor,
+            conv_id,
+            "gate:return_to_ungated",
+            idem_key,
+            display_subject,
+            correlation_id,
         )
 
         runtime = self.runtimes.get(conv_id)
@@ -350,49 +399,123 @@ class GateModeController:
         released_results: list[dict[str, Any]] = []
         cancelled_ids: list[str] = []
 
-        for action in held_actions:
-            aid = action["action_id"]
-            decision = resolution_map[aid]
-            if decision == ReleaseDecision.CANCEL:
-                await self.store.update_action_state(aid, ActionState.CANCELLED)
-                await self.history.record_control_event(
-                    conversation_id=conv_id,
-                    actor=actor,
-                    event_type=ControlEventType.ACTION_CANCELLED,
-                    operation_id=f"{action['engine']}:{action['operation']}",
-                    idempotency_key=action["idempotency_key"],
-                    outcome=Outcome.OK,
-                    subject_line_display=display_subject,
-                    correlation_id=correlation_id,
-                )
-                cancelled_ids.append(aid)
-            elif decision == ReleaseDecision.RELEASE:
-                await self.store.update_action_state(aid, ActionState.APPROVED)
-                await self.history.record_control_event(
-                    conversation_id=conv_id,
-                    actor=actor,
-                    event_type=ControlEventType.ACTION_RELEASED,
-                    operation_id=f"{action['engine']}:{action['operation']}",
-                    idempotency_key=action["idempotency_key"],
-                    outcome=Outcome.OK,
-                    subject_line_display=display_subject,
-                    correlation_id=correlation_id,
-                )
-                res = await self.dispatcher.dispatch_approved_action(
-                    action_id=aid, actor=actor, correlation_id=correlation_id
-                )
-                released_results.append(res)
+        try:
+            for action in held_actions:
+                aid = action["action_id"]
+                decision = resolution_map[aid]
+                if decision == ReleaseDecision.CANCEL:
+                    async with runtime.state_lock:
+                        await self.store.update_action_state(aid, ActionState.CANCELLED)
+                        await self.history.record_control_event(
+                            conversation_id=conv_id,
+                            actor=actor,
+                            event_type=ControlEventType.ACTION_CANCELLED,
+                            operation_id=f"{action['engine']}:{action['operation']}",
+                            idempotency_key=action["idempotency_key"],
+                            outcome=Outcome.OK,
+                            subject_line_display=display_subject,
+                            correlation_id=correlation_id,
+                        )
+                    cancelled_ids.append(aid)
+                elif decision == ReleaseDecision.RELEASE:
+                    async with runtime.state_lock:
+                        await self.store.update_action_state(aid, ActionState.APPROVED)
+                        await self.history.record_control_event(
+                            conversation_id=conv_id,
+                            actor=actor,
+                            event_type=ControlEventType.ACTION_RELEASED,
+                            operation_id=f"{action['engine']}:{action['operation']}",
+                            idempotency_key=action["idempotency_key"],
+                            outcome=Outcome.OK,
+                            subject_line_display=display_subject,
+                            correlation_id=correlation_id,
+                        )
+                    res = await self.dispatcher.dispatch_approved_action(
+                        action_id=aid, actor=actor, correlation_id=correlation_id
+                    )
+                    released_results.append(res)
 
-        await asyncio.wait_for(
-            runtime.inflight_zero.wait(),
-            timeout=self.config.inflight_reconcile_timeout_seconds,
-        )
+            await asyncio.wait_for(
+                runtime.inflight_zero.wait(),
+                timeout=self.config.inflight_reconcile_timeout_seconds,
+            )
+        except asyncio.TimeoutError:
+            await self.dispatcher.fail_closed(
+                conversation_id=conv_id,
+                actor=actor,
+                operation_id=op_id,
+                idempotency_key=idem_key,
+                subject_line_display=display_subject,
+                correlation_id=correlation_id,
+            )
+            raise GateFailedClosedError(
+                conv_id,
+                "Timed out reconciling in-flight actions during Return to Ungated; transitioned to FAILED_CLOSED",
+            )
+        except (
+            PermissionCheckFailedError,
+            IdentityUncertainError,
+            DownstreamOutcomeUnknownError,
+        ):
+            # Already transitioned to FAILED_CLOSED by dispatcher; ensure never left in TRANSITIONING
+            async with runtime.state_lock:
+                conv_now = await self.store.get_conversation(conv_id)
+                if conv_now and ConversationMode(conv_now["mode"]) == ConversationMode.TRANSITIONING:
+                    await self.store.update_conversation_mode(
+                        conv_id, ConversationMode.FAILED_CLOSED
+                    )
+            raise
+        except (
+            UnauthorizedError,
+            RecipientNotAllowlistedError,
+            DownstreamError,
+            GateError,
+        ):
+            # Confirmed error during release: safely restore GATED so conversation is NEVER bricked in TRANSITIONING
+            async with runtime.state_lock:
+                conv_now = await self.store.get_conversation(conv_id)
+                if conv_now and ConversationMode(conv_now["mode"]) == ConversationMode.TRANSITIONING:
+                    await self.store.update_conversation_mode(
+                        conv_id, ConversationMode.GATED
+                    )
+            raise
+        except Exception:
+            # Unexpected error -> fail closed rather than leaving stuck in TRANSITIONING
+            await self.dispatcher.fail_closed(
+                conversation_id=conv_id,
+                actor=actor,
+                operation_id=op_id,
+                idempotency_key=idem_key,
+                subject_line_display=display_subject,
+                correlation_id=correlation_id,
+            )
+            raise
 
         async with runtime.state_lock:
             conv = await self.store.get_conversation(conv_id)
             if ConversationMode(conv["mode"]) == ConversationMode.FAILED_CLOSED:
                 raise GateFailedClosedError(conv_id)
 
+            # Check if any new actions were held while we were in TRANSITIONING (zero orphaned HELD items)
+            newly_held = await self.store.get_held_actions(conv_id)
+            if newly_held:
+                await self.store.update_conversation_mode(conv_id, ConversationMode.GATED)
+                raise HeldActionsUnresolvedError(
+                    conv_id,
+                    [
+                        {
+                            "actionId": a["action_id"],
+                            "engine": a["engine"],
+                            "operation": a["operation"],
+                            "idempotencyKey": a["idempotency_key"],
+                        }
+                        for a in newly_held
+                    ],
+                )
+
+            assert_valid_mode_transition(
+                ConversationMode(conv["mode"]), ConversationMode.UNGATED
+            )
             await self.store.update_conversation_mode(conv_id, ConversationMode.UNGATED)
             await self.history.record_control_event(
                 conversation_id=conv_id,
@@ -422,7 +545,9 @@ class GateModeController:
     ) -> dict[str, Any]:
         """Reconciles a FAILED_CLOSED conversation after operator verification (E4, E6)."""
         if target_mode not in (ConversationMode.UNGATED, ConversationMode.GATED):
-            raise InvalidModeTransitionError(ConversationMode.FAILED_CLOSED.value, target_mode.value)
+            raise InvalidModeTransitionError(
+                ConversationMode.FAILED_CLOSED.value, target_mode.value
+            )
 
         conv = await self.resolve_conversation(conversation_id=conversation_id)
         conv_id = conv["conversation_id"]
@@ -486,7 +611,7 @@ class GateModeController:
                 correlation_id=correlation_id,
             )
             raise
-        except PermissionCheckFailedError:
+        except (PermissionCheckFailedError, IdentityUncertainError):
             await self.dispatcher.fail_closed(
                 conversation_id=conversation_id,
                 actor=actor,
