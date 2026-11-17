@@ -1,10 +1,10 @@
 {
-  "actionId": "act_d1f39fed2a87",
-  "conversationId": "conv_sow_b_1794952473",
+  "actionId": "act_d6cfab02caa1",
+  "conversationId": "conv_sow_b_1794952605",
   "engine": "n8n",
   "operation": "dispatch_followup",
-  "idempotencyKey": "held:conv_sow_b_1794952473:1",
+  "idempotencyKey": "held:conv_sow_b_1794952605:1",
   "state": "HELD",
   "payloadRef": "sha256:captured_live_ref",
-  "createdAt": "2026-11-17T21:54:33.664337Z"
+  "createdAt": "2026-11-17T21:56:45.741958Z"
 }
