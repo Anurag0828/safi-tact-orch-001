@@ -854,7 +854,7 @@ async def main() -> None:
         }
 
         # === A09: Live Fail-Closed Authz, Anti-DoS, IDOR, Allowlist & Scope Escape ===
-        cb_headers = {"X-SAFI-Gate-Secret": env["GATE_API_TOKEN"]}
+        cb_headers = {"X-SAFI-Gate-Secret": env["N8N_WEBHOOK_SECRET"]}
         r_no_bearer = await client.post(
             f"{GATE}/safichat/ops/gate/barge-in",
             json={"conversationId": conv_a, "actor": owner_actor},
@@ -1019,8 +1019,11 @@ async def main() -> None:
         assert r_revoked.status_code == 403
         assert r_non_allowlist.status_code == 403
         assert r_dispatch_payload_bypass.status_code == 403
+        assert r_dispatch_payload_bypass.json()["errorCode"] == "RECIPIENT_NOT_ALLOWLISTED"
         assert r_wm_script_escape.status_code == 403
+        assert "workflow scope" in r_wm_script_escape.json().get("message", "")
         assert r_cal_escape.status_code == 403
+        assert "bounded test calendar" in r_cal_escape.json().get("message", "")
         assert r_owner_incomplete.status_code == 401
         assert r_live_reconcile.status_code == 200 and r_live_reconcile.json()["mode"] == "GATED"
 

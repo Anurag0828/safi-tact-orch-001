@@ -45,7 +45,7 @@ When starting from empty Docker volumes, perform these one-time non-default setu
    - Create a non-default owner account via the n8n setup screen and generate an API key (`N8N_API_KEY`).
    - Create two native **Header Auth (`httpHeaderAuth`)** credentials (required because `N8N_BLOCK_ENV_ACCESS_IN_NODE="true"` blocks `$env` access):
      - `SAFI Webhook Header Auth`: header `X-SAFI-Webhook-Secret`, value = `N8N_WEBHOOK_SECRET`.
-     - `SAFI Gate Callback Header Auth`: header `X-SAFI-Gate-Secret`, value = `GATE_API_TOKEN`.
+     - `SAFI Gate Callback Header Auth`: header `X-SAFI-Gate-Secret`, value = `N8N_WEBHOOK_SECRET`.
    - Import and activate both exported workflows from `workflows/n8n/lead_intake_gated_followup.json` and `workflows/n8n/approved_followup_dispatch.json`, binding the two Header Auth credentials above.
 2. **Calnode (`http://127.0.0.1:3000`)**
    - Claim the instance with a non-default admin account and generate an API key (`CALNODE_API_KEY`).

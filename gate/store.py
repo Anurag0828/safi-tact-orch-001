@@ -59,6 +59,18 @@ class GateStore:
             try:
                 yield conn
                 await conn.commit()
+            except StoreError:
+                try:
+                    await conn.rollback()
+                except Exception:
+                    pass
+                raise
+            except aiosqlite.Error as exc:
+                try:
+                    await conn.rollback()
+                except Exception:
+                    pass
+                raise StoreError(f"Operational SQLite store error: {exc}") from exc
             except Exception:
                 try:
                     await conn.rollback()
@@ -71,6 +83,14 @@ class GateStore:
             Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
             self._db = await aiosqlite.connect(self.db_path)
             self._db.row_factory = aiosqlite.Row
+
+            # Fail closed immediately if the SQLite store file is corrupted (A10.4 / E6)
+            qc_cursor = await self._db.execute("PRAGMA quick_check;")
+            qc_row = await qc_cursor.fetchone()
+            if not qc_row or str(qc_row[0]).strip().lower() != "ok":
+                raise StoreError(
+                    f"Operational store failed SQLite integrity check: {qc_row[0] if qc_row else 'empty'}"
+                )
 
             await self._db.execute("PRAGMA journal_mode = WAL;")
             await self._db.execute("PRAGMA synchronous = FULL;")
@@ -142,6 +162,12 @@ class GateStore:
             )
             await self._db.commit()
         except Exception as exc:
+            if self._db is not None:
+                try:
+                    await self._db.close()
+                except Exception:
+                    pass
+                self._db = None
             raise StoreError(f"Failed to initialize Gate operational store: {exc}") from exc
 
     async def _run_migrations(self) -> None:

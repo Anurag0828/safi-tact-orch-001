@@ -103,46 +103,47 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         await gate_store.initialize()
-
-        # Restore persisted per-conversation ownership into local ACL provider across restarts (A09/A10)
-        persisted_owners = await gate_store.list_conversation_owners()
-        local_acl = (
-            gate_authz.local_policy
-            if isinstance(gate_authz, HttpPermissionProvider)
-            else gate_authz
-        )
-        if hasattr(local_acl, "authorize_actor_for_conversation"):
-            for cid, owner_guid in persisted_owners.items():
-                local_acl.authorize_actor_for_conversation(cid, owner_guid)
-
-        if isinstance(gate_history, JetStreamHistoryPublisher):
-            await gate_history.connect()
-        recovery = await gate_store.recover_on_startup()
-        app.state.recovery_summary = recovery
-
-        # Emit authoritative GATE_FAILED_CLOSED events to JetStream for any crash-interrupted conversations (A10/A11)
-        system_actor = ActorContext(
-            actorGuid="system-gate-recovery",
-            actorKind=ActorKind.PROXY,
-            meetingContext={"source": "startup-recovery"},
-            portContext={"port": "local-gate-adapter"},
-            permissionProvenance={"role": "SYSTEM_RECOVERY"},
-        )
-        for item in recovery.get("failedClosedDetails", []):
-            await gate_history.record_control_event(
-                conversation_id=item["conversationId"],
-                actor=system_actor,
-                event_type=ControlEventType.GATE_FAILED_CLOSED,
-                operation_id="startup:recover_on_startup",
-                idempotency_key=f"recovery:{item['conversationId']}",
-                outcome=Outcome.UNKNOWN,
-                subject_line_display=item.get("subjectLine", ""),
+        try:
+            # Restore persisted per-conversation ownership into local ACL provider across restarts (A09/A10)
+            persisted_owners = await gate_store.list_conversation_owners()
+            local_acl = (
+                gate_authz.local_policy
+                if isinstance(gate_authz, HttpPermissionProvider)
+                else gate_authz
             )
+            if hasattr(local_acl, "authorize_actor_for_conversation"):
+                for cid, owner_guid in persisted_owners.items():
+                    local_acl.authorize_actor_for_conversation(cid, owner_guid)
 
-        yield
-        if isinstance(gate_history, JetStreamHistoryPublisher):
-            await gate_history.close()
-        await gate_store.close()
+            if isinstance(gate_history, JetStreamHistoryPublisher):
+                await gate_history.connect()
+            recovery = await gate_store.recover_on_startup()
+            app.state.recovery_summary = recovery
+
+            # Emit authoritative GATE_FAILED_CLOSED events to JetStream for any crash-interrupted conversations (A10/A11)
+            system_actor = ActorContext(
+                actorGuid="system-gate-recovery",
+                actorKind=ActorKind.PROXY,
+                meetingContext={"source": "startup-recovery"},
+                portContext={"port": "local-gate-adapter"},
+                permissionProvenance={"role": "SYSTEM_RECOVERY"},
+            )
+            for item in recovery.get("failedClosedDetails", []):
+                await gate_history.record_control_event(
+                    conversation_id=item["conversationId"],
+                    actor=system_actor,
+                    event_type=ControlEventType.GATE_FAILED_CLOSED,
+                    operation_id="startup:recover_on_startup",
+                    idempotency_key=f"recovery:{item['conversationId']}",
+                    outcome=Outcome.UNKNOWN,
+                    subject_line_display=item.get("subjectLine", ""),
+                )
+
+            yield
+        finally:
+            if isinstance(gate_history, JetStreamHistoryPublisher):
+                await gate_history.close()
+            await gate_store.close()
 
     app = FastAPI(
         title="SAFI Local Gate Adapter",

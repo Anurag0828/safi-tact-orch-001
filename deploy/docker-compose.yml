@@ -10,6 +10,11 @@ services:
       dockerfile: deploy/Dockerfile.gate
     container_name: safi-gate-adapter
     restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
     ports:
       - "127.0.0.1:8000:8000"
     environment:
@@ -39,6 +44,8 @@ services:
       JETSTREAM_CONTROL_SUBJECT_PREFIX: ${JETSTREAM_CONTROL_SUBJECT_PREFIX:-safi.control.events}
       JETSTREAM_REQUIRED: ${JETSTREAM_REQUIRED:-true}
       JETSTREAM_AUTO_CREATE_STREAM: ${JETSTREAM_AUTO_CREATE_STREAM:-false}
+      NATS_CONNECT_TIMEOUT_SECONDS: ${NATS_CONNECT_TIMEOUT_SECONDS:-3}
+      NATS_CONNECT_TOTAL_BUDGET_SECONDS: ${NATS_CONNECT_TOTAL_BUDGET_SECONDS:-12}
     volumes:
       - gate_state_data:/app/data
     networks:
@@ -69,8 +76,8 @@ services:
       - safi_local_net
 
   calnode:
-    # Official Calnode v0.14.0 pinned by exact SHA256 digest (https://github.com/Calnode/calnode)
-    image: ${CALNODE_PINNED_IMAGE:-ghcr.io/calnode/calnode@sha256:120f1434d02c409b25f981a163cd4408db3e3f3ea571abc4c1e3e922f292af80}
+    # Official Calnode v0.14.0 pinned by exact version tag + SHA256 digest (https://github.com/Calnode/calnode)
+    image: ${CALNODE_PINNED_IMAGE:-ghcr.io/calnode/calnode:0.14.0@sha256:120f1434d02c409b25f981a163cd4408db3e3f3ea571abc4c1e3e922f292af80}
     container_name: safi-calnode
     restart: unless-stopped
     ports:

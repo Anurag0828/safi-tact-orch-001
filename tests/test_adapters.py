@@ -197,3 +197,155 @@ async def test_jetstream_required_fails_closed_when_unreachable():
     pub = JetStreamHistoryPublisher(cfg)
     with pytest.raises(StoreError, match="JetStream is required"):
         await pub.connect()
+
+
+@pytest.mark.asyncio
+async def test_d1_jetstream_blackholed_host_fails_closed_within_budget():
+    """D1: Blackholed/unreachable NATS with JETSTREAM_REQUIRED=true fails closed within <= 20s (never hangs)."""
+    import asyncio
+    import time
+
+    t0 = time.monotonic()
+    cfg = GateConfig(
+        nats_url="nats://192.0.2.1:4222",
+        jetstream_required=True,
+        nats_connect_timeout_seconds=1.0,
+        nats_connect_total_budget_seconds=3.5,
+    )
+    pub = JetStreamHistoryPublisher(cfg)
+    with pytest.raises(StoreError, match="JetStream is required"):
+        await asyncio.wait_for(pub.connect(), timeout=20.0)
+    elapsed = time.monotonic() - t0
+    assert elapsed < 10.0, f"Connect took too long: {elapsed:.2f}s"
+    assert pub.connected is False
+
+
+@pytest.mark.asyncio
+async def test_d1_jetstream_optional_falls_back_without_exception(test_actor):
+    """D1: Unreachable NATS with JETSTREAM_REQUIRED=false falls back cleanly within <= 10s."""
+    import asyncio
+    from gate.models import ControlEventType, Outcome
+
+    cfg = GateConfig(
+        nats_url="nats://192.0.2.1:4222",
+        jetstream_required=False,
+        nats_connect_timeout_seconds=1.0,
+        nats_connect_total_budget_seconds=3.0,
+    )
+    pub = JetStreamHistoryPublisher(cfg)
+    await asyncio.wait_for(pub.connect(), timeout=10.0)
+    assert pub.connected is False
+    assert pub.fallback is not None
+
+    ev = await pub.record_control_event(
+        conversation_id="conv_d1_opt",
+        actor=test_actor,
+        event_type=ControlEventType.MODE_GATED,
+        operation_id="gate:barge_in",
+        idempotency_key="d1_opt_1",
+        outcome=Outcome.OK,
+    )
+    assert len(pub.fallback.events) == 1
+    assert pub.fallback.events[0].eventId == ev.eventId
+
+
+@pytest.mark.asyncio
+async def test_d1_gate_app_startup_fails_closed_when_nats_required_and_down(tmp_path):
+    """D1: FastAPI lifespan fails closed (raises StoreError within <= 20s) when JETSTREAM_REQUIRED=true and NATS is down."""
+    import asyncio
+    from gate.app import create_app
+
+    cfg = GateConfig(
+        store_path=str(tmp_path / "startup_fail.db"),
+        nats_url="nats://127.0.0.1:1",
+        jetstream_required=True,
+        nats_connect_timeout_seconds=1.0,
+        nats_connect_total_budget_seconds=3.5,
+        gate_api_token="tok",
+        n8n_webhook_secret="sec",
+        allowed_recipients=frozenset({"customer-a@allowlist.test.local"}),
+    )
+    app = create_app(config=cfg)
+    with pytest.raises(StoreError, match="JetStream is required"):
+        async with asyncio.timeout(20.0):
+            async with app.router.lifespan_context(app):
+                pass
+
+
+@pytest.mark.asyncio
+async def test_d1_midrun_nats_outage_blocks_downstream_and_never_silent_done(
+    test_config, gate_store, authz_provider, mock_adapters, test_actor
+):
+    """D1: Mid-run JetStream outage either blocks before downstream (0 effects) or fails closed (<=1 effect, NOT DONE)."""
+    from gate.dispatch import GateDispatcher
+    from gate.history import InMemoryHistoryPublisher
+    from gate.models import ActionState, ActionSubmission, ConversationMode, EngineName
+    from gate.state_machine import ConversationRuntimeRegistry
+
+    authz_provider.authorize_bootstrap_actor(test_actor.actorGuid)
+
+    # Case A: NATS dies BEFORE downstream executes -> 0 downstream effects + FAILED_CLOSED
+    class PreDispatchDeadHistory(InMemoryHistoryPublisher):
+        async def ensure_available(self) -> None:
+            raise StoreError("Simulated mid-run NATS outage before dispatch")
+
+    disp_a = GateDispatcher(
+        test_config, gate_store, PreDispatchDeadHistory(), authz_provider, ConversationRuntimeRegistry(), mock_adapters
+    )
+    with pytest.raises(StoreError, match="mid-run NATS outage"):
+        await disp_a.submit_action(
+            ActionSubmission(
+                conversationId="conv_d1_pre",
+                subjectLineDisplay="D1 Pre Outage",
+                engine=EngineName.N8N,
+                operation="dispatch_followup",
+                idempotencyKey="d1_pre_1",
+                payload={"recipientEmail": "customer-a@allowlist.test.local", "messageBody": "hi"},
+                recipients=["customer-a@allowlist.test.local"],
+                actor=test_actor,
+            )
+        )
+    assert len(mock_adapters[EngineName.N8N].call_log) == 0
+    act_a = await gate_store.get_action_by_idempotency_key("conv_d1_pre", "d1_pre_1")
+    assert act_a["state"] == ActionState.FAILED.value
+    assert (await gate_store.get_conversation("conv_d1_pre"))["mode"] == ConversationMode.FAILED_CLOSED.value
+
+    # Case B: NATS dies DURING downstream execution -> <=1 effect, action FAILED(unknown) (NOT DONE!), conv FAILED_CLOSED
+    class PostExecDeadHistory(InMemoryHistoryPublisher):
+        async def record_control_event(self, *args, **kwargs):
+            raise StoreError("Simulated NATS drop during ACTION_DISPATCHED publish")
+
+    disp_b = GateDispatcher(
+        test_config, gate_store, PostExecDeadHistory(), authz_provider, ConversationRuntimeRegistry(), mock_adapters
+    )
+    with pytest.raises(StoreError, match="NATS drop"):
+        await disp_b.submit_action(
+            ActionSubmission(
+                conversationId="conv_d1_post",
+                subjectLineDisplay="D1 Post Outage",
+                engine=EngineName.N8N,
+                operation="dispatch_followup",
+                idempotencyKey="d1_post_1",
+                payload={"recipientEmail": "customer-a@allowlist.test.local", "messageBody": "hi"},
+                recipients=["customer-a@allowlist.test.local"],
+                actor=test_actor,
+            )
+        )
+    assert len(mock_adapters[EngineName.N8N].call_log) == 1
+    act_b = await gate_store.get_action_by_idempotency_key("conv_d1_post", "d1_post_1")
+    assert act_b["state"] == ActionState.FAILED.value  # NEVER silently DONE without audit event!
+    rec_b = await gate_store.get_idempotency_record("conv_d1_post", "d1_post_1")
+    assert rec_b["outcome"] == "unknown"
+    assert (await gate_store.get_conversation("conv_d1_post"))["mode"] == ConversationMode.FAILED_CLOSED.value
+
+
+@pytest.mark.asyncio
+async def test_a10_corrupt_sqlite_store_fails_closed(tmp_path):
+    """A10.4: Corrupted SQLite store file fails closed with StoreError instead of silently defaulting to UNGATED."""
+    from gate.store import GateStore
+
+    bad_db = tmp_path / "corrupt_gate.db"
+    bad_db.write_bytes(b"NOT A VALID SQLITE DATABASE HEADER CORRUPTION TEST 1234567890" * 4)
+    store = GateStore(str(bad_db))
+    with pytest.raises(StoreError):
+        await store.initialize()

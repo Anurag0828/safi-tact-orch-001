@@ -697,11 +697,30 @@ class GateDispatcher:
             if adapter is None:
                 raise DownstreamError(engine.value, "No adapter registered for engine")
 
+            # D1: Fail closed BEFORE executing any downstream side effect if required audit history is unreachable
+            try:
+                await self.history.ensure_available()
+            except StoreError as exc:
+                logger.error(
+                    "Audit backend unavailable before downstream execution for action '%s': %s",
+                    action_id,
+                    exc,
+                )
+                await self.store.update_action_state(
+                    action_id,
+                    ActionState.FAILED,
+                    error={"code": "AUDIT_BACKEND_UNAVAILABLE", "message": str(exc), "outcome": "unknown"},
+                    outcome_override=Outcome.UNKNOWN,
+                )
+                await self.store.update_conversation_mode(
+                    conversation_id, ConversationMode.FAILED_CLOSED
+                )
+                raise
+
             result = await adapter.execute(operation, payload, idempotency_key)
 
-            await self.store.update_action_state(
-                action_id, ActionState.DONE, result=result
-            )
+            # D1: Publish authoritative audit event BEFORE marking action DONE; if publish fails mid-run,
+            # record FAILED(unknown) + FAILED_CLOSED rather than silently reporting DONE without audit.
             try:
                 await self.history.record_control_event(
                     conversation_id=conversation_id,
@@ -715,14 +734,29 @@ class GateDispatcher:
                 )
             except StoreError as exc:
                 logger.error(
-                    "Audit publish failed after downstream success for action '%s': %s",
+                    "Audit publish failed after downstream execution for action '%s': %s",
                     action_id,
                     exc,
+                )
+                await self.store.update_action_state(
+                    action_id,
+                    ActionState.FAILED,
+                    error={
+                        "code": "AUDIT_PUBLISH_FAILED",
+                        "message": str(exc),
+                        "outcome": "unknown",
+                        "downstreamExecuted": True,
+                    },
+                    outcome_override=Outcome.UNKNOWN,
                 )
                 await self.store.update_conversation_mode(
                     conversation_id, ConversationMode.FAILED_CLOSED
                 )
                 raise
+
+            await self.store.update_action_state(
+                action_id, ActionState.DONE, result=result
+            )
 
             return {
                 "actionId": action_id,
@@ -732,6 +766,9 @@ class GateDispatcher:
                 "idempotentReplay": False,
                 "result": result,
             }
+
+        except StoreError:
+            raise
 
         except UnauthorizedError as exc:
             # Adapter-level scope guard (e.g. arbitrary Windmill scriptPath or out-of-bounds Calnode calendar)

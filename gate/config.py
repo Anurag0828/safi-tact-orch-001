@@ -65,6 +65,8 @@ class GateConfig:
     http_timeout_seconds: float = 10.0
     authz_timeout_seconds: float = 3.0
     inflight_reconcile_timeout_seconds: float = 30.0
+    nats_connect_timeout_seconds: float = 3.0
+    nats_connect_total_budget_seconds: float = 12.0
 
     @classmethod
     def from_env(cls) -> "GateConfig":
@@ -113,6 +115,13 @@ class GateConfig:
             authz_timeout_seconds=float(os.getenv("GATE_AUTHZ_TIMEOUT_SECONDS", "3.0")),
             inflight_reconcile_timeout_seconds=float(
                 os.getenv("GATE_INFLIGHT_TIMEOUT_SECONDS", "30.0")
+            ),
+            nats_connect_timeout_seconds=float(
+                os.getenv("NATS_CONNECT_TIMEOUT_SECONDS", "3.0")
+            ),
+            nats_connect_total_budget_seconds=min(
+                float(os.getenv("NATS_CONNECT_TOTAL_BUDGET_SECONDS", "12.0")),
+                15.0,
             ),
         )
 

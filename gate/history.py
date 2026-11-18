@@ -61,6 +61,10 @@ def build_validated_control_event(
 
 
 class HistoryPublisher(ABC):
+    async def ensure_available(self) -> None:
+        """Verifies audit history backend is reachable before executing a downstream side effect."""
+        return None
+
     @abstractmethod
     async def record_control_event(
         self,
@@ -132,25 +136,54 @@ class JetStreamHistoryPublisher(HistoryPublisher):
             None if config.jetstream_required else InMemoryHistoryPublisher()
         )
 
-    async def connect(self, max_retries: int = 5, retry_delay_s: float = 1.0) -> None:
+    async def connect(self, max_retries: int = 3, retry_delay_s: float = 0.5) -> None:
+        """Connects to NATS JetStream with strict fail-closed timeout & retry budget (D1).
+
+        Uses allow_reconnect=False and max_reconnect_attempts=0 on initial connect wrapped in
+        asyncio.wait_for so unreachable/blackholed NATS fails fast within <= 15s total budget.
+        """
         import asyncio
+        import time
+
+        per_attempt_cap = max(0.5, float(self.config.nats_connect_timeout_seconds))
+        total_budget = min(max(per_attempt_cap, float(self.config.nats_connect_total_budget_seconds)), 15.0)
+        attempts = max(1, max_retries) if self.config.jetstream_required else 1
+        deadline = time.monotonic() + total_budget
 
         last_exc: Exception | None = None
-        for attempt in range(1, max_retries + 1):
+        for attempt in range(1, attempts + 1):
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                last_exc = TimeoutError(f"Exceeded total NATS connect budget ({total_budget:.1f}s)")
+                break
+
+            attempt_timeout = min(per_attempt_cap, remaining)
             try:
                 import nats
 
-                opts: dict[str, Any] = {"servers": [self.config.nats_url]}
+                opts: dict[str, Any] = {
+                    "servers": [self.config.nats_url],
+                    "allow_reconnect": False,
+                    "max_reconnect_attempts": 0,
+                    "connect_timeout": attempt_timeout,
+                }
                 if self.config.nats_token:
                     opts["token"] = self.config.nats_token
                 elif self.config.nats_user and self.config.nats_password:
                     opts["user"] = self.config.nats_user
                     opts["password"] = self.config.nats_password
-                self._nc = await nats.connect(**opts)
+
+                self._nc = await asyncio.wait_for(
+                    nats.connect(**opts),
+                    timeout=attempt_timeout + 0.5,
+                )
                 self._js = self._nc.jetstream()
 
                 try:
-                    await self._js.stream_info(self.config.jetstream_stream)
+                    await asyncio.wait_for(
+                        self._js.stream_info(self.config.jetstream_stream),
+                        timeout=attempt_timeout,
+                    )
                 except Exception as stream_exc:
                     if not self.config.jetstream_auto_create_stream:
                         raise StoreError(
@@ -158,9 +191,12 @@ class JetStreamHistoryPublisher(HistoryPublisher):
                             f"(JETSTREAM_AUTO_CREATE_STREAM=false; refusing to mutate NATS): {stream_exc}"
                         ) from stream_exc
                     subject_wildcard = f"{self.config.jetstream_control_subject_prefix}.>"
-                    await self._js.add_stream(
-                        name=self.config.jetstream_stream,
-                        subjects=[subject_wildcard],
+                    await asyncio.wait_for(
+                        self._js.add_stream(
+                            name=self.config.jetstream_stream,
+                            subjects=[subject_wildcard],
+                        ),
+                        timeout=attempt_timeout,
                     )
                     logger.info(
                         "Created local JetStream stream '%s' for '%s' (JETSTREAM_AUTO_CREATE_STREAM=true)",
@@ -181,21 +217,54 @@ class JetStreamHistoryPublisher(HistoryPublisher):
                 self._js = None
                 if self._nc is not None:
                     try:
-                        await self._nc.close()
+                        await asyncio.wait_for(self._nc.close(), timeout=1.0)
                     except Exception:
                         pass
                     self._nc = None
-                if attempt < max_retries and self.config.jetstream_required:
-                    await asyncio.sleep(retry_delay_s)
+                if attempt < attempts and self.config.jetstream_required:
+                    sleep_for = min(retry_delay_s, max(0.0, deadline - time.monotonic()))
+                    if sleep_for > 0:
+                        await asyncio.sleep(sleep_for)
 
         if self.config.jetstream_required:
             raise StoreError(
                 f"JetStream is required (JETSTREAM_REQUIRED=true) but unavailable at {self.config.nats_url}: {last_exc}"
             ) from last_exc
         logger.warning(
-            "Could not connect to NATS JetStream (%s). Falling back to local publisher (JETSTREAM_REQUIRED=false).",
+            "WARNING: Could not connect to NATS JetStream (%s). Falling back to local in-memory publisher (JETSTREAM_REQUIRED=false).",
             last_exc,
         )
+
+    async def _drop_connection(self) -> None:
+        import asyncio
+
+        self.connected = False
+        self._js = None
+        if self._nc is not None:
+            try:
+                await asyncio.wait_for(self._nc.close(), timeout=1.0)
+            except Exception:
+                pass
+            self._nc = None
+
+    async def ensure_available(self) -> None:
+        """Fail-closed liveness check before dispatching external side effects (D1 / A10.3)."""
+        import asyncio
+
+        if not self.config.jetstream_required:
+            return
+
+        ping_timeout = min(max(0.5, float(self.config.nats_connect_timeout_seconds)), 2.5)
+        if self._nc is not None and self._js is not None and self._nc.is_connected:
+            try:
+                await asyncio.wait_for(self._nc.flush(timeout=ping_timeout), timeout=ping_timeout + 0.5)
+                return
+            except Exception as exc:
+                logger.warning("NATS liveness check failed mid-run (%s); attempting single bounded reconnect", exc)
+                await self._drop_connection()
+
+        # Single bounded reconnect attempt so recovery works after NATS returns (A10.3), while failing fast if down
+        await self.connect(max_retries=1, retry_delay_s=0.0)
 
     async def record_control_event(
         self,
@@ -208,6 +277,8 @@ class JetStreamHistoryPublisher(HistoryPublisher):
         subject_line_display: str = "",
         correlation_id: str | None = None,
     ) -> ControlEvent:
+        import asyncio
+
         event, payload = build_validated_control_event(
             conversation_id=conversation_id,
             actor=actor,
@@ -219,22 +290,27 @@ class JetStreamHistoryPublisher(HistoryPublisher):
             correlation_id=correlation_id,
         )
 
-        if self._js is None:
+        if self._js is None or self._nc is None or not self._nc.is_connected:
             if self.config.jetstream_required:
-                raise StoreError(
-                    "JetStream publisher is disconnected; refusing to proceed without authoritative audit event"
-                )
-            if self.fallback is not None:
-                self.fallback.events.append(event)
-            return event
+                # Attempt single fast reconnect in case NATS just recovered (A10.3)
+                await self.connect(max_retries=1, retry_delay_s=0.0)
+            else:
+                if self.fallback is not None:
+                    self.fallback.events.append(event)
+                return event
 
         conv_token = sanitize_subject_token(conversation_id)
         type_token = sanitize_subject_token(event_type.value.lower())
         subject = f"{self.config.jetstream_control_subject_prefix}.{conv_token}.{type_token}"
         payload_bytes = json.dumps(payload).encode("utf-8")
+        pub_timeout = max(0.5, float(self.config.nats_connect_timeout_seconds))
         try:
-            await self._js.publish(subject, payload_bytes)
+            await asyncio.wait_for(
+                self._js.publish(subject, payload_bytes, timeout=pub_timeout),
+                timeout=pub_timeout + 1.0,
+            )
         except Exception as exc:
+            await self._drop_connection()
             if self.config.jetstream_required:
                 raise StoreError(
                     f"Failed to publish ControlEvent to JetStream subject '{subject}': {exc}"
@@ -250,9 +326,18 @@ class JetStreamHistoryPublisher(HistoryPublisher):
         return event
 
     async def close(self) -> None:
+        import asyncio
+
         if self._nc:
-            await self._nc.drain()
-            await self._nc.close()
+            try:
+                if self._nc.is_connected:
+                    await asyncio.wait_for(self._nc.drain(), timeout=2.0)
+            except Exception:
+                pass
+            try:
+                await asyncio.wait_for(self._nc.close(), timeout=1.0)
+            except Exception:
+                pass
             self._nc = None
             self._js = None
             self.connected = False
