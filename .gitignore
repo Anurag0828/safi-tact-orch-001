@@ -25,3 +25,10 @@ venv/
 # Temporary logs and evidence scratch
 *.log
 extracted_docx_text.txt
+
+# Proprietary SOW / internal scratch docs & local archives (D3 - never commit to public repo)
+*.docx
+SAFI_BUILD_SPEC.md
+SAFI_TACT_ORCH_001_VERIFICATION_PLAYBOOK.md
+*.zip
+.coverage
