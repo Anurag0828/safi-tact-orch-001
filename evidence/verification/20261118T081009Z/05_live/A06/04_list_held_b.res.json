@@ -1,0 +1,20 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:42.459559Z",
+  "statusCode": 200,
+  "body": {
+    "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+    "subjectLineDisplay": "Customer B - Selective 20261118T081009Z_1794989544",
+    "mode": "GATED",
+    "heldActions": [
+      {
+        "actionId": "act_2d834a707ccf",
+        "engine": "n8n",
+        "operation": "dispatch_followup",
+        "idempotencyKey": "a06:b:held1:20261118T081009Z",
+        "state": "HELD",
+        "createdAt": "2026-11-18T08:12:41.698802Z"
+      }
+    ]
+  }
+}

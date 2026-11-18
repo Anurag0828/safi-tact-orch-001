@@ -1,0 +1,13 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# command: grep -rnE 'import.*adapters|CalnodeAdapter|N8nAdapter|WindmillAdapter' --include='*.py' . | grep -v './tests/'
+# rc: 0
+
+./adapters/calnode.py:26:class CalnodeAdapter(EngineAdapter):
+./adapters/n8n.py:21:class N8nAdapter(EngineAdapter):
+./adapters/windmill.py:24:class WindmillAdapter(EngineAdapter):
+./gate/app.py:13:from adapters.calnode import CalnodeAdapter
+./gate/app.py:14:from adapters.n8n import N8nAdapter
+./gate/app.py:15:from adapters.windmill import WindmillAdapter
+./gate/app.py:81:        EngineName.N8N: N8nAdapter(cfg),
+./gate/app.py:82:        EngineName.CALNODE: CalnodeAdapter(cfg),
+./gate/app.py:83:        EngineName.WINDMILL: WindmillAdapter(cfg),

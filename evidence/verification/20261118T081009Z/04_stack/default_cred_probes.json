@@ -1,0 +1,20 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "capturedUtc": "2026-11-18T08:12:34.845100Z",
+  "windmillDefaultAdminRejected": {
+    "status": 400,
+    "rejected": true
+  },
+  "n8nDefaultAdminRejected": {
+    "status": 401,
+    "rejected": true
+  },
+  "calnodeUnauthRejected": {
+    "status": 401,
+    "rejected": true
+  },
+  "gateUnauthRejected": {
+    "status": 403,
+    "rejected": true
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "clientResult": "Server disconnected without sending a response.",
+  "gate": {
+    "status": "ok",
+    "service": "safi-local-gate-adapter",
+    "jetstreamConnected": true,
+    "recovery": {
+      "interruptedConversationsFailedClosed": [
+        "conv_ver_a10_kill_20261118T081009Z_1794989544"
+      ],
+      "failedClosedDetails": [
+        {
+          "conversationId": "conv_ver_a10_kill_20261118T081009Z_1794989544",
+          "subjectLine": "A10 Kill9 20261118T081009Z"
+        }
+      ],
+      "failedClosedCount": 1,
+      "interruptedDispatchingActions": [
+        "act_3eb7226c1b08"
+      ],
+      "interruptedPreDispatchActions": [],
+      "heldActionsPreserved": 152
+    }
+  },
+  "n8n": {
+    "status": "ok"
+  },
+  "calnode": {
+    "status": "ok"
+  },
+  "windmillVersion": "CE v1.425.0",
+  "natsJetStream": true
+}

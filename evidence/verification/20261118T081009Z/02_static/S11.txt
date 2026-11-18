@@ -1,0 +1,7 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# command: grep -n '_recheck_permission_or_fail' gate/dispatch.py
+# rc: 0
+
+489:                await self._recheck_permission_or_fail(
+600:                    await self._recheck_permission_or_fail(
+632:    async def _recheck_permission_or_fail(

@@ -1,0 +1,44 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:43.230920Z",
+  "statusCode": 200,
+  "body": {
+    "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+    "subjectLineDisplay": "Customer B - Selective 20261118T081009Z_1794989544",
+    "mode": "GATED",
+    "heldActions": [
+      {
+        "actionId": "act_2d834a707ccf",
+        "engine": "n8n",
+        "operation": "dispatch_followup",
+        "idempotencyKey": "a06:b:held1:20261118T081009Z",
+        "state": "HELD",
+        "createdAt": "2026-11-18T08:12:41.698802Z"
+      },
+      {
+        "actionId": "act_c1ca295c5fb9",
+        "engine": "n8n",
+        "operation": "dispatch_followup",
+        "idempotencyKey": "a07:b:held2:20261118T081009Z",
+        "state": "HELD",
+        "createdAt": "2026-11-18T08:12:43.113868Z"
+      },
+      {
+        "actionId": "act_da703f7638d0",
+        "engine": "n8n",
+        "operation": "dispatch_followup",
+        "idempotencyKey": "a07:b:held3:20261118T081009Z",
+        "state": "HELD",
+        "createdAt": "2026-11-18T08:12:43.146767Z"
+      },
+      {
+        "actionId": "act_ab00bb7006e1",
+        "engine": "n8n",
+        "operation": "dispatch_followup",
+        "idempotencyKey": "a07:b:held4:20261118T081009Z",
+        "state": "HELD",
+        "createdAt": "2026-11-18T08:12:43.194671Z"
+      }
+    ]
+  }
+}

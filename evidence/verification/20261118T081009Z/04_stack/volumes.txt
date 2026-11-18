@@ -1,0 +1,7 @@
+DRIVER    VOLUME NAME
+local     deploy_calnode_data
+local     deploy_gate_state_data
+local     deploy_n8n_data
+local     deploy_nats_data
+local     deploy_windmill_db_data
+local     deploy_windmill_worker_logs

@@ -1,0 +1,10 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+
+CONTAINER              REPOSITORY                       TAG                 PLATFORM            IMAGE ID            SIZE                CREATED
+safi-calnode           ghcr.io/calnode/calnode          <none>              linux/amd64         120f1434d02c        91.6MB              10 days ago
+safi-gate-adapter      deploy-gate-adapter              latest              linux/amd64         58a390a01c2b        212MB               4 seconds ago
+safi-local-nats        nats                             <none>              linux/amd64         b83efabe3e7d        38.7MB              9 months ago
+safi-n8n               docker.n8n.io/n8nio/n8n          <none>              linux/amd64         d468689474fd        1.06GB              2 years ago
+safi-windmill-db       postgres                         <none>              linux/amd64         5660c2cbfea5        358MB               2 years ago
+safi-windmill-server   ghcr.io/windmill-labs/windmill   <none>              linux/amd64         d90895fdf608        3.55GB              2 years ago
+safi-windmill-worker   ghcr.io/windmill-labs/windmill   <none>              linux/amd64         d90895fdf608        3.55GB              2 years ago

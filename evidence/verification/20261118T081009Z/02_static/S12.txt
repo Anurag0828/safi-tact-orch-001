@@ -1,0 +1,31 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# command: grep -nE 'FAILED_CLOSED|recover_on_startup|quick_check' gate/store.py gate/modes.py gate/app.py
+# rc: 0
+
+gate/store.py:88:            qc_cursor = await self._db.execute("PRAGMA quick_check;")
+gate/store.py:675:    async def recover_on_startup(self) -> dict[str, Any]:
+gate/store.py:727:            await self.update_conversation_mode(conv_id, ConversationMode.FAILED_CLOSED)
+gate/modes.py:143:        """Enforces fail-closed authz, persists owner_guid on new conversations, and guards FAILED_CLOSED."""
+gate/modes.py:159:        if conv and ConversationMode(conv["mode"]) == ConversationMode.FAILED_CLOSED:
+gate/modes.py:188:            if current_mode == ConversationMode.FAILED_CLOSED:
+gate/modes.py:228:                "Timed out reconciling in-flight actions during Barge In; transitioned to FAILED_CLOSED",
+gate/modes.py:235:            if now_mode == ConversationMode.FAILED_CLOSED:
+gate/modes.py:254:                        conv_id, ConversationMode.FAILED_CLOSED
+gate/modes.py:335:            if mode == ConversationMode.FAILED_CLOSED:
+gate/modes.py:369:                    conv_id, ConversationMode.FAILED_CLOSED
+gate/modes.py:405:            if mode == ConversationMode.FAILED_CLOSED:
+gate/modes.py:433:                    conv_id, ConversationMode.FAILED_CLOSED
+gate/modes.py:471:            if current_mode == ConversationMode.FAILED_CLOSED:
+gate/modes.py:583:                "Timed out reconciling in-flight actions during Return to Ungated; transitioned to FAILED_CLOSED",
+gate/modes.py:594:                if conv_now and ConversationMode(conv_now["mode"]) != ConversationMode.FAILED_CLOSED:
+gate/modes.py:596:                        conv_id, ConversationMode.FAILED_CLOSED
+gate/modes.py:626:            if ConversationMode(conv["mode"]) == ConversationMode.FAILED_CLOSED:
+gate/modes.py:671:                    conv_id, ConversationMode.FAILED_CLOSED
+gate/modes.py:690:        """Reconciles a FAILED_CLOSED conversation after operator verification (E4, E6).
+gate/modes.py:696:                ConversationMode.FAILED_CLOSED.value, target_mode.value
+gate/modes.py:714:            if ConversationMode(conv["mode"]) != ConversationMode.FAILED_CLOSED:
+gate/modes.py:752:                    conv_id, ConversationMode.FAILED_CLOSED
+gate/app.py:120:            recovery = await gate_store.recover_on_startup()
+gate/app.py:123:            # Emit authoritative GATE_FAILED_CLOSED events to JetStream for any crash-interrupted conversations (A10/A11)
+gate/app.py:135:                    event_type=ControlEventType.GATE_FAILED_CLOSED,
+gate/app.py:136:                    operation_id="startup:recover_on_startup",

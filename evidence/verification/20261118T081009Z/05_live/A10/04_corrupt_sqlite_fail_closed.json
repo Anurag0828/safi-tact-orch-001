@@ -1,0 +1,6 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "capturedUtc": "2026-11-18T08:13:16.779501Z",
+  "exitCode": 1,
+  "output": "re import GateStore; Path('/tmp/corrupt.db').write_bytes(b'CORRUPTED_BYTES'*20); asyncio.run(GateStore('/tmp/corrupt.db').initialize())\n                                                                                                                                            ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.13/asyncio/runners.py\", line 196, in run\n    return runner.run(main)\n           ~~~~~~~~~~^^^^^^\n  File \"/usr/local/lib/python3.13/asyncio/runners.py\", line 119, in run\n    return self._loop.run_until_complete(task)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"/usr/local/lib/python3.13/asyncio/base_events.py\", line 726, in run_until_complete\n    return future.result()\n           ~~~~~~~~~~~~~^^\n  File \"/app/gate/store.py\", line 171, in initialize\n    raise StoreError(f\"Failed to initialize Gate operational store: {exc}\") from exc\ngate.errors.StoreError: Failed to initialize Gate operational store: file is not a database\n"
+}

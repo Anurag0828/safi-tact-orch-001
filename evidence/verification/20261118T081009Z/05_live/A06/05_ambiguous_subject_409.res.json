@@ -1,0 +1,24 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:42.772284Z",
+  "statusCode": 409,
+  "body": {
+    "errorCode": "AMBIGUOUS_SUBJECT_LINE",
+    "message": "Subject Line 'Ambiguous Renewal 20261118T081009Z_1794989544' matches multiple conversations; select a specific ConversationID",
+    "details": {
+      "subjectLine": "Ambiguous Renewal 20261118T081009Z_1794989544",
+      "candidates": [
+        {
+          "conversationId": "conv_ver_d1_20261118T081009Z_1794989544",
+          "subjectLine": "Ambiguous Renewal 20261118T081009Z_1794989544",
+          "mode": "UNGATED"
+        },
+        {
+          "conversationId": "conv_ver_d2_20261118T081009Z_1794989544",
+          "subjectLine": "Ambiguous Renewal 20261118T081009Z_1794989544",
+          "mode": "UNGATED"
+        }
+      ]
+    }
+  }
+}

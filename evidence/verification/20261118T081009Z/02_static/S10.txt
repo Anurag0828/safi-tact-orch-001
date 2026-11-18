@@ -1,0 +1,14 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# command: grep -nE 'sanitize_subject_token|jetstream_control_subject_prefix|jetstream_auto_create_stream' gate/history.py gate/config.py
+# rc: 0
+
+gate/history.py:27:def sanitize_subject_token(token: str) -> str:
+gate/history.py:188:                    if not self.config.jetstream_auto_create_stream:
+gate/history.py:193:                    subject_wildcard = f"{self.config.jetstream_control_subject_prefix}.>"
+gate/history.py:302:        conv_token = sanitize_subject_token(conversation_id)
+gate/history.py:303:        type_token = sanitize_subject_token(event_type.value.lower())
+gate/history.py:304:        subject = f"{self.config.jetstream_control_subject_prefix}.{conv_token}.{type_token}"
+gate/config.py:59:    jetstream_control_subject_prefix: str = "safi.control.events"
+gate/config.py:62:    jetstream_auto_create_stream: bool = False
+gate/config.py:109:            jetstream_control_subject_prefix=os.getenv(
+gate/config.py:113:            jetstream_auto_create_stream=_parse_bool_env("JETSTREAM_AUTO_CREATE_STREAM", False),

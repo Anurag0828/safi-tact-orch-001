@@ -1,0 +1,626 @@
+diff --git a/gate/app.py b/gate/app.py
+index 7a8ba70..b6944a4 100644
+--- a/gate/app.py
++++ b/gate/app.py
+@@ -103,46 +103,47 @@ def create_app(
+     @asynccontextmanager
+     async def lifespan(app: FastAPI):
+         await gate_store.initialize()
+-
+-        # Restore persisted per-conversation ownership into local ACL provider across restarts (A09/A10)
+-        persisted_owners = await gate_store.list_conversation_owners()
+-        local_acl = (
+-            gate_authz.local_policy
+-            if isinstance(gate_authz, HttpPermissionProvider)
+-            else gate_authz
+-        )
+-        if hasattr(local_acl, "authorize_actor_for_conversation"):
+-            for cid, owner_guid in persisted_owners.items():
+-                local_acl.authorize_actor_for_conversation(cid, owner_guid)
+-
+-        if isinstance(gate_history, JetStreamHistoryPublisher):
+-            await gate_history.connect()
+-        recovery = await gate_store.recover_on_startup()
+-        app.state.recovery_summary = recovery
+-
+-        # Emit authoritative GATE_FAILED_CLOSED events to JetStream for any crash-interrupted conversations (A10/A11)
+-        system_actor = ActorContext(
+-            actorGuid="system-gate-recovery",
+-            actorKind=ActorKind.PROXY,
+-            meetingContext={"source": "startup-recovery"},
+-            portContext={"port": "local-gate-adapter"},
+-            permissionProvenance={"role": "SYSTEM_RECOVERY"},
+-        )
+-        for item in recovery.get("failedClosedDetails", []):
+-            await gate_history.record_control_event(
+-                conversation_id=item["conversationId"],
+-                actor=system_actor,
+-                event_type=ControlEventType.GATE_FAILED_CLOSED,
+-                operation_id="startup:recover_on_startup",
+-                idempotency_key=f"recovery:{item['conversationId']}",
+-                outcome=Outcome.UNKNOWN,
+-                subject_line_display=item.get("subjectLine", ""),
++        try:
++            # Restore persisted per-conversation ownership into local ACL provider across restarts (A09/A10)
++            persisted_owners = await gate_store.list_conversation_owners()
++            local_acl = (
++                gate_authz.local_policy
++                if isinstance(gate_authz, HttpPermissionProvider)
++                else gate_authz
+             )
+-
+-        yield
+-        if isinstance(gate_history, JetStreamHistoryPublisher):
+-            await gate_history.close()
+-        await gate_store.close()
++            if hasattr(local_acl, "authorize_actor_for_conversation"):
++                for cid, owner_guid in persisted_owners.items():
++                    local_acl.authorize_actor_for_conversation(cid, owner_guid)
++
++            if isinstance(gate_history, JetStreamHistoryPublisher):
++                await gate_history.connect()
++            recovery = await gate_store.recover_on_startup()
++            app.state.recovery_summary = recovery
++
++            # Emit authoritative GATE_FAILED_CLOSED events to JetStream for any crash-interrupted conversations (A10/A11)
++            system_actor = ActorContext(
++                actorGuid="system-gate-recovery",
++                actorKind=ActorKind.PROXY,
++                meetingContext={"source": "startup-recovery"},
++                portContext={"port": "local-gate-adapter"},
++                permissionProvenance={"role": "SYSTEM_RECOVERY"},
++            )
++            for item in recovery.get("failedClosedDetails", []):
++                await gate_history.record_control_event(
++                    conversation_id=item["conversationId"],
++                    actor=system_actor,
++                    event_type=ControlEventType.GATE_FAILED_CLOSED,
++                    operation_id="startup:recover_on_startup",
++                    idempotency_key=f"recovery:{item['conversationId']}",
++                    outcome=Outcome.UNKNOWN,
++                    subject_line_display=item.get("subjectLine", ""),
++                )
++
++            yield
++        finally:
++            if isinstance(gate_history, JetStreamHistoryPublisher):
++                await gate_history.close()
++            await gate_store.close()
+ 
+     app = FastAPI(
+         title="SAFI Local Gate Adapter",
+diff --git a/gate/config.py b/gate/config.py
+index 2fc915c..aee209b 100644
+--- a/gate/config.py
++++ b/gate/config.py
+@@ -65,6 +65,8 @@ class GateConfig:
+     http_timeout_seconds: float = 10.0
+     authz_timeout_seconds: float = 3.0
+     inflight_reconcile_timeout_seconds: float = 30.0
++    nats_connect_timeout_seconds: float = 3.0
++    nats_connect_total_budget_seconds: float = 12.0
+ 
+     @classmethod
+     def from_env(cls) -> "GateConfig":
+@@ -114,6 +116,13 @@ class GateConfig:
+             inflight_reconcile_timeout_seconds=float(
+                 os.getenv("GATE_INFLIGHT_TIMEOUT_SECONDS", "30.0")
+             ),
++            nats_connect_timeout_seconds=float(
++                os.getenv("NATS_CONNECT_TIMEOUT_SECONDS", "3.0")
++            ),
++            nats_connect_total_budget_seconds=min(
++                float(os.getenv("NATS_CONNECT_TOTAL_BUDGET_SECONDS", "12.0")),
++                15.0,
++            ),
+         )
+ 
+     def is_recipient_allowed(self, recipient: str) -> bool:
+diff --git a/gate/dispatch.py b/gate/dispatch.py
+index b55a719..5742fb7 100644
+--- a/gate/dispatch.py
++++ b/gate/dispatch.py
+@@ -697,11 +697,30 @@ class GateDispatcher:
+             if adapter is None:
+                 raise DownstreamError(engine.value, "No adapter registered for engine")
+ 
++            # D1: Fail closed BEFORE executing any downstream side effect if required audit history is unreachable
++            try:
++                await self.history.ensure_available()
++            except StoreError as exc:
++                logger.error(
++                    "Audit backend unavailable before downstream execution for action '%s': %s",
++                    action_id,
++                    exc,
++                )
++                await self.store.update_action_state(
++                    action_id,
++                    ActionState.FAILED,
++                    error={"code": "AUDIT_BACKEND_UNAVAILABLE", "message": str(exc), "outcome": "unknown"},
++                    outcome_override=Outcome.UNKNOWN,
++                )
++                await self.store.update_conversation_mode(
++                    conversation_id, ConversationMode.FAILED_CLOSED
++                )
++                raise
++
+             result = await adapter.execute(operation, payload, idempotency_key)
+ 
+-            await self.store.update_action_state(
+-                action_id, ActionState.DONE, result=result
+-            )
++            # D1: Publish authoritative audit event BEFORE marking action DONE; if publish fails mid-run,
++            # record FAILED(unknown) + FAILED_CLOSED rather than silently reporting DONE without audit.
+             try:
+                 await self.history.record_control_event(
+                     conversation_id=conversation_id,
+@@ -715,15 +734,30 @@ class GateDispatcher:
+                 )
+             except StoreError as exc:
+                 logger.error(
+-                    "Audit publish failed after downstream success for action '%s': %s",
++                    "Audit publish failed after downstream execution for action '%s': %s",
+                     action_id,
+                     exc,
+                 )
++                await self.store.update_action_state(
++                    action_id,
++                    ActionState.FAILED,
++                    error={
++                        "code": "AUDIT_PUBLISH_FAILED",
++                        "message": str(exc),
++                        "outcome": "unknown",
++                        "downstreamExecuted": True,
++                    },
++                    outcome_override=Outcome.UNKNOWN,
++                )
+                 await self.store.update_conversation_mode(
+                     conversation_id, ConversationMode.FAILED_CLOSED
+                 )
+                 raise
+ 
++            await self.store.update_action_state(
++                action_id, ActionState.DONE, result=result
++            )
++
+             return {
+                 "actionId": action_id,
+                 "conversationId": conversation_id,
+@@ -733,6 +767,9 @@ class GateDispatcher:
+                 "result": result,
+             }
+ 
++        except StoreError:
++            raise
++
+         except UnauthorizedError as exc:
+             # Adapter-level scope guard (e.g. arbitrary Windmill scriptPath or out-of-bounds Calnode calendar)
+             await self.store.update_action_state(
+diff --git a/gate/history.py b/gate/history.py
+index 0750473..5ff8f12 100644
+--- a/gate/history.py
++++ b/gate/history.py
+@@ -61,6 +61,10 @@ def build_validated_control_event(
+ 
+ 
+ class HistoryPublisher(ABC):
++    async def ensure_available(self) -> None:
++        """Verifies audit history backend is reachable before executing a downstream side effect."""
++        return None
++
+     @abstractmethod
+     async def record_control_event(
+         self,
+@@ -132,25 +136,54 @@ class JetStreamHistoryPublisher(HistoryPublisher):
+             None if config.jetstream_required else InMemoryHistoryPublisher()
+         )
+ 
+-    async def connect(self, max_retries: int = 5, retry_delay_s: float = 1.0) -> None:
++    async def connect(self, max_retries: int = 3, retry_delay_s: float = 0.5) -> None:
++        """Connects to NATS JetStream with strict fail-closed timeout & retry budget (D1).
++
++        Uses allow_reconnect=False and max_reconnect_attempts=0 on initial connect wrapped in
++        asyncio.wait_for so unreachable/blackholed NATS fails fast within <= 15s total budget.
++        """
+         import asyncio
++        import time
++
++        per_attempt_cap = max(0.5, float(self.config.nats_connect_timeout_seconds))
++        total_budget = min(max(per_attempt_cap, float(self.config.nats_connect_total_budget_seconds)), 15.0)
++        attempts = max(1, max_retries) if self.config.jetstream_required else 1
++        deadline = time.monotonic() + total_budget
+ 
+         last_exc: Exception | None = None
+-        for attempt in range(1, max_retries + 1):
++        for attempt in range(1, attempts + 1):
++            remaining = deadline - time.monotonic()
++            if remaining <= 0:
++                last_exc = TimeoutError(f"Exceeded total NATS connect budget ({total_budget:.1f}s)")
++                break
++
++            attempt_timeout = min(per_attempt_cap, remaining)
+             try:
+                 import nats
+ 
+-                opts: dict[str, Any] = {"servers": [self.config.nats_url]}
++                opts: dict[str, Any] = {
++                    "servers": [self.config.nats_url],
++                    "allow_reconnect": False,
++                    "max_reconnect_attempts": 0,
++                    "connect_timeout": attempt_timeout,
++                }
+                 if self.config.nats_token:
+                     opts["token"] = self.config.nats_token
+                 elif self.config.nats_user and self.config.nats_password:
+                     opts["user"] = self.config.nats_user
+                     opts["password"] = self.config.nats_password
+-                self._nc = await nats.connect(**opts)
++
++                self._nc = await asyncio.wait_for(
++                    nats.connect(**opts),
++                    timeout=attempt_timeout + 0.5,
++                )
+                 self._js = self._nc.jetstream()
+ 
+                 try:
+-                    await self._js.stream_info(self.config.jetstream_stream)
++                    await asyncio.wait_for(
++                        self._js.stream_info(self.config.jetstream_stream),
++                        timeout=attempt_timeout,
++                    )
+                 except Exception as stream_exc:
+                     if not self.config.jetstream_auto_create_stream:
+                         raise StoreError(
+@@ -158,9 +191,12 @@ class JetStreamHistoryPublisher(HistoryPublisher):
+                             f"(JETSTREAM_AUTO_CREATE_STREAM=false; refusing to mutate NATS): {stream_exc}"
+                         ) from stream_exc
+                     subject_wildcard = f"{self.config.jetstream_control_subject_prefix}.>"
+-                    await self._js.add_stream(
+-                        name=self.config.jetstream_stream,
+-                        subjects=[subject_wildcard],
++                    await asyncio.wait_for(
++                        self._js.add_stream(
++                            name=self.config.jetstream_stream,
++                            subjects=[subject_wildcard],
++                        ),
++                        timeout=attempt_timeout,
+                     )
+                     logger.info(
+                         "Created local JetStream stream '%s' for '%s' (JETSTREAM_AUTO_CREATE_STREAM=true)",
+@@ -181,22 +217,55 @@ class JetStreamHistoryPublisher(HistoryPublisher):
+                 self._js = None
+                 if self._nc is not None:
+                     try:
+-                        await self._nc.close()
++                        await asyncio.wait_for(self._nc.close(), timeout=1.0)
+                     except Exception:
+                         pass
+                     self._nc = None
+-                if attempt < max_retries and self.config.jetstream_required:
+-                    await asyncio.sleep(retry_delay_s)
++                if attempt < attempts and self.config.jetstream_required:
++                    sleep_for = min(retry_delay_s, max(0.0, deadline - time.monotonic()))
++                    if sleep_for > 0:
++                        await asyncio.sleep(sleep_for)
+ 
+         if self.config.jetstream_required:
+             raise StoreError(
+                 f"JetStream is required (JETSTREAM_REQUIRED=true) but unavailable at {self.config.nats_url}: {last_exc}"
+             ) from last_exc
+         logger.warning(
+-            "Could not connect to NATS JetStream (%s). Falling back to local publisher (JETSTREAM_REQUIRED=false).",
++            "WARNING: Could not connect to NATS JetStream (%s). Falling back to local in-memory publisher (JETSTREAM_REQUIRED=false).",
+             last_exc,
+         )
+ 
++    async def _drop_connection(self) -> None:
++        import asyncio
++
++        self.connected = False
++        self._js = None
++        if self._nc is not None:
++            try:
++                await asyncio.wait_for(self._nc.close(), timeout=1.0)
++            except Exception:
++                pass
++            self._nc = None
++
++    async def ensure_available(self) -> None:
++        """Fail-closed liveness check before dispatching external side effects (D1 / A10.3)."""
++        import asyncio
++
++        if not self.config.jetstream_required:
++            return
++
++        ping_timeout = min(max(0.5, float(self.config.nats_connect_timeout_seconds)), 2.5)
++        if self._nc is not None and self._js is not None and self._nc.is_connected:
++            try:
++                await asyncio.wait_for(self._nc.flush(timeout=ping_timeout), timeout=ping_timeout + 0.5)
++                return
++            except Exception as exc:
++                logger.warning("NATS liveness check failed mid-run (%s); attempting single bounded reconnect", exc)
++                await self._drop_connection()
++
++        # Single bounded reconnect attempt so recovery works after NATS returns (A10.3), while failing fast if down
++        await self.connect(max_retries=1, retry_delay_s=0.0)
++
+     async def record_control_event(
+         self,
+         conversation_id: str,
+@@ -208,6 +277,8 @@ class JetStreamHistoryPublisher(HistoryPublisher):
+         subject_line_display: str = "",
+         correlation_id: str | None = None,
+     ) -> ControlEvent:
++        import asyncio
++
+         event, payload = build_validated_control_event(
+             conversation_id=conversation_id,
+             actor=actor,
+@@ -219,22 +290,27 @@ class JetStreamHistoryPublisher(HistoryPublisher):
+             correlation_id=correlation_id,
+         )
+ 
+-        if self._js is None:
++        if self._js is None or self._nc is None or not self._nc.is_connected:
+             if self.config.jetstream_required:
+-                raise StoreError(
+-                    "JetStream publisher is disconnected; refusing to proceed without authoritative audit event"
+-                )
+-            if self.fallback is not None:
+-                self.fallback.events.append(event)
+-            return event
++                # Attempt single fast reconnect in case NATS just recovered (A10.3)
++                await self.connect(max_retries=1, retry_delay_s=0.0)
++            else:
++                if self.fallback is not None:
++                    self.fallback.events.append(event)
++                return event
+ 
+         conv_token = sanitize_subject_token(conversation_id)
+         type_token = sanitize_subject_token(event_type.value.lower())
+         subject = f"{self.config.jetstream_control_subject_prefix}.{conv_token}.{type_token}"
+         payload_bytes = json.dumps(payload).encode("utf-8")
++        pub_timeout = max(0.5, float(self.config.nats_connect_timeout_seconds))
+         try:
+-            await self._js.publish(subject, payload_bytes)
++            await asyncio.wait_for(
++                self._js.publish(subject, payload_bytes, timeout=pub_timeout),
++                timeout=pub_timeout + 1.0,
++            )
+         except Exception as exc:
++            await self._drop_connection()
+             if self.config.jetstream_required:
+                 raise StoreError(
+                     f"Failed to publish ControlEvent to JetStream subject '{subject}': {exc}"
+@@ -250,9 +326,18 @@ class JetStreamHistoryPublisher(HistoryPublisher):
+         return event
+ 
+     async def close(self) -> None:
++        import asyncio
++
+         if self._nc:
+-            await self._nc.drain()
+-            await self._nc.close()
++            try:
++                if self._nc.is_connected:
++                    await asyncio.wait_for(self._nc.drain(), timeout=2.0)
++            except Exception:
++                pass
++            try:
++                await asyncio.wait_for(self._nc.close(), timeout=1.0)
++            except Exception:
++                pass
+             self._nc = None
+             self._js = None
+             self.connected = False
+diff --git a/gate/store.py b/gate/store.py
+index 5367a47..54e4470 100644
+--- a/gate/store.py
++++ b/gate/store.py
+@@ -59,6 +59,18 @@ class GateStore:
+             try:
+                 yield conn
+                 await conn.commit()
++            except StoreError:
++                try:
++                    await conn.rollback()
++                except Exception:
++                    pass
++                raise
++            except aiosqlite.Error as exc:
++                try:
++                    await conn.rollback()
++                except Exception:
++                    pass
++                raise StoreError(f"Operational SQLite store error: {exc}") from exc
+             except Exception:
+                 try:
+                     await conn.rollback()
+@@ -72,6 +84,14 @@ class GateStore:
+             self._db = await aiosqlite.connect(self.db_path)
+             self._db.row_factory = aiosqlite.Row
+ 
++            # Fail closed immediately if the SQLite store file is corrupted (A10.4 / E6)
++            qc_cursor = await self._db.execute("PRAGMA quick_check;")
++            qc_row = await qc_cursor.fetchone()
++            if not qc_row or str(qc_row[0]).strip().lower() != "ok":
++                raise StoreError(
++                    f"Operational store failed SQLite integrity check: {qc_row[0] if qc_row else 'empty'}"
++                )
++
+             await self._db.execute("PRAGMA journal_mode = WAL;")
+             await self._db.execute("PRAGMA synchronous = FULL;")
+             await self._db.execute("PRAGMA busy_timeout = 5000;")
+@@ -142,6 +162,12 @@ class GateStore:
+             )
+             await self._db.commit()
+         except Exception as exc:
++            if self._db is not None:
++                try:
++                    await self._db.close()
++                except Exception:
++                    pass
++                self._db = None
+             raise StoreError(f"Failed to initialize Gate operational store: {exc}") from exc
+ 
+     async def _run_migrations(self) -> None:
+diff --git a/tests/test_adapters.py b/tests/test_adapters.py
+index e15e6df..0c32073 100644
+--- a/tests/test_adapters.py
++++ b/tests/test_adapters.py
+@@ -197,3 +197,155 @@ async def test_jetstream_required_fails_closed_when_unreachable():
+     pub = JetStreamHistoryPublisher(cfg)
+     with pytest.raises(StoreError, match="JetStream is required"):
+         await pub.connect()
++
++
++@pytest.mark.asyncio
++async def test_d1_jetstream_blackholed_host_fails_closed_within_budget():
++    """D1: Blackholed/unreachable NATS with JETSTREAM_REQUIRED=true fails closed within <= 20s (never hangs)."""
++    import asyncio
++    import time
++
++    t0 = time.monotonic()
++    cfg = GateConfig(
++        nats_url="nats://192.0.2.1:4222",
++        jetstream_required=True,
++        nats_connect_timeout_seconds=1.0,
++        nats_connect_total_budget_seconds=3.5,
++    )
++    pub = JetStreamHistoryPublisher(cfg)
++    with pytest.raises(StoreError, match="JetStream is required"):
++        await asyncio.wait_for(pub.connect(), timeout=20.0)
++    elapsed = time.monotonic() - t0
++    assert elapsed < 10.0, f"Connect took too long: {elapsed:.2f}s"
++    assert pub.connected is False
++
++
++@pytest.mark.asyncio
++async def test_d1_jetstream_optional_falls_back_without_exception(test_actor):
++    """D1: Unreachable NATS with JETSTREAM_REQUIRED=false falls back cleanly within <= 10s."""
++    import asyncio
++    from gate.models import ControlEventType, Outcome
++
++    cfg = GateConfig(
++        nats_url="nats://192.0.2.1:4222",
++        jetstream_required=False,
++        nats_connect_timeout_seconds=1.0,
++        nats_connect_total_budget_seconds=3.0,
++    )
++    pub = JetStreamHistoryPublisher(cfg)
++    await asyncio.wait_for(pub.connect(), timeout=10.0)
++    assert pub.connected is False
++    assert pub.fallback is not None
++
++    ev = await pub.record_control_event(
++        conversation_id="conv_d1_opt",
++        actor=test_actor,
++        event_type=ControlEventType.MODE_GATED,
++        operation_id="gate:barge_in",
++        idempotency_key="d1_opt_1",
++        outcome=Outcome.OK,
++    )
++    assert len(pub.fallback.events) == 1
++    assert pub.fallback.events[0].eventId == ev.eventId
++
++
++@pytest.mark.asyncio
++async def test_d1_gate_app_startup_fails_closed_when_nats_required_and_down(tmp_path):
++    """D1: FastAPI lifespan fails closed (raises StoreError within <= 20s) when JETSTREAM_REQUIRED=true and NATS is down."""
++    import asyncio
++    from gate.app import create_app
++
++    cfg = GateConfig(
++        store_path=str(tmp_path / "startup_fail.db"),
++        nats_url="nats://127.0.0.1:1",
++        jetstream_required=True,
++        nats_connect_timeout_seconds=1.0,
++        nats_connect_total_budget_seconds=3.5,
++        gate_api_token="tok",
++        n8n_webhook_secret="sec",
++        allowed_recipients=frozenset({"customer-a@allowlist.test.local"}),
++    )
++    app = create_app(config=cfg)
++    with pytest.raises(StoreError, match="JetStream is required"):
++        async with asyncio.timeout(20.0):
++            async with app.router.lifespan_context(app):
++                pass
++
++
++@pytest.mark.asyncio
++async def test_d1_midrun_nats_outage_blocks_downstream_and_never_silent_done(
++    test_config, gate_store, authz_provider, mock_adapters, test_actor
++):
++    """D1: Mid-run JetStream outage either blocks before downstream (0 effects) or fails closed (<=1 effect, NOT DONE)."""
++    from gate.dispatch import GateDispatcher
++    from gate.history import InMemoryHistoryPublisher
++    from gate.models import ActionState, ActionSubmission, ConversationMode, EngineName
++    from gate.state_machine import ConversationRuntimeRegistry
++
++    authz_provider.authorize_bootstrap_actor(test_actor.actorGuid)
++
++    # Case A: NATS dies BEFORE downstream executes -> 0 downstream effects + FAILED_CLOSED
++    class PreDispatchDeadHistory(InMemoryHistoryPublisher):
++        async def ensure_available(self) -> None:
++            raise StoreError("Simulated mid-run NATS outage before dispatch")
++
++    disp_a = GateDispatcher(
++        test_config, gate_store, PreDispatchDeadHistory(), authz_provider, ConversationRuntimeRegistry(), mock_adapters
++    )
++    with pytest.raises(StoreError, match="mid-run NATS outage"):
++        await disp_a.submit_action(
++            ActionSubmission(
++                conversationId="conv_d1_pre",
++                subjectLineDisplay="D1 Pre Outage",
++                engine=EngineName.N8N,
++                operation="dispatch_followup",
++                idempotencyKey="d1_pre_1",
++                payload={"recipientEmail": "customer-a@allowlist.test.local", "messageBody": "hi"},
++                recipients=["customer-a@allowlist.test.local"],
++                actor=test_actor,
++            )
++        )
++    assert len(mock_adapters[EngineName.N8N].call_log) == 0
++    act_a = await gate_store.get_action_by_idempotency_key("conv_d1_pre", "d1_pre_1")
++    assert act_a["state"] == ActionState.FAILED.value
++    assert (await gate_store.get_conversation("conv_d1_pre"))["mode"] == ConversationMode.FAILED_CLOSED.value
++
++    # Case B: NATS dies DURING downstream execution -> <=1 effect, action FAILED(unknown) (NOT DONE!), conv FAILED_CLOSED
++    class PostExecDeadHistory(InMemoryHistoryPublisher):
++        async def record_control_event(self, *args, **kwargs):
++            raise StoreError("Simulated NATS drop during ACTION_DISPATCHED publish")
++
++    disp_b = GateDispatcher(
++        test_config, gate_store, PostExecDeadHistory(), authz_provider, ConversationRuntimeRegistry(), mock_adapters
++    )
++    with pytest.raises(StoreError, match="NATS drop"):
++        await disp_b.submit_action(
++            ActionSubmission(
++                conversationId="conv_d1_post",
++                subjectLineDisplay="D1 Post Outage",
++                engine=EngineName.N8N,
++                operation="dispatch_followup",
++                idempotencyKey="d1_post_1",
++                payload={"recipientEmail": "customer-a@allowlist.test.local", "messageBody": "hi"},
++                recipients=["customer-a@allowlist.test.local"],
++                actor=test_actor,
++            )
++        )
++    assert len(mock_adapters[EngineName.N8N].call_log) == 1
++    act_b = await gate_store.get_action_by_idempotency_key("conv_d1_post", "d1_post_1")
++    assert act_b["state"] == ActionState.FAILED.value  # NEVER silently DONE without audit event!
++    rec_b = await gate_store.get_idempotency_record("conv_d1_post", "d1_post_1")
++    assert rec_b["outcome"] == "unknown"
++    assert (await gate_store.get_conversation("conv_d1_post"))["mode"] == ConversationMode.FAILED_CLOSED.value
++
++
++@pytest.mark.asyncio
++async def test_a10_corrupt_sqlite_store_fails_closed(tmp_path):
++    """A10.4: Corrupted SQLite store file fails closed with StoreError instead of silently defaulting to UNGATED."""
++    from gate.store import GateStore
++
++    bad_db = tmp_path / "corrupt_gate.db"
++    bad_db.write_bytes(b"NOT A VALID SQLITE DATABASE HEADER CORRUPTION TEST 1234567890" * 4)
++    store = GateStore(str(bad_db))
++    with pytest.raises(StoreError):
++        await store.initialize()

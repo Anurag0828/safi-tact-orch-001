@@ -1,0 +1,24 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "wmBefore": 151,
+  "wmAfter": 152,
+  "wmDelta": 1,
+  "recovery": {
+    "interruptedConversationsFailedClosed": [
+      "conv_ver_a10_kill_20261118T081009Z_1794989544"
+    ],
+    "failedClosedDetails": [
+      {
+        "conversationId": "conv_ver_a10_kill_20261118T081009Z_1794989544",
+        "subjectLine": "A10 Kill9 20261118T081009Z"
+      }
+    ],
+    "failedClosedCount": 1,
+    "interruptedDispatchingActions": [
+      "act_3eb7226c1b08"
+    ],
+    "interruptedPreDispatchActions": [],
+    "heldActionsPreserved": 152
+  },
+  "retryStatus": 503
+}

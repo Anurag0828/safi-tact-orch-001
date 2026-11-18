@@ -1,0 +1,9 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:58.248819Z",
+  "statusCode": 403,
+  "body": {
+    "errorCode": "UNAUTHORIZED",
+    "message": "Actor 'user_safi_revoked_03' permissions have been revoked"
+  }
+}

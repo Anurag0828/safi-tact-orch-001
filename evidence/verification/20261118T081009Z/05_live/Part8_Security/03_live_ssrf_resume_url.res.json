@@ -1,0 +1,13 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:13:17.019874Z",
+  "statusCode": 502,
+  "body": {
+    "errorCode": "DOWNSTREAM_ERROR",
+    "message": "Downstream engine 'n8n' failed: Rejected resumeUrl: origin does not match configured n8n_base_url",
+    "details": {
+      "engine": "n8n",
+      "resumeUrl": "http://169.254.169.254/latest/meta-data/"
+    }
+  }
+}

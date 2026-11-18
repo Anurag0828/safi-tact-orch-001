@@ -1,0 +1,56 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:40.024918Z",
+  "statusCode": 200,
+  "body": {
+    "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+    "engine": "windmill",
+    "job": {
+      "type": "CompletedJob",
+      "workspace_id": "safi-ops",
+      "id": "01a1edb7-0f86-e943-691e-167adfbe3852",
+      "created_by": "label-safi-gate-least-priv-ops",
+      "created_at": "2026-11-18T08:12:39.685512Z",
+      "started_at": "2026-11-18T08:12:39.719434Z",
+      "duration_ms": 91,
+      "success": true,
+      "script_hash": "df084f6c58e774ac",
+      "script_path": "f/safi/ops_task_assignment",
+      "args": {
+        "assignee": "ops-specialist-1@allowlist.test.local",
+        "idempotencyKey": "assign:conv_ver_a_20261118T081009Z_1794989544:fe4767e4-a8af-4aad-8f21-3746e4444b31",
+        "bookingId": "fe4767e4-a8af-4aad-8f21-3746e4444b31",
+        "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+        "taskSummary": "Onboard Alice fe4767e4-a8af-4aad-8f21-3746e4444b31"
+      },
+      "result": {
+        "error": null,
+        "state": "COMPLETED",
+        "assignee": "ops-specialist-1@allowlist.test.local",
+        "bookingId": "fe4767e4-a8af-4aad-8f21-3746e4444b31",
+        "retryCount": 0,
+        "completedAt": "2026-11-18T08:12:39.803829Z",
+        "taskSummary": "Onboard Alice fe4767e4-a8af-4aad-8f21-3746e4444b31",
+        "assignmentId": "asgn_459c8af268df",
+        "conversationId": "conv_ver_a_20261118T081009Z_1794989544"
+      },
+      "logs": "job=01a1edb7-0f86-e943-691e-167adfbe3852 tag=python3 worker=wk-default-2dab004009d4-syE1U hostname=2dab004009d4\n\n\n--- PYTHON CODE EXECUTION ---\n",
+      "deleted": false,
+      "canceled": false,
+      "job_kind": "script",
+      "permissioned_as": "u/safi_ops_runner",
+      "is_flow_step": false,
+      "language": "python3",
+      "is_skipped": false,
+      "email": "safi_ops_runner@local.test",
+      "visible_to_owner": true,
+      "mem_peak": 324,
+      "tag": "python3",
+      "jobId": "01a1edb7-0f86-e943-691e-167adfbe3852",
+      "state": "COMPLETED",
+      "assignee": "ops-specialist-1@allowlist.test.local",
+      "retryCount": 0,
+      "error": null
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:40.408784Z",
+  "method": "POST",
+  "url": "http://127.0.0.1:8000/gate/dispatch",
+  "headers": {
+    "X-SAFI-Gate-Secret": "[REDACTED]"
+  },
+  "body": {
+    "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+    "engine": "windmill",
+    "operation": "start_assignment",
+    "idempotencyKey": "wm:esc:20261118T081009Z",
+    "recipients": [
+      "ops-specialist-1@allowlist.test.local"
+    ],
+    "payload": {
+      "scriptPath": "f/other/evil",
+      "bookingId": "bkg_1",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "assignee": "ops-specialist-1@allowlist.test.local"
+    },
+    "actor": {
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "meetingContext": {
+        "meetingId": "mtg_ver_20261118T081009Z",
+        "channel": "safichat-pilot"
+      },
+      "portContext": {
+        "port": "safichat-local-api",
+        "host": "127.0.0.1"
+      },
+      "permissionProvenance": {
+        "role": "BUSINESS_OWNER",
+        "scope": "conversation:admin"
+      }
+    }
+  }
+}

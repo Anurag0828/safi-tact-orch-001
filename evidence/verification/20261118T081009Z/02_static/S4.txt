@@ -1,0 +1,51 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# command: cat calnode/test-config.json && echo '--- compose ---' && grep -nE 'SMTP|calnode' deploy/docker-compose.yml
+# rc: 0
+
+{
+  "calendarId": "consultation-30m",
+  "displayName": "SAFI Pilot Bounded Test Calendar (30m Consultation)",
+  "timezone": "UTC",
+  "slotDurationMinutes": 30,
+  "workingHours": {
+    "days": ["MON", "TUE", "WED", "THU", "FRI"],
+    "start": "14:00",
+    "end": "17:00"
+  },
+  "allowlistedTestAttendees": [
+    "customer-a@allowlist.test.local",
+    "customer-b@allowlist.test.local",
+    "customer-c@allowlist.test.local"
+  ],
+  "notificationPolicy": {
+    "inviteDelivery": "none",
+    "reminders": [],
+    "smtpConfigured": false,
+    "excludedUngateablePaths": [
+      {
+        "path": "calnode.builtin.email_confirmation",
+        "status": "DISABLED_AND_EXCLUDED",
+        "requirement": "R-GATE-02",
+        "reason": "Calnode built-in transactional SMTP confirmation bypasses the Local Gate Adapter; event type configured with invite_delivery='none' and EMAIL_SMTP_HOST='' in Docker Compose."
+      },
+      {
+        "path": "calnode.builtin.reminder_cron",
+        "status": "DISABLED_AND_EXCLUDED",
+        "requirement": "R-GATE-02",
+        "reason": "Autonomous scheduled reminders cannot be gated per conversation in this pilot; event type configured with reminders=[]."
+      }
+    ]
+  }
+}
+--- compose ---
+30:      CALNODE_BASE_URL: http://calnode:3000
+78:  calnode:
+79:    # Official Calnode v0.14.0 pinned by exact version tag + SHA256 digest (https://github.com/Calnode/calnode)
+80:    image: ${CALNODE_PINNED_IMAGE:-ghcr.io/calnode/calnode:0.14.0@sha256:120f1434d02c409b25f981a163cd4408db3e3f3ea571abc4c1e3e922f292af80}
+81:    container_name: safi-calnode
+88:      DATABASE_URL: sqlite:///data/calnode.db
+91:      # R-GATE-02: Leave SMTP unconfigured so ungated auto-emails cannot bypass the Gate
+92:      # (Calnode v0.14.0 reads EMAIL_SMTP_HOST)
+93:      EMAIL_SMTP_HOST: ""
+95:      - calnode_data:/data
+176:  calnode_data:

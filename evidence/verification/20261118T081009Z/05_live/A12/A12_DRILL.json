@@ -1,0 +1,15 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "label": "A12-DRILL (not A12)",
+  "guidePath": "docs/safichat_user_guide.md",
+  "stepsVerified": [
+    "1. Marketing Intake (n8n): verified via POST /safichat/ops/marketing/ingest-lead",
+    "2. Sales Slots & Booking (Calnode): verified via /sales/slots & /sales/book (idempotent)",
+    "3. Operations Assignment (Windmill): verified via /operations/assign & /operations/job-status",
+    "4. Barge In by Subject Line & Ambiguity selection: verified (409 -> select conversationId)",
+    "5. Review Held Actions & Approve/Reject: verified via /gate/held, /gate/approve, /gate/reject",
+    "6. Return to Ungated (Release/Cancel): verified via /gate/ungate",
+    "7. Fail-Closed Recovery: verified via /gate/reconcile after NATS outage"
+  ],
+  "guideGapsFound": "Guide accurately describes all user workflows; note that actual UI button labels will map once SAFI supplies V-06."
+}

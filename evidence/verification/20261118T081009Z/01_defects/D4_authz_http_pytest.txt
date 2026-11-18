@@ -1,0 +1,19 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# capturedUtc: 2026-11-18T08:10:40.669784Z
+
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-8.3.4, pluggy-1.7.0 -- /tmp/safi_verify_venv/bin/python
+cachedir: .pytest_cache
+rootdir: /mnt/d/Interworks/Safi
+configfile: pyproject.toml
+plugins: anyio-4.16.0, asyncio-0.25.0, cov-7.1.0, timeout-2.4.0
+asyncio: mode=Mode.AUTO, asyncio_default_fixture_loop_scope=function
+timeout: 30.0s
+timeout method: signal
+timeout func_only: False
+collecting ... collected 2 items
+
+tests/test_authz_http_live.py::test_d4_case1_unset_safi_authz_url_fails_closed PASSED [ 50%]
+tests/test_authz_http_live.py::test_d4_cases_2_to_7_allow_deny_timeout_5xx_malformed_revocation_and_recheck_order PASSED [100%]
+
+============================== 2 passed in 1.64s ===============================

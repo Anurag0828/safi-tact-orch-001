@@ -1,0 +1,5 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# command: (grep -rnEi 'facebook.*ad|ad_spend|bulk_send|mass_email|public_webhook' gate/ adapters/ safichat/ workflows/ || echo 'NONE_PRESENT')
+# rc: 0
+
+NONE_PRESENT

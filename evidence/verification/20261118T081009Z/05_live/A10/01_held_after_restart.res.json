@@ -1,0 +1,28 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:13:06.170822Z",
+  "statusCode": 200,
+  "body": {
+    "conversationId": "conv_ver_a10_20261118T081009Z_1794989544",
+    "subjectLineDisplay": "A10 Restart 20261118T081009Z",
+    "mode": "GATED",
+    "heldActions": [
+      {
+        "actionId": "act_1fdad1c9a034",
+        "engine": "n8n",
+        "operation": "dispatch_followup",
+        "idempotencyKey": "a10:h1:20261118T081009Z",
+        "state": "HELD",
+        "createdAt": "2026-11-18T08:12:58.740007Z"
+      },
+      {
+        "actionId": "act_c8b42024fbaf",
+        "engine": "n8n",
+        "operation": "dispatch_followup",
+        "idempotencyKey": "a10:h2:20261118T081009Z",
+        "state": "HELD",
+        "createdAt": "2026-11-18T08:12:58.758658Z"
+      }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# command: git check-ignore -v deploy/.env && echo '--- history .env check ---' && git log --all --name-only -- '*.env' 'deploy/.env' && echo '--- tracked secret scan ---' && (git ls-files | grep -vE '\.docx$|evidence/' | xargs grep -nEi '(secret|token|password|api[_-]?key)[[:space:]]*[:=][[:space:]]*[\x27"]?[A-Za-z0-9_\-]{16,}' || echo 'NO_HARDCODED_SECRETS')
+# rc: 0
+
+.gitignore:5:deploy/.env	deploy/.env
+--- history .env check ---
+--- tracked secret scan ---
+deploy/.env.template:6:GATE_API_TOKEN=replace_with_32_byte_random_gate_api_token
+deploy/.env.template:17:N8N_API_KEY=replace_with_n8n_api_key
+deploy/.env.template:18:N8N_WEBHOOK_SECRET=replace_with_random_webhook_secret
+deploy/.env.template:23:CALNODE_RECOVERY_SECRET=replace_with_64_hex_char_32_byte_secret
+deploy/.env.template:24:CALNODE_API_KEY=replace_with_calnode_api_key
+deploy/.env.template:29:WINDMILL_DB_PASSWORD=replace_with_strong_db_password
+deploy/.env.template:31:WINDMILL_ADMIN_PASSWORD=replace_with_strong_unique_password
+deploy/.env.template:32:WINDMILL_TOKEN=replace_with_least_privilege_workspace_operator_token
+gate/history.py:302:        conv_token = sanitize_subject_token(conversation_id)
+gate/history.py:303:        type_token = sanitize_subject_token(event_type.value.lower())
+tests/test_e2e_safichat.py:211:        gate_api_token="secret_gate_tok_123",
+tests/test_security_and_edge_cases.py:637:    cfg = GateConfig(n8n_api_key="admin-n8n-key", n8n_webhook_secret="webhook-only-secret")
+
+--- real .env secret value search across full git history ---
+REAL_SECRET_HITS=0

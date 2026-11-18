@@ -1,0 +1,9 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:13:15.027831Z",
+  "statusCode": 500,
+  "body": {
+    "errorCode": "STORE_ERROR",
+    "message": "JetStream is required (JETSTREAM_REQUIRED=true) but unavailable at nats://nats:4222: "
+  }
+}

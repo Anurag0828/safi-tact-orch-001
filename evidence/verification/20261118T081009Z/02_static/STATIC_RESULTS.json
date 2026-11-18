@@ -1,0 +1,96 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "capturedUtc": "2026-11-18T08:10:40.673988Z",
+  "checks": {
+    "S1": {
+      "verdict": "PASS",
+      "command": "grep -rnE 'import.*adapters|CalnodeAdapter|N8nAdapter|WindmillAdapter' --include='*.py' . | grep -v './tests/'",
+      "outputFile": "02_static/S1.txt",
+      "note": "Adapters imported/constructed only inside adapters/ and gate/app.py wiring"
+    },
+    "S2": {
+      "verdict": "PASS",
+      "command": "/tmp/safi_verify_venv/bin/python -c \"import json, glob; print(json.dumps({f: [{'name':n['name'],'type':n['type'],'url':n.get('parameters',{}).get('url')} for n in json.load(open(f))['nodes']] for f in sorted(glob.glob('workflows/n8n/*.json'))}, indent=2))\"",
+      "outputFile": "02_static/S2.txt",
+      "note": "Zero direct send nodes; sole httpRequest targets http://gate-adapter:8000/gate/dispatch"
+    },
+    "S3": {
+      "verdict": "PASS",
+      "command": "/tmp/safi_verify_venv/bin/python -c \"import json, glob; print(json.dumps({f: [n['parameters'] for n in json.load(open(f))['nodes'] if n['type']=='n8n-nodes-base.webhook'] for f in sorted(glob.glob('workflows/n8n/*.json'))}, indent=2))\"",
+      "outputFile": "02_static/S3.txt",
+      "note": "Both n8n webhooks enforce native headerAuth (403 on missing/wrong secret)"
+    },
+    "S4": {
+      "verdict": "PASS",
+      "command": "cat calnode/test-config.json && echo '--- compose ---' && grep -nE 'SMTP|calnode' deploy/docker-compose.yml",
+      "outputFile": "02_static/S4.txt",
+      "note": "inviteDelivery=none, reminders=[], EMAIL_SMTP_HOST=''"
+    },
+    "S5": {
+      "verdict": "PASS",
+      "command": "cat workflows/windmill/ops_task_assignment.py",
+      "outputFile": "02_static/S5.txt",
+      "note": "Deterministic Python only; zero network/email/webhook calls"
+    },
+    "S6": {
+      "verdict": "PASS",
+      "command": "grep -nE 'image:|FROM ' deploy/docker-compose.yml deploy/Dockerfile.gate",
+      "outputFile": "02_static/S6.txt",
+      "note": "Every Compose & Dockerfile image pinned by exact tag AND @sha256: digest; no latest"
+    },
+    "S7": {
+      "verdict": "PASS",
+      "command": "grep -n 'ports:' -A3 deploy/docker-compose.yml",
+      "outputFile": "02_static/S7.txt",
+      "note": "Every published port bound strictly to 127.0.0.1"
+    },
+    "S8": {
+      "verdict": "PASS",
+      "command": "git check-ignore -v deploy/.env && echo '--- history .env check ---' && git log --all --name-only -- '*.env' 'deploy/.env' && echo '--- tracked secret scan ---' && (git ls-files | grep -vE '\\.docx$|evidence/' | xargs grep -nEi '(secret|token|password|api[_-]?key)[[:space:]]*[:=][[:space:]]*[\\x27\"]?[A-Za-z0-9_\\-]{16,}' || echo 'NO_HARDCODED_SECRETS') + git log --all -S <real_env_secrets>",
+      "outputFile": "02_static/S8.txt",
+      "note": "deploy/.env gitignored; 0 .env files in Git history; 0 real .env secret hits across all commits (only template placeholders & unit-test literals)"
+    },
+    "S9": {
+      "verdict": "PASS",
+      "command": "grep -nE 'payload_json|REDACT|purge|terminal' gate/store.py",
+      "outputFile": "02_static/S9.txt",
+      "note": "Terminal actions purge payload_json in gate/store.py (not a second Chat History)"
+    },
+    "S10": {
+      "verdict": "PASS",
+      "command": "grep -nE 'sanitize_subject_token|jetstream_control_subject_prefix|jetstream_auto_create_stream' gate/history.py gate/config.py",
+      "outputFile": "02_static/S10.txt",
+      "note": "Publishes strictly under JETSTREAM_CONTROL_SUBJECT_PREFIX with sanitized tokens; auto-create defaults false"
+    },
+    "S11": {
+      "verdict": "PASS",
+      "command": "grep -n '_recheck_permission_or_fail' gate/dispatch.py",
+      "outputFile": "02_static/S11.txt",
+      "note": "Fresh permission recheck invoked on both ungated and approved/released paths before DISPATCHING"
+    },
+    "S12": {
+      "verdict": "PASS",
+      "command": "grep -nE 'FAILED_CLOSED|recover_on_startup|quick_check' gate/store.py gate/modes.py gate/app.py",
+      "outputFile": "02_static/S12.txt",
+      "note": "Interrupted or corrupted state transitions to FAILED_CLOSED on restart; never auto-resumes"
+    },
+    "S13": {
+      "verdict": "PASS",
+      "command": "/tmp/safi_verify_venv/bin/python -c \"import json; from pathlib import Path; from gate.models import validate_against_schema; d=Path('contracts'); pairs=[('control-event.schema.json','control-event.example.json'),('gate-action.schema.json','gate-action.example.json'),('gate-operation.schema.json','gate-operation.example.json')]; [validate_against_schema(s, json.loads((d/e).read_text())) for s,e in pairs]; schemas=[json.loads((d/s).read_text()) for s,_ in pairs]; assert all(sc.get('additionalProperties') is False for sc in schemas); print('ALL_CONTRACTS_VALID_AND_STRICT')\"",
+      "outputFile": "02_static/S13.txt",
+      "note": "All schemas strict (additionalProperties:false) & all examples valid"
+    },
+    "S14": {
+      "verdict": "PASS",
+      "command": "cat deploy/Dockerfile.gate && echo '--- compose gate-adapter ---' && sed -n '7,48p' deploy/docker-compose.yml",
+      "outputFile": "02_static/S14.txt",
+      "note": "Gate container runs non-root (USER safi), read_only:true, no-new-privileges:true"
+    },
+    "S15": {
+      "verdict": "PASS",
+      "command": "(grep -rnEi 'facebook.*ad|ad_spend|bulk_send|mass_email|public_webhook' gate/ adapters/ safichat/ workflows/ || echo 'NONE_PRESENT')",
+      "outputFile": "02_static/S15.txt",
+      "note": "Zero bulk-send, ad-spend, or public-webhook code"
+    }
+  }
+}

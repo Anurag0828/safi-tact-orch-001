@@ -1,0 +1,15 @@
+=== SAFI-TACT-ORCH-001 Preflight Verification ===
+[OK] UNIX/Linux host detected: Linux
+[OK] git found: git version 2.43.0
+[OK] docker found: Docker version 29.10.0, build fdd4b8e
+[OK] docker compose: Docker Compose version v5.8.0
+[OK] python3 found: Python 3.12.3
+[OK] Git repository initialized (HEAD: 11a3176)
+[OK] Git remote configured: origin	https://github.com/Anurag0828/safi-tact-orch-001.git (fetch)
+[OK] deploy/.env exists
+[OK] GATE_API_TOKEN configured
+[OK] CALNODE_PINNED_IMAGE digest pinned
+[OK] NATS_URL configured: nats://nats:4222
+[OK] SAFI_AUTHZ_URL configured: 
+===============================================
+RESULT: READY — Proceed to Phase 1 (T-01).

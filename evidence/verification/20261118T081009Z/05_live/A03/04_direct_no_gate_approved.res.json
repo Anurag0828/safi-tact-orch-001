@@ -1,0 +1,9 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:37.704081Z",
+  "statusCode": 403,
+  "body": {
+    "errorCode": "GATE_BYPASS_REJECTED",
+    "message": "Direct webhook call rejected: gateApproved=true from Local Gate Adapter is required"
+  }
+}

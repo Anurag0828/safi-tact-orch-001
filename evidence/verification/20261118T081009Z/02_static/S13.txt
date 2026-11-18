@@ -1,0 +1,5 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# command: /tmp/safi_verify_venv/bin/python -c "import json; from pathlib import Path; from gate.models import validate_against_schema; d=Path('contracts'); pairs=[('control-event.schema.json','control-event.example.json'),('gate-action.schema.json','gate-action.example.json'),('gate-operation.schema.json','gate-operation.example.json')]; [validate_against_schema(s, json.loads((d/e).read_text())) for s,e in pairs]; schemas=[json.loads((d/s).read_text()) for s,_ in pairs]; assert all(sc.get('additionalProperties') is False for sc in schemas); print('ALL_CONTRACTS_VALID_AND_STRICT')"
+# rc: 0
+
+ALL_CONTRACTS_VALID_AND_STRICT

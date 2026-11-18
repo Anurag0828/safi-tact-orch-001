@@ -1,0 +1,46 @@
+{
+  "allowStatus": 200,
+  "denyStatus": 403,
+  "timeoutStatus": 503,
+  "downstreamExecutions": [
+    {
+      "key": "k1",
+      "mono": 20182.638863381,
+      "ts": "2026-11-18T08:10:37.418527Z"
+    }
+  ],
+  "mockAuthzRequestLog": [
+    {
+      "ts": "2026-11-18T08:10:37.380797Z",
+      "mono": 20182.601155832,
+      "actorGuid": "user_d4_owner",
+      "conversationId": "c1",
+      "operation": "n8n:dispatch_followup",
+      "decision": "allow"
+    },
+    {
+      "ts": "2026-11-18T08:10:37.410660Z",
+      "mono": 20182.631009153,
+      "actorGuid": "user_d4_owner",
+      "conversationId": "c1",
+      "operation": "n8n:dispatch_followup",
+      "decision": "allow"
+    },
+    {
+      "ts": "2026-11-18T08:10:37.443478Z",
+      "mono": 20182.663827113,
+      "actorGuid": "user_d4_owner",
+      "conversationId": "c1",
+      "operation": "n8n:dispatch_followup",
+      "decision": "deny"
+    },
+    {
+      "ts": "2026-11-18T08:10:37.470596Z",
+      "mono": 20182.690945976,
+      "actorGuid": "user_d4_owner",
+      "conversationId": "c1",
+      "operation": "n8n:dispatch_followup",
+      "decision": "timeout"
+    }
+  ]
+}

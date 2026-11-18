@@ -1,0 +1,54 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# capturedUtc: 2026-11-18T08:12:24.669664Z
+
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-8.3.4, pluggy-1.7.0
+rootdir: /mnt/d/Interworks/Safi
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.16.0, asyncio-0.25.0, cov-7.1.0, timeout-2.4.0
+asyncio: mode=Mode.AUTO, asyncio_default_fixture_loop_scope=function
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 73 items
+
+tests/test_adapters.py .........                                         [ 12%]
+tests/test_authz.py .......                                              [ 21%]
+tests/test_authz_http_live.py ..                                         [ 24%]
+tests/test_contracts.py .......                                          [ 34%]
+tests/test_e2e_safichat.py .....                                         [ 41%]
+tests/test_gate_dispatcher.py ........                                   [ 52%]
+tests/test_modes_and_barge_in.py .......                                 [ 61%]
+tests/test_security_and_edge_cases.py .....................              [ 90%]
+tests/test_state_machine.py ...                                          [ 94%]
+tests/test_store.py ....                                                 [100%]
+
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.12.3-final-0 ________________
+
+Name                       Stmts   Miss  Cover   Missing
+--------------------------------------------------------
+adapters/__init__.py           0      0   100%
+adapters/base.py               9      1    89%   27
+adapters/calnode.py           67     10    85%   83, 92, 120, 143-148, 151, 158-159
+adapters/n8n.py               47      6    87%   42, 61, 72, 94-95, 100
+adapters/windmill.py          88     14    84%   72, 118, 143-151, 205-206, 232-237
+gate/__init__.py               0      0   100%
+gate/app.py                   96     14    85%   42, 50, 59, 115-116, 120-142, 170-172
+gate/authz.py                187     53    72%   44, 48, 50, 58-59, 83, 92, 125-138, 152, 158, 168, 172-177, 180-185, 189, 203, 216-217, 229, 240-241, 304, 312-322, 363, 365, 380, 386
+gate/config.py                54      2    96%   13, 131
+gate/dispatch.py             269     42    84%   76-78, 90-93, 133, 151-152, 258, 279, 310, 350-354, 423, 452, 462, 465, 529, 540, 544, 555, 565, 572-578, 582-598, 613, 629-630, 644-678, 698
+gate/errors.py                65      0   100%
+gate/history.py              155     73    53%   29-32, 80, 171, 173-174, 180-213, 219-223, 239-248, 252-267, 296, 302-326, 332-343
+gate/models.py               140      0   100%
+gate/modes.py                280     49    82%   80, 110, 134, 160, 189, 216-226, 236, 252-256, 336, 338, 342, 361-371, 406, 412, 415, 431-435, 472, 474, 550-557, 572-581, 592-598, 612-622, 627, 629, 640-641, 695, 715, 750-754
+gate/state_machine.py         41      1    98%   102
+gate/store.py                278     52    81%   45, 62-79, 91, 168-169, 180, 186, 193-235, 243, 278, 411, 477, 508-513, 571, 576-577, 602, 644, 650, 662-664, 706-710, 722
+safichat/__init__.py           0      0   100%
+safichat/ops/__init__.py       0      0   100%
+safichat/ops/gate_ops.py      66      3    95%   86-94
+safichat/ops/router.py       103      1    99%   131
+--------------------------------------------------------
+TOTAL                       1945    321    83%
+============================= 73 passed in 25.93s ==============================

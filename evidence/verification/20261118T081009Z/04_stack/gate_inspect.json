@@ -1,0 +1,54 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "user": "safi",
+  "privileged": false,
+  "readonlyRootfs": true,
+  "securityOpt": [
+    "no-new-privileges:true"
+  ],
+  "portBindings": {
+    "8000/tcp": [
+      {
+        "HostIp": "127.0.0.1",
+        "HostPort": "8000"
+      }
+    ]
+  },
+  "envVarNamesOnly": [
+    "AUTHZ_MODE",
+    "CALNODE_API_KEY",
+    "CALNODE_BASE_URL",
+    "CALNODE_CALENDAR_ID",
+    "GATE_API_TOKEN",
+    "GATE_REQUIRE_AUTH",
+    "GATE_STORE_PATH",
+    "GPG_KEY",
+    "JETSTREAM_AUTO_CREATE_STREAM",
+    "JETSTREAM_CONTROL_SUBJECT_PREFIX",
+    "JETSTREAM_REQUIRED",
+    "JETSTREAM_STREAM",
+    "LANG",
+    "LOCAL_ACL_JSON",
+    "N8N_API_KEY",
+    "N8N_BASE_URL",
+    "N8N_WEBHOOK_SECRET",
+    "NATS_CONNECT_TIMEOUT_SECONDS",
+    "NATS_CONNECT_TOTAL_BUDGET_SECONDS",
+    "NATS_PASSWORD",
+    "NATS_TOKEN",
+    "NATS_URL",
+    "NATS_USER",
+    "PATH",
+    "PYTHONDONTWRITEBYTECODE",
+    "PYTHONUNBUFFERED",
+    "PYTHON_SHA256",
+    "PYTHON_VERSION",
+    "SAFI_ALLOWED_RECIPIENTS",
+    "SAFI_AUTHZ_TOKEN",
+    "SAFI_AUTHZ_URL",
+    "WINDMILL_ALLOWED_SCRIPTS",
+    "WINDMILL_BASE_URL",
+    "WINDMILL_TOKEN",
+    "WINDMILL_WORKSPACE"
+  ]
+}

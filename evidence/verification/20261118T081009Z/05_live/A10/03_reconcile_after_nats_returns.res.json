@@ -1,0 +1,10 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:13:15.618880Z",
+  "statusCode": 200,
+  "body": {
+    "conversationId": "conv_ver_a10_nats_20261118T081009Z_1794989544",
+    "mode": "GATED",
+    "reconciled": true
+  }
+}

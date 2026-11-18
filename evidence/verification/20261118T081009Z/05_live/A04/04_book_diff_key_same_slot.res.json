@@ -1,0 +1,13 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:38.815381Z",
+  "statusCode": 502,
+  "body": {
+    "errorCode": "DOWNSTREAM_ERROR",
+    "message": "Downstream engine 'calnode' failed: HTTP 409: {\"error\":\"this slot is no longer available\"}\n",
+    "details": {
+      "engine": "calnode",
+      "statusCode": 409
+    }
+  }
+}

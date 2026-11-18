@@ -1,0 +1,21 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:13:16.946420Z",
+  "statusCode": 422,
+  "body": {
+    "detail": [
+      {
+        "type": "json_invalid",
+        "loc": [
+          "body",
+          1
+        ],
+        "msg": "JSON decode error",
+        "input": {},
+        "ctx": {
+          "error": "Expecting property name enclosed in double quotes"
+        }
+      }
+    ]
+  }
+}

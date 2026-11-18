@@ -1,0 +1,11 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:13:16.929718Z",
+  "method": "POST",
+  "url": "http://127.0.0.1:8000/safichat/ops/marketing/followup",
+  "headers": {
+    "Authorization": "[REDACTED]",
+    "Content-Type": "application/json"
+  },
+  "body": "<raw 18 bytes>"
+}

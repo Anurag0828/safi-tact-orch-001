@@ -1,0 +1,31 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:42.054790Z",
+  "statusCode": 200,
+  "body": {
+    "actionId": "act_2ccd2eeeddb3",
+    "conversationId": "conv_ver_c_20261118T081009Z_1794989544",
+    "state": "DONE",
+    "idempotencyKey": "a06:c:20261118T081009Z",
+    "idempotentReplay": false,
+    "result": {
+      "jobId": "01a1edb7-1784-44b9-7874-ce820effd910",
+      "state": "COMPLETED",
+      "assignee": "ops-specialist-1@allowlist.test.local",
+      "result": {
+        "error": null,
+        "state": "COMPLETED",
+        "assignee": "ops-specialist-1@allowlist.test.local",
+        "bookingId": "bkg_c_20261118T081009Z",
+        "retryCount": 0,
+        "completedAt": "2026-11-18T08:12:41.824472Z",
+        "taskSummary": "Conv C runs while B gated",
+        "assignmentId": "asgn_fe7edb2bfe83",
+        "conversationId": "conv_ver_c_20261118T081009Z_1794989544"
+      },
+      "durationMs": 52,
+      "retryCount": 0,
+      "error": null
+    }
+  }
+}

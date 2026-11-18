@@ -1,0 +1,32 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:13:08.775276Z",
+  "method": "POST",
+  "url": "http://127.0.0.1:8000/safichat/ops/operations/assign",
+  "headers": {
+    "Authorization": "[REDACTED]"
+  },
+  "body": {
+    "conversationId": "conv_ver_a10_kill_20261118T081009Z_1794989544",
+    "bookingId": "bkg_kill_20261118T081009Z",
+    "assignee": "ops-specialist-1@allowlist.test.local",
+    "taskSummary": "Kill-9 mid dispatch test",
+    "idempotencyKey": "a10:kill9:20261118T081009Z",
+    "actor": {
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "meetingContext": {
+        "meetingId": "mtg_ver_20261118T081009Z",
+        "channel": "safichat-pilot"
+      },
+      "portContext": {
+        "port": "safichat-local-api",
+        "host": "127.0.0.1"
+      },
+      "permissionProvenance": {
+        "role": "BUSINESS_OWNER",
+        "scope": "conversation:admin"
+      }
+    }
+  }
+}

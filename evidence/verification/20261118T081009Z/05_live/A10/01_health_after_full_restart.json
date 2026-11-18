@@ -1,0 +1,24 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "gate": {
+    "status": "ok",
+    "service": "safi-local-gate-adapter",
+    "jetstreamConnected": true,
+    "recovery": {
+      "interruptedConversationsFailedClosed": [],
+      "failedClosedDetails": [],
+      "failedClosedCount": 0,
+      "interruptedDispatchingActions": [],
+      "interruptedPreDispatchActions": [],
+      "heldActionsPreserved": 152
+    }
+  },
+  "n8n": {
+    "status": "ok"
+  },
+  "calnode": {
+    "status": "ok"
+  },
+  "windmillVersion": "CE v1.425.0",
+  "natsJetStream": true
+}

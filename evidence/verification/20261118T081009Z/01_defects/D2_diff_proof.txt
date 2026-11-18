@@ -1,0 +1,4 @@
+# D2 Evidence-Only Commit Proof
+testedSha=11a31766f79c035d1a115d5f0b38ad4e92924753
+command=git diff --stat 11a31766f79c035d1a115d5f0b38ad4e92924753..HEAD -- . ':!evidence' ':!docs'
+staged_non_evidence_diff_output=(empty - 0 non-evidence/docs files modified)

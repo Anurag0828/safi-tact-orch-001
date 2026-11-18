@@ -1,0 +1,28 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:58.192914Z",
+  "method": "POST",
+  "url": "http://127.0.0.1:8000/safichat/ops/marketing/followup",
+  "headers": {
+    "Authorization": "[REDACTED]"
+  },
+  "body": {
+    "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+    "recipientEmail": "customer-a@allowlist.test.local",
+    "messageBody": "x",
+    "idempotencyKey": "a09:rev:20261118T081009Z",
+    "actor": {
+      "actorGuid": "user_safi_revoked_03",
+      "actorKind": "USER",
+      "meetingContext": {
+        "meetingId": "mtg_rev_20261118T081009Z"
+      },
+      "portContext": {
+        "port": "safichat-local-api"
+      },
+      "permissionProvenance": {
+        "role": "REVOKED_USER"
+      }
+    }
+  }
+}

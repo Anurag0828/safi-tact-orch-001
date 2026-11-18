@@ -1,0 +1,92 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# capturedUtc: 2026-11-18T08:10:36.562454Z
+
+=== Blackholed NATS fail-closed probe ===
+nats: encountered error
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/asyncio/tasks.py", line 520, in wait_for
+    return await fut
+           ^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 1104, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 1007, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "/usr/lib/python3.12/asyncio/selector_events.py", line 651, in sock_connect
+    return await fut
+           ^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/tmp/safi_verify_venv/lib/python3.12/site-packages/nats/aio/client.py", line 1353, in _select_next_server
+    await self._transport.connect(
+  File "/tmp/safi_verify_venv/lib/python3.12/site-packages/nats/aio/transport.py", line 121, in connect
+    r, w = await asyncio.wait_for(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/tasks.py", line 519, in wait_for
+    async with timeouts.timeout(timeout):
+  File "/usr/lib/python3.12/asyncio/timeouts.py", line 115, in __aexit__
+    raise TimeoutError from exc_val
+TimeoutError
+nats: encountered error
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/asyncio/tasks.py", line 520, in wait_for
+    return await fut
+           ^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 1104, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 1007, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "/usr/lib/python3.12/asyncio/selector_events.py", line 651, in sock_connect
+    return await fut
+           ^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/tmp/safi_verify_venv/lib/python3.12/site-packages/nats/aio/client.py", line 1353, in _select_next_server
+    await self._transport.connect(
+  File "/tmp/safi_verify_venv/lib/python3.12/site-packages/nats/aio/transport.py", line 121, in connect
+    r, w = await asyncio.wait_for(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/tasks.py", line 519, in wait_for
+    async with timeouts.timeout(timeout):
+  File "/usr/lib/python3.12/asyncio/timeouts.py", line 115, in __aexit__
+    raise TimeoutError from exc_val
+TimeoutError
+[D1_AFTER] Fail-closed StoreError raised in 5.00s (budget=5.0s): JetStream is required (JETSTREAM_REQUIRED=true) but unavailable at nats://192.0.2.1:4222: Exceeded total NATS connect budget (5.0s)
+
+=== tests/test_adapters.py ===
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-8.3.4, pluggy-1.7.0 -- /tmp/safi_verify_venv/bin/python
+cachedir: .pytest_cache
+rootdir: /mnt/d/Interworks/Safi
+configfile: pyproject.toml
+plugins: anyio-4.16.0, asyncio-0.25.0, cov-7.1.0, timeout-2.4.0
+asyncio: mode=Mode.AUTO, asyncio_default_fixture_loop_scope=function
+timeout: 30.0s
+timeout method: signal
+timeout func_only: False
+collecting ... collected 9 items
+
+tests/test_adapters.py::test_calnode_adapter_real_v1_path_slots_and_idempotency PASSED [ 11%]
+tests/test_adapters.py::test_n8n_adapter_timeout_ssrf_and_invalid_json PASSED [ 22%]
+tests/test_adapters.py::test_windmill_adapter_polling_timeout_error_and_script_determinism PASSED [ 33%]
+tests/test_adapters.py::test_jetstream_required_fails_closed_when_unreachable PASSED [ 44%]
+tests/test_adapters.py::test_d1_jetstream_blackholed_host_fails_closed_within_budget PASSED [ 55%]
+tests/test_adapters.py::test_d1_jetstream_optional_falls_back_without_exception PASSED [ 66%]
+tests/test_adapters.py::test_d1_gate_app_startup_fails_closed_when_nats_required_and_down PASSED [ 77%]
+tests/test_adapters.py::test_d1_midrun_nats_outage_blocks_downstream_and_never_silent_done PASSED [ 88%]
+tests/test_adapters.py::test_a10_corrupt_sqlite_store_fails_closed PASSED [100%]
+
+============================== 9 passed in 19.76s ==============================

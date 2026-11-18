@@ -1,0 +1,32 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:41.001972Z",
+  "method": "POST",
+  "url": "http://127.0.0.1:8000/safichat/ops/marketing/followup",
+  "headers": {
+    "Authorization": "[REDACTED]"
+  },
+  "body": {
+    "conversationId": "conv_ver_c_20261118T081009Z_1794989544",
+    "subjectLineDisplay": "Customer C - Independent 20261118T081009Z_1794989544",
+    "recipientEmail": "customer-c@allowlist.test.local",
+    "messageBody": "Seed conv_ver_c_20261118T081009Z_1794989544",
+    "idempotencyKey": "seed:conv_ver_c_20261118T081009Z_1794989544",
+    "actor": {
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "meetingContext": {
+        "meetingId": "mtg_ver_20261118T081009Z",
+        "channel": "safichat-pilot"
+      },
+      "portContext": {
+        "port": "safichat-local-api",
+        "host": "127.0.0.1"
+      },
+      "permissionProvenance": {
+        "role": "BUSINESS_OWNER",
+        "scope": "conversation:admin"
+      }
+    }
+  }
+}

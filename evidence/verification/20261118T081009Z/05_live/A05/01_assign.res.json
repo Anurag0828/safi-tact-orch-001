@@ -1,0 +1,31 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:39.984004Z",
+  "statusCode": 200,
+  "body": {
+    "actionId": "act_282a3cce80a1",
+    "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+    "state": "DONE",
+    "idempotencyKey": "assign:conv_ver_a_20261118T081009Z_1794989544:fe4767e4-a8af-4aad-8f21-3746e4444b31",
+    "idempotentReplay": false,
+    "result": {
+      "jobId": "01a1edb7-0f86-e943-691e-167adfbe3852",
+      "state": "COMPLETED",
+      "assignee": "ops-specialist-1@allowlist.test.local",
+      "result": {
+        "error": null,
+        "state": "COMPLETED",
+        "assignee": "ops-specialist-1@allowlist.test.local",
+        "bookingId": "fe4767e4-a8af-4aad-8f21-3746e4444b31",
+        "retryCount": 0,
+        "completedAt": "2026-11-18T08:12:39.803829Z",
+        "taskSummary": "Onboard Alice fe4767e4-a8af-4aad-8f21-3746e4444b31",
+        "assignmentId": "asgn_459c8af268df",
+        "conversationId": "conv_ver_a_20261118T081009Z_1794989544"
+      },
+      "durationMs": 91,
+      "retryCount": 0,
+      "error": null
+    }
+  }
+}

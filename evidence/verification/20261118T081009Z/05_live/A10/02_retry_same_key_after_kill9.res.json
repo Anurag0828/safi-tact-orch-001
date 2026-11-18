@@ -1,0 +1,12 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:13:08.810010Z",
+  "statusCode": 503,
+  "body": {
+    "errorCode": "GATE_FAILED_CLOSED",
+    "message": "Conversation gate is FAILED_CLOSED until reconciled",
+    "details": {
+      "conversationId": "conv_ver_a10_kill_20261118T081009Z_1794989544"
+    }
+  }
+}

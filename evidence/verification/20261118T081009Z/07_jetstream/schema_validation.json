@@ -1,0 +1,53 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "totalValidated": 132,
+  "validCount": 132,
+  "invalidCount": 0,
+  "typesObserved": [
+    "ACTION_APPROVED",
+    "ACTION_CANCELLED",
+    "ACTION_DISPATCHED",
+    "ACTION_FAILED",
+    "ACTION_HELD",
+    "ACTION_REJECTED",
+    "ACTION_RELEASED",
+    "GATE_FAILED_CLOSED",
+    "MODE_GATED",
+    "MODE_UNGATED"
+  ],
+  "proxyEventVerified": {
+    "seq": 908,
+    "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_dispatched",
+    "eventId": "evt_dd214bb61f15",
+    "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+    "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+    "actorGuid": "proxy-n8n-workflow",
+    "actorKind": "PROXY",
+    "type": "ACTION_DISPATCHED",
+    "operationId": "n8n:dispatch_followup",
+    "idempotencyKey": "followup:conv_ver_a_20261118T081009Z_1794989544:intake:conv_ver_a_20261118T081009Z_1794989544:1",
+    "outcome": "ok",
+    "context": {
+      "meetingContext": {
+        "proxySource": "n8n-lead-intake",
+        "proxyExecutionId": "269",
+        "meetingId": "mtg_ver_20261118T081009Z",
+        "channel": "safichat-pilot"
+      },
+      "portContext": {
+        "proxyPort": "n8n-internal",
+        "port": "safichat-local-api",
+        "host": "127.0.0.1"
+      },
+      "permissionProvenance": {
+        "proxyRole": "WORKFLOW_PROXY",
+        "delegatedBy": "user_safi_pilot_owner_01",
+        "role": "BUSINESS_OWNER",
+        "scope": "conversation:admin"
+      }
+    },
+    "correlationId": "corr_a_20261118T081009Z",
+    "ts": "2026-11-18T08:12:35.766651Z"
+  },
+  "contextImmutabilityVerifiedOnConvB": 14
+}

@@ -1,0 +1,24 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:45.228514Z",
+  "statusCode": 200,
+  "body": {
+    "actionId": "act_0a95449c0067",
+    "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+    "state": "DONE",
+    "idempotencyKey": "a07:post:20261118T081009Z",
+    "idempotentReplay": false,
+    "result": {
+      "receiptId": "rcpt_280_1794989565206",
+      "executionId": "280",
+      "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+      "recipientEmail": "customer-b@allowlist.test.local",
+      "idempotencyKey": "a07:post:20261118T081009Z",
+      "messagePreview": "Post ungate immediate",
+      "gateApproved": true,
+      "dispatchedAt": "2026-11-18T08:12:45.206Z",
+      "status": "dispatched",
+      "deliveredCount": 200
+    }
+  }
+}

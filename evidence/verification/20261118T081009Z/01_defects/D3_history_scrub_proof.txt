@@ -1,0 +1,4 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# command: git log --all --name-only -- '*.docx' 'SAFI_BUILD_SPEC.md'
+# output: (empty - 0 occurrences across all commits)
+# visibility: PUBLIC

@@ -1,0 +1,3691 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "count": 132,
+  "events": [
+    {
+      "seq": 907,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_ec35a8ae1f65",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:ingest_lead",
+      "idempotencyKey": "intake:conv_ver_a_20261118T081009Z_1794989544:1",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "correlationId": "corr_a_20261118T081009Z",
+      "ts": "2026-11-18T08:12:35.637276Z"
+    },
+    {
+      "seq": 908,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_dd214bb61f15",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "proxy-n8n-workflow",
+      "actorKind": "PROXY",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "followup:conv_ver_a_20261118T081009Z_1794989544:intake:conv_ver_a_20261118T081009Z_1794989544:1",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "proxySource": "n8n-lead-intake",
+          "proxyExecutionId": "269",
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "proxyPort": "n8n-internal",
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "proxyRole": "WORKFLOW_PROXY",
+          "delegatedBy": "user_safi_pilot_owner_01",
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "correlationId": "corr_a_20261118T081009Z",
+      "ts": "2026-11-18T08:12:35.766651Z"
+    },
+    {
+      "seq": 909,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_061d89ee221b",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "na:20261118T081009Z",
+      "outcome": "denied",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:37.731520Z"
+    },
+    {
+      "seq": 910,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_dd215a32e954",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "calnode:create_booking",
+      "idempotencyKey": "book:conv_ver_a_20261118T081009Z_1794989544:2026-11-18T14:00:00Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "correlationId": "corr_a_20261118T081009Z",
+      "ts": "2026-11-18T08:12:38.712000Z"
+    },
+    {
+      "seq": 911,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_f7796ac9fb71",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "calnode:create_booking",
+      "idempotencyKey": "book_diff_key:conv_ver_a_20261118T081009Z_1794989544:2026-11-18T14:00:00Z",
+      "outcome": "error",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "correlationId": "corr_a_20261118T081009Z",
+      "ts": "2026-11-18T08:12:38.808754Z"
+    },
+    {
+      "seq": 912,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_f561ecc60731",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "assign:conv_ver_a_20261118T081009Z_1794989544:fe4767e4-a8af-4aad-8f21-3746e4444b31",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "correlationId": "corr_a_20261118T081009Z",
+      "ts": "2026-11-18T08:12:39.973369Z"
+    },
+    {
+      "seq": 913,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_782b8698628f",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "assign:err:conv_ver_a_20261118T081009Z_1794989544:20261118T081009Z",
+      "outcome": "error",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:40.394710Z"
+    },
+    {
+      "seq": 914,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_8ccdfeeefd42",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "wm:esc:20261118T081009Z",
+      "outcome": "denied",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:40.440654Z"
+    },
+    {
+      "seq": 915,
+      "subject": "safi.control.events.conv_ver_b_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_c3f2154e7611",
+      "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer B - Selective 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_b_20261118T081009Z_1794989544",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:40.975159Z"
+    },
+    {
+      "seq": 916,
+      "subject": "safi.control.events.conv_ver_c_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_ae7c6706b13c",
+      "conversationId": "conv_ver_c_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer C - Independent 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_c_20261118T081009Z_1794989544",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:41.110999Z"
+    },
+    {
+      "seq": 917,
+      "subject": "safi.control.events.conv_ver_b_20261118T081009Z_1794989544.mode_gated",
+      "eventId": "evt_f191cccea2ae",
+      "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer B - Selective 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:c678aec2",
+      "idempotencyKey": "mode:gated:conv_ver_b_20261118T081009Z_1794989544:barge_in:c678aec2",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:41.164470Z"
+    },
+    {
+      "seq": 918,
+      "subject": "safi.control.events.conv_ver_b_20261118T081009Z_1794989544.action_held",
+      "eventId": "evt_229b0e0ceeee",
+      "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer B - Selective 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a06:b:held1:20261118T081009Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:41.702161Z"
+    },
+    {
+      "seq": 919,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_81b38fb14b43",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a06:a:20261118T081009Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:41.770481Z"
+    },
+    {
+      "seq": 920,
+      "subject": "safi.control.events.conv_ver_c_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_c4b3abebd017",
+      "conversationId": "conv_ver_c_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer C - Independent 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "a06:c:20261118T081009Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:42.027155Z"
+    },
+    {
+      "seq": 921,
+      "subject": "safi.control.events.conv_ver_d1_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_115792aec44b",
+      "conversationId": "conv_ver_d1_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Ambiguous Renewal 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "dup:20261118T081009Z_1794989544:d1",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:42.574625Z"
+    },
+    {
+      "seq": 922,
+      "subject": "safi.control.events.conv_ver_d2_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_371633b83c3d",
+      "conversationId": "conv_ver_d2_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Ambiguous Renewal 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "dup:20261118T081009Z_1794989544:d2",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:42.717388Z"
+    },
+    {
+      "seq": 923,
+      "subject": "safi.control.events.conv_ver_d1_20261118T081009Z_1794989544.mode_gated",
+      "eventId": "evt_d80940b539a1",
+      "conversationId": "conv_ver_d1_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Ambiguous Renewal 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:ac64e48e",
+      "idempotencyKey": "mode:gated:conv_ver_d1_20261118T081009Z_1794989544:barge_in:ac64e48e",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:42.819132Z"
+    },
+    {
+      "seq": 924,
+      "subject": "safi.control.events.conv_ver_wild_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_eba8d70f58d3",
+      "conversationId": "conv_ver_wild_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "foo.> a.b.* 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "wild:20261118T081009Z_1794989544",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:42.948499Z"
+    },
+    {
+      "seq": 925,
+      "subject": "safi.control.events.conv_ver_wild_20261118T081009Z_1794989544.mode_gated",
+      "eventId": "evt_c7ec182470e3",
+      "conversationId": "conv_ver_wild_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "foo.> a.b.* 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:3163547a",
+      "idempotencyKey": "mode:gated:conv_ver_wild_20261118T081009Z_1794989544:barge_in:3163547a",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:42.991853Z"
+    },
+    {
+      "seq": 926,
+      "subject": "safi.control.events.conv_ver_b_20261118T081009Z_1794989544.action_held",
+      "eventId": "evt_a8fa44a2fe63",
+      "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer B - Selective 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a07:b:held2:20261118T081009Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:43.117412Z"
+    },
+    {
+      "seq": 927,
+      "subject": "safi.control.events.conv_ver_b_20261118T081009Z_1794989544.action_held",
+      "eventId": "evt_41122674aaf2",
+      "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer B - Selective 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a07:b:held3:20261118T081009Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:43.164259Z"
+    },
+    {
+      "seq": 928,
+      "subject": "safi.control.events.conv_ver_b_20261118T081009Z_1794989544.action_held",
+      "eventId": "evt_9a79d85ad6f8",
+      "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer B - Selective 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a07:b:held4:20261118T081009Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:43.197569Z"
+    },
+    {
+      "seq": 929,
+      "subject": "safi.control.events.conv_ver_b_20261118T081009Z_1794989544.action_approved",
+      "eventId": "evt_ab1e5c352563",
+      "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer B - Selective 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_APPROVED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a07:b:held3:20261118T081009Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:43.660165Z"
+    },
+    {
+      "seq": 930,
+      "subject": "safi.control.events.conv_ver_b_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_9180d073e412",
+      "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer B - Selective 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a07:b:held3:20261118T081009Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:43.747345Z"
+    },
+    {
+      "seq": 931,
+      "subject": "safi.control.events.conv_ver_b_20261118T081009Z_1794989544.action_rejected",
+      "eventId": "evt_7e6776d9adc2",
+      "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer B - Selective 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_REJECTED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a07:b:held4:20261118T081009Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:43.792267Z"
+    },
+    {
+      "seq": 932,
+      "subject": "safi.control.events.conv_ver_b_20261118T081009Z_1794989544.action_released",
+      "eventId": "evt_93e9817a88ed",
+      "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer B - Selective 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_RELEASED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a06:b:held1:20261118T081009Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:43.827560Z"
+    },
+    {
+      "seq": 933,
+      "subject": "safi.control.events.conv_ver_b_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_c9c88786acd2",
+      "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer B - Selective 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a06:b:held1:20261118T081009Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:43.904033Z"
+    },
+    {
+      "seq": 934,
+      "subject": "safi.control.events.conv_ver_b_20261118T081009Z_1794989544.action_cancelled",
+      "eventId": "evt_a471fef21715",
+      "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer B - Selective 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_CANCELLED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a07:b:held2:20261118T081009Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:43.916906Z"
+    },
+    {
+      "seq": 935,
+      "subject": "safi.control.events.conv_ver_b_20261118T081009Z_1794989544.mode_ungated",
+      "eventId": "evt_ffb18d2138be",
+      "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer B - Selective 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_UNGATED",
+      "operationId": "ungate:ad2cfb88",
+      "idempotencyKey": "mode:ungated:conv_ver_b_20261118T081009Z_1794989544:ungate:ad2cfb88",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:43.943907Z"
+    },
+    {
+      "seq": 936,
+      "subject": "safi.control.events.conv_ver_b_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_8b02f3f80776",
+      "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer B - Selective 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a07:post:20261118T081009Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:45.210219Z"
+    },
+    {
+      "seq": 937,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_01.action_dispatched",
+      "eventId": "evt_da5656b09e97",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_01",
+      "subjectLineDisplay": "A08 Race 01",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_01",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:46.050287Z"
+    },
+    {
+      "seq": 938,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_01.action_held",
+      "eventId": "evt_d138f14e64db",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_01",
+      "subjectLineDisplay": "A08 Race 01",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:01",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:46.168268Z"
+    },
+    {
+      "seq": 939,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_01.mode_gated",
+      "eventId": "evt_9580094e9a33",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_01",
+      "subjectLineDisplay": "A08 Race 01",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:f8e1768a",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_01:barge_in:f8e1768a",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:46.171881Z"
+    },
+    {
+      "seq": 940,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_01.action_held",
+      "eventId": "evt_495fbb2c74bd",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_01",
+      "subjectLineDisplay": "A08 Race 01",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:01",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:46.190379Z"
+    },
+    {
+      "seq": 941,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_02.action_dispatched",
+      "eventId": "evt_0b03f7e04077",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_02",
+      "subjectLineDisplay": "A08 Race 02",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_02",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:46.332873Z"
+    },
+    {
+      "seq": 942,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_02.action_dispatched",
+      "eventId": "evt_c689d58bdc71",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_02",
+      "subjectLineDisplay": "A08 Race 02",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:02",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:46.720479Z"
+    },
+    {
+      "seq": 943,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_02.mode_gated",
+      "eventId": "evt_6aeea3fb713f",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_02",
+      "subjectLineDisplay": "A08 Race 02",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:0de05226",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_02:barge_in:0de05226",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:46.740225Z"
+    },
+    {
+      "seq": 944,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_02.action_held",
+      "eventId": "evt_0fcba9f3b0c4",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_02",
+      "subjectLineDisplay": "A08 Race 02",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:02",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:46.773716Z"
+    },
+    {
+      "seq": 945,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_03.action_dispatched",
+      "eventId": "evt_006731f00be5",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_03",
+      "subjectLineDisplay": "A08 Race 03",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_03",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:46.921724Z"
+    },
+    {
+      "seq": 946,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_03.action_dispatched",
+      "eventId": "evt_e4c40ad16af6",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_03",
+      "subjectLineDisplay": "A08 Race 03",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:03",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:47.312912Z"
+    },
+    {
+      "seq": 947,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_03.mode_gated",
+      "eventId": "evt_c299b2e03180",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_03",
+      "subjectLineDisplay": "A08 Race 03",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:353f5635",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_03:barge_in:353f5635",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:47.330829Z"
+    },
+    {
+      "seq": 948,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_03.action_held",
+      "eventId": "evt_63d80f32350a",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_03",
+      "subjectLineDisplay": "A08 Race 03",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:03",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:47.348501Z"
+    },
+    {
+      "seq": 949,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_04.action_dispatched",
+      "eventId": "evt_966e32c040c2",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_04",
+      "subjectLineDisplay": "A08 Race 04",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_04",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:47.495579Z"
+    },
+    {
+      "seq": 950,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_04.action_dispatched",
+      "eventId": "evt_2232f4d4f6fb",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_04",
+      "subjectLineDisplay": "A08 Race 04",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:04",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:47.937024Z"
+    },
+    {
+      "seq": 951,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_04.mode_gated",
+      "eventId": "evt_e70eadec0948",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_04",
+      "subjectLineDisplay": "A08 Race 04",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:4c5f8370",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_04:barge_in:4c5f8370",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:47.951722Z"
+    },
+    {
+      "seq": 952,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_04.action_held",
+      "eventId": "evt_50ff5664d162",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_04",
+      "subjectLineDisplay": "A08 Race 04",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:04",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:47.967910Z"
+    },
+    {
+      "seq": 953,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_05.action_dispatched",
+      "eventId": "evt_8d1f217bc951",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_05",
+      "subjectLineDisplay": "A08 Race 05",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_05",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:48.123395Z"
+    },
+    {
+      "seq": 954,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_05.action_dispatched",
+      "eventId": "evt_f2e69b51a96e",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_05",
+      "subjectLineDisplay": "A08 Race 05",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:05",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:48.512131Z"
+    },
+    {
+      "seq": 955,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_05.mode_gated",
+      "eventId": "evt_790aa7395d98",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_05",
+      "subjectLineDisplay": "A08 Race 05",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:a624f423",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_05:barge_in:a624f423",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:48.535027Z"
+    },
+    {
+      "seq": 956,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_05.action_held",
+      "eventId": "evt_1680d8dd8ecf",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_05",
+      "subjectLineDisplay": "A08 Race 05",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:05",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:48.552169Z"
+    },
+    {
+      "seq": 957,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_06.action_dispatched",
+      "eventId": "evt_ceec738c54ff",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_06",
+      "subjectLineDisplay": "A08 Race 06",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_06",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:48.713782Z"
+    },
+    {
+      "seq": 958,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_06.action_dispatched",
+      "eventId": "evt_8b04217592eb",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_06",
+      "subjectLineDisplay": "A08 Race 06",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:06",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:49.115676Z"
+    },
+    {
+      "seq": 959,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_06.mode_gated",
+      "eventId": "evt_3eb7b795e913",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_06",
+      "subjectLineDisplay": "A08 Race 06",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:73a178b4",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_06:barge_in:73a178b4",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:49.131634Z"
+    },
+    {
+      "seq": 960,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_06.action_held",
+      "eventId": "evt_bb61f92c65e3",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_06",
+      "subjectLineDisplay": "A08 Race 06",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:06",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:49.148560Z"
+    },
+    {
+      "seq": 961,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_07.action_dispatched",
+      "eventId": "evt_23ab8a993dc1",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_07",
+      "subjectLineDisplay": "A08 Race 07",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_07",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:49.299543Z"
+    },
+    {
+      "seq": 962,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_07.action_dispatched",
+      "eventId": "evt_63c44faf0241",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_07",
+      "subjectLineDisplay": "A08 Race 07",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:07",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:49.678364Z"
+    },
+    {
+      "seq": 963,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_07.mode_gated",
+      "eventId": "evt_0d0d704b7695",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_07",
+      "subjectLineDisplay": "A08 Race 07",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:fa947fe8",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_07:barge_in:fa947fe8",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:49.695408Z"
+    },
+    {
+      "seq": 964,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_07.action_held",
+      "eventId": "evt_cb3d6890df46",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_07",
+      "subjectLineDisplay": "A08 Race 07",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:07",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:49.711758Z"
+    },
+    {
+      "seq": 965,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_08.action_dispatched",
+      "eventId": "evt_524da24f671a",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_08",
+      "subjectLineDisplay": "A08 Race 08",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_08",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:49.851777Z"
+    },
+    {
+      "seq": 966,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_08.action_dispatched",
+      "eventId": "evt_d969c07420c0",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_08",
+      "subjectLineDisplay": "A08 Race 08",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:08",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:50.241761Z"
+    },
+    {
+      "seq": 967,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_08.mode_gated",
+      "eventId": "evt_21caee4062ff",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_08",
+      "subjectLineDisplay": "A08 Race 08",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:27b8a700",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_08:barge_in:27b8a700",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:50.248855Z"
+    },
+    {
+      "seq": 968,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_08.action_held",
+      "eventId": "evt_a020543fdf7a",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_08",
+      "subjectLineDisplay": "A08 Race 08",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:08",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:50.265607Z"
+    },
+    {
+      "seq": 969,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_09.action_dispatched",
+      "eventId": "evt_55d764d02b1b",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_09",
+      "subjectLineDisplay": "A08 Race 09",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_09",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:50.422774Z"
+    },
+    {
+      "seq": 970,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_09.action_dispatched",
+      "eventId": "evt_3a0a75856322",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_09",
+      "subjectLineDisplay": "A08 Race 09",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:09",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:50.814569Z"
+    },
+    {
+      "seq": 971,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_09.mode_gated",
+      "eventId": "evt_873b11a091eb",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_09",
+      "subjectLineDisplay": "A08 Race 09",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:5edb9fc9",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_09:barge_in:5edb9fc9",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:50.837113Z"
+    },
+    {
+      "seq": 972,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_09.action_held",
+      "eventId": "evt_e6355e3b8981",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_09",
+      "subjectLineDisplay": "A08 Race 09",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:09",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:50.854141Z"
+    },
+    {
+      "seq": 973,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_10.action_dispatched",
+      "eventId": "evt_cd7b87d279ae",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_10",
+      "subjectLineDisplay": "A08 Race 10",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_10",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:51.005356Z"
+    },
+    {
+      "seq": 974,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_10.action_dispatched",
+      "eventId": "evt_2bf026986c55",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_10",
+      "subjectLineDisplay": "A08 Race 10",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:10",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:51.412963Z"
+    },
+    {
+      "seq": 975,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_10.mode_gated",
+      "eventId": "evt_2f0d7ecbec7b",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_10",
+      "subjectLineDisplay": "A08 Race 10",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:48204f02",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_10:barge_in:48204f02",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:51.431082Z"
+    },
+    {
+      "seq": 976,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_10.action_held",
+      "eventId": "evt_1a34b824339c",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_10",
+      "subjectLineDisplay": "A08 Race 10",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:10",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:51.447496Z"
+    },
+    {
+      "seq": 977,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_11.action_dispatched",
+      "eventId": "evt_a4556bcdee7d",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_11",
+      "subjectLineDisplay": "A08 Race 11",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_11",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:51.600408Z"
+    },
+    {
+      "seq": 978,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_11.action_dispatched",
+      "eventId": "evt_11c5aeb4d361",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_11",
+      "subjectLineDisplay": "A08 Race 11",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:11",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:51.981820Z"
+    },
+    {
+      "seq": 979,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_11.mode_gated",
+      "eventId": "evt_de34842bfce5",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_11",
+      "subjectLineDisplay": "A08 Race 11",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:2d9d57ef",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_11:barge_in:2d9d57ef",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:51.986326Z"
+    },
+    {
+      "seq": 980,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_11.action_held",
+      "eventId": "evt_81a60a87acfb",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_11",
+      "subjectLineDisplay": "A08 Race 11",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:11",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:52.003171Z"
+    },
+    {
+      "seq": 981,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_12.action_dispatched",
+      "eventId": "evt_59ed4b5b3f29",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_12",
+      "subjectLineDisplay": "A08 Race 12",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_12",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:52.138519Z"
+    },
+    {
+      "seq": 982,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_12.action_dispatched",
+      "eventId": "evt_a8e09ccc1cc3",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_12",
+      "subjectLineDisplay": "A08 Race 12",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:12",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:52.579805Z"
+    },
+    {
+      "seq": 983,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_12.mode_gated",
+      "eventId": "evt_5008af4c0684",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_12",
+      "subjectLineDisplay": "A08 Race 12",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:716ee74d",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_12:barge_in:716ee74d",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:52.589848Z"
+    },
+    {
+      "seq": 984,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_12.action_held",
+      "eventId": "evt_971b7d88a898",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_12",
+      "subjectLineDisplay": "A08 Race 12",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:12",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:52.606479Z"
+    },
+    {
+      "seq": 985,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_13.action_dispatched",
+      "eventId": "evt_6706c5279486",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_13",
+      "subjectLineDisplay": "A08 Race 13",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_13",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:52.752051Z"
+    },
+    {
+      "seq": 986,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_13.action_dispatched",
+      "eventId": "evt_5b41906bf4e5",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_13",
+      "subjectLineDisplay": "A08 Race 13",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:13",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:53.149257Z"
+    },
+    {
+      "seq": 987,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_13.mode_gated",
+      "eventId": "evt_ca438e2367d7",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_13",
+      "subjectLineDisplay": "A08 Race 13",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:1502789f",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_13:barge_in:1502789f",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:53.160072Z"
+    },
+    {
+      "seq": 988,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_13.action_held",
+      "eventId": "evt_604ba8f2d6c8",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_13",
+      "subjectLineDisplay": "A08 Race 13",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:13",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:53.176869Z"
+    },
+    {
+      "seq": 989,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_14.action_dispatched",
+      "eventId": "evt_1e4086bddbc0",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_14",
+      "subjectLineDisplay": "A08 Race 14",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_14",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:53.329188Z"
+    },
+    {
+      "seq": 990,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_14.action_dispatched",
+      "eventId": "evt_eb3ebdfc1796",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_14",
+      "subjectLineDisplay": "A08 Race 14",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:14",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:53.703681Z"
+    },
+    {
+      "seq": 991,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_14.mode_gated",
+      "eventId": "evt_07c453fbf196",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_14",
+      "subjectLineDisplay": "A08 Race 14",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:ed57db64",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_14:barge_in:ed57db64",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:53.718622Z"
+    },
+    {
+      "seq": 992,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_14.action_held",
+      "eventId": "evt_bd44ecb14021",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_14",
+      "subjectLineDisplay": "A08 Race 14",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:14",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:53.733545Z"
+    },
+    {
+      "seq": 993,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_15.action_dispatched",
+      "eventId": "evt_9a2a97f74e3d",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_15",
+      "subjectLineDisplay": "A08 Race 15",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_15",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:53.874897Z"
+    },
+    {
+      "seq": 994,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_15.action_dispatched",
+      "eventId": "evt_3082d44809ae",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_15",
+      "subjectLineDisplay": "A08 Race 15",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:15",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:54.253957Z"
+    },
+    {
+      "seq": 995,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_15.mode_gated",
+      "eventId": "evt_51f02777cd8a",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_15",
+      "subjectLineDisplay": "A08 Race 15",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:3ca4f651",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_15:barge_in:3ca4f651",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:54.264286Z"
+    },
+    {
+      "seq": 996,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_15.action_held",
+      "eventId": "evt_6bacfd220ac5",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_15",
+      "subjectLineDisplay": "A08 Race 15",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:15",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:54.281015Z"
+    },
+    {
+      "seq": 997,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_16.action_dispatched",
+      "eventId": "evt_7e5233fe2a10",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_16",
+      "subjectLineDisplay": "A08 Race 16",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_16",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:54.419988Z"
+    },
+    {
+      "seq": 998,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_16.action_dispatched",
+      "eventId": "evt_2728bf229394",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_16",
+      "subjectLineDisplay": "A08 Race 16",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:16",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:54.848150Z"
+    },
+    {
+      "seq": 999,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_16.mode_gated",
+      "eventId": "evt_095ad76f393d",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_16",
+      "subjectLineDisplay": "A08 Race 16",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:6de5e49a",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_16:barge_in:6de5e49a",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:54.861690Z"
+    },
+    {
+      "seq": 1000,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_16.action_held",
+      "eventId": "evt_a94db156e2ab",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_16",
+      "subjectLineDisplay": "A08 Race 16",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:16",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:54.879177Z"
+    },
+    {
+      "seq": 1001,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_17.action_dispatched",
+      "eventId": "evt_628fe295fa32",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_17",
+      "subjectLineDisplay": "A08 Race 17",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_17",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:55.020560Z"
+    },
+    {
+      "seq": 1002,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_17.action_dispatched",
+      "eventId": "evt_3d8166a28aca",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_17",
+      "subjectLineDisplay": "A08 Race 17",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:17",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:55.403336Z"
+    },
+    {
+      "seq": 1003,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_17.mode_gated",
+      "eventId": "evt_19eaf1c8324b",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_17",
+      "subjectLineDisplay": "A08 Race 17",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:3077432b",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_17:barge_in:3077432b",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:55.413873Z"
+    },
+    {
+      "seq": 1004,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_17.action_held",
+      "eventId": "evt_a089d8cb41fc",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_17",
+      "subjectLineDisplay": "A08 Race 17",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:17",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:55.430793Z"
+    },
+    {
+      "seq": 1005,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_18.action_dispatched",
+      "eventId": "evt_5a65bb116a24",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_18",
+      "subjectLineDisplay": "A08 Race 18",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_18",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:55.579828Z"
+    },
+    {
+      "seq": 1006,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_18.action_dispatched",
+      "eventId": "evt_91c7bae581ff",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_18",
+      "subjectLineDisplay": "A08 Race 18",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:18",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:55.964584Z"
+    },
+    {
+      "seq": 1007,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_18.mode_gated",
+      "eventId": "evt_83f3c3ebbfd4",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_18",
+      "subjectLineDisplay": "A08 Race 18",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:39257df8",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_18:barge_in:39257df8",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:55.982268Z"
+    },
+    {
+      "seq": 1008,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_18.action_held",
+      "eventId": "evt_77c27464b771",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_18",
+      "subjectLineDisplay": "A08 Race 18",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:18",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:55.997345Z"
+    },
+    {
+      "seq": 1009,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_19.action_dispatched",
+      "eventId": "evt_6cb259175edd",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_19",
+      "subjectLineDisplay": "A08 Race 19",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_19",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:56.137683Z"
+    },
+    {
+      "seq": 1010,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_19.action_dispatched",
+      "eventId": "evt_d66bf147dc7a",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_19",
+      "subjectLineDisplay": "A08 Race 19",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:19",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:56.524080Z"
+    },
+    {
+      "seq": 1011,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_19.mode_gated",
+      "eventId": "evt_1a916893a29b",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_19",
+      "subjectLineDisplay": "A08 Race 19",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:50042660",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_19:barge_in:50042660",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:56.537271Z"
+    },
+    {
+      "seq": 1012,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_19.action_held",
+      "eventId": "evt_713a260467c4",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_19",
+      "subjectLineDisplay": "A08 Race 19",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:19",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:56.551477Z"
+    },
+    {
+      "seq": 1013,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_20.action_dispatched",
+      "eventId": "evt_c47c63f4cc7d",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_20",
+      "subjectLineDisplay": "A08 Race 20",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a08_20261118T081009Z_1794989544_20",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:56.699274Z"
+    },
+    {
+      "seq": 1014,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_20.action_dispatched",
+      "eventId": "evt_69c09c1bde81",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_20",
+      "subjectLineDisplay": "A08 Race 20",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "race:wm:20261118T081009Z:20",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:57.101420Z"
+    },
+    {
+      "seq": 1015,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_20.mode_gated",
+      "eventId": "evt_25e3c5d78cad",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_20",
+      "subjectLineDisplay": "A08 Race 20",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:f1831d36",
+      "idempotencyKey": "mode:gated:conv_ver_a08_20261118T081009Z_1794989544_20:barge_in:f1831d36",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:57.116923Z"
+    },
+    {
+      "seq": 1016,
+      "subject": "safi.control.events.conv_ver_a08_20261118T081009Z_1794989544_20.action_held",
+      "eventId": "evt_85b6675f5806",
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_20",
+      "subjectLineDisplay": "A08 Race 20",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "race:post:20261118T081009Z:20",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:57.130962Z"
+    },
+    {
+      "seq": 1017,
+      "subject": "safi.control.events.conv_ver_d1_20261118T081009Z_1794989544.action_held",
+      "eventId": "evt_1171d676973b",
+      "conversationId": "conv_ver_d1_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Ambiguous Renewal 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a09:held:20261118T081009Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:57.821307Z"
+    },
+    {
+      "seq": 1018,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_d5837c9f03ed",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_other_02",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "gate:barge_in",
+      "idempotencyKey": "mode:gated:conv_ver_a_20261118T081009Z_1794989544:barge_in:2ff8b7fb",
+      "outcome": "denied",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_other_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "OTHER_USER",
+          "scope": "conversation:member"
+        }
+      },
+      "ts": "2026-11-18T08:12:57.922804Z"
+    },
+    {
+      "seq": 1019,
+      "subject": "safi.control.events.conv_ver_d1_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_428473a4fae1",
+      "conversationId": "conv_ver_d1_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Ambiguous Renewal 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_other_02",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "gate:return_to_ungated",
+      "idempotencyKey": "mode:ungated:conv_ver_d1_20261118T081009Z_1794989544:ungate:dd3495b6",
+      "outcome": "denied",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_other_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "OTHER_USER",
+          "scope": "conversation:member"
+        }
+      },
+      "ts": "2026-11-18T08:12:57.951985Z"
+    },
+    {
+      "seq": 1020,
+      "subject": "safi.control.events.conv_ver_d1_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_b40e47f80a4b",
+      "conversationId": "conv_ver_d1_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Ambiguous Renewal 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_other_02",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "gate:approve_action",
+      "idempotencyKey": "approve:act_c6ea852ba7c7",
+      "outcome": "denied",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_other_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "OTHER_USER",
+          "scope": "conversation:member"
+        }
+      },
+      "ts": "2026-11-18T08:12:57.980483Z"
+    },
+    {
+      "seq": 1021,
+      "subject": "safi.control.events.conv_ver_d1_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_bcac81c19de5",
+      "conversationId": "conv_ver_d1_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Ambiguous Renewal 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_other_02",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "gate:reject_action",
+      "idempotencyKey": "reject:act_c6ea852ba7c7",
+      "outcome": "denied",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_other_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "OTHER_USER",
+          "scope": "conversation:member"
+        }
+      },
+      "ts": "2026-11-18T08:12:58.008619Z"
+    },
+    {
+      "seq": 1022,
+      "subject": "safi.control.events.conv_ver_d1_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_21578125ab4b",
+      "conversationId": "conv_ver_d1_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Ambiguous Renewal 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_other_02",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "gate:list_held",
+      "idempotencyKey": "list:conv_ver_d1_20261118T081009Z_1794989544",
+      "outcome": "denied",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_other_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "OTHER_USER",
+          "scope": "conversation:member"
+        }
+      },
+      "ts": "2026-11-18T08:12:58.036725Z"
+    },
+    {
+      "seq": 1023,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_60d7b935de9a",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_other_02",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a09:op:20261118T081009Z",
+      "outcome": "denied",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_other_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "OTHER_USER",
+          "scope": "conversation:member"
+        }
+      },
+      "ts": "2026-11-18T08:12:58.064524Z"
+    },
+    {
+      "seq": 1024,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_437ce6bad620",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_other_02",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "calnode:list_slots",
+      "idempotencyKey": "read:calnode:list_slots:conv_ver_a_20261118T081009Z_1794989544",
+      "outcome": "denied",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_other_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "OTHER_USER",
+          "scope": "conversation:member"
+        }
+      },
+      "ts": "2026-11-18T08:12:58.093127Z"
+    },
+    {
+      "seq": 1025,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_0be981140888",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_other_02",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "windmill:start_assignment",
+      "idempotencyKey": "a09:as:20261118T081009Z",
+      "outcome": "denied",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_other_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "OTHER_USER",
+          "scope": "conversation:member"
+        }
+      },
+      "ts": "2026-11-18T08:12:58.121985Z"
+    },
+    {
+      "seq": 1026,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_5ea15a8f6c5d",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_other_02",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "gate:barge_in",
+      "idempotencyKey": "mode:gated:conv_ver_a_20261118T081009Z_1794989544:barge_in:d9a2d14a",
+      "outcome": "denied",
+      "context": {
+        "meetingContext": {},
+        "portContext": {},
+        "permissionProvenance": {}
+      },
+      "ts": "2026-11-18T08:12:58.178785Z"
+    },
+    {
+      "seq": 1027,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_db6584518ff3",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_revoked_03",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a09:rev:20261118T081009Z",
+      "outcome": "denied",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_rev_20261118T081009Z"
+        },
+        "portContext": {
+          "port": "safichat-local-api"
+        },
+        "permissionProvenance": {
+          "role": "REVOKED_USER"
+        }
+      },
+      "ts": "2026-11-18T08:12:58.207664Z"
+    },
+    {
+      "seq": 1028,
+      "subject": "safi.control.events.conv_ver_d1_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_f39ee55d4ad8",
+      "conversationId": "conv_ver_d1_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Ambiguous Renewal 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_revoked_03",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "gate:approve_action",
+      "idempotencyKey": "approve:act_c6ea852ba7c7",
+      "outcome": "denied",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_rev_20261118T081009Z"
+        },
+        "portContext": {
+          "port": "safichat-local-api"
+        },
+        "permissionProvenance": {
+          "role": "REVOKED_USER"
+        }
+      },
+      "ts": "2026-11-18T08:12:58.242580Z"
+    },
+    {
+      "seq": 1029,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_86d13969d83a",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "spoofed_attacker_999",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "gate:barge_in",
+      "idempotencyKey": "mode:gated:conv_ver_a_20261118T081009Z_1794989544:barge_in:6cd17ad2",
+      "outcome": "denied",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_stranger"
+        },
+        "portContext": {
+          "port": "external"
+        },
+        "permissionProvenance": {
+          "role": "UNKNOWN"
+        }
+      },
+      "ts": "2026-11-18T08:12:58.271573Z"
+    },
+    {
+      "seq": 1030,
+      "subject": "safi.control.events.conv_ver_a_20261118T081009Z_1794989544.action_failed",
+      "eventId": "evt_2bf1d85a075b",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_FAILED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a09:nest:20261118T081009Z",
+      "outcome": "denied",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:58.299782Z"
+    },
+    {
+      "seq": 1031,
+      "subject": "safi.control.events.conv_ver_a10_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_66ba7022a51d",
+      "conversationId": "conv_ver_a10_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "A10 Restart 20261118T081009Z",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a10_20261118T081009Z_1794989544",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:58.706088Z"
+    },
+    {
+      "seq": 1032,
+      "subject": "safi.control.events.conv_ver_a10_20261118T081009Z_1794989544.mode_gated",
+      "eventId": "evt_cb437b45d9bb",
+      "conversationId": "conv_ver_a10_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "A10 Restart 20261118T081009Z",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "barge_in:90680276",
+      "idempotencyKey": "mode:gated:conv_ver_a10_20261118T081009Z_1794989544:barge_in:90680276",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:58.725509Z"
+    },
+    {
+      "seq": 1033,
+      "subject": "safi.control.events.conv_ver_a10_20261118T081009Z_1794989544.action_held",
+      "eventId": "evt_f0d03840b6e2",
+      "conversationId": "conv_ver_a10_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "A10 Restart 20261118T081009Z",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a10:h1:20261118T081009Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:58.744830Z"
+    },
+    {
+      "seq": 1034,
+      "subject": "safi.control.events.conv_ver_a10_20261118T081009Z_1794989544.action_held",
+      "eventId": "evt_6491ecfaf2fb",
+      "conversationId": "conv_ver_a10_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "A10 Restart 20261118T081009Z",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_HELD",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "a10:h2:20261118T081009Z",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:12:58.760211Z"
+    },
+    {
+      "seq": 1035,
+      "subject": "safi.control.events.conv_ver_a10_kill_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_05ec08403275",
+      "conversationId": "conv_ver_a10_kill_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "A10 Kill9 20261118T081009Z",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a10_kill_20261118T081009Z_1794989544",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:13:06.891083Z"
+    },
+    {
+      "seq": 1036,
+      "subject": "safi.control.events.conv_ver_a10_kill_20261118T081009Z_1794989544.gate_failed_closed",
+      "eventId": "evt_e3ac7644a9a7",
+      "conversationId": "conv_ver_a10_kill_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "A10 Kill9 20261118T081009Z",
+      "actorGuid": "system-gate-recovery",
+      "actorKind": "PROXY",
+      "type": "GATE_FAILED_CLOSED",
+      "operationId": "startup:recover_on_startup",
+      "idempotencyKey": "recovery:conv_ver_a10_kill_20261118T081009Z_1794989544",
+      "outcome": "unknown",
+      "context": {
+        "meetingContext": {
+          "source": "startup-recovery"
+        },
+        "portContext": {
+          "port": "local-gate-adapter"
+        },
+        "permissionProvenance": {
+          "role": "SYSTEM_RECOVERY"
+        }
+      },
+      "ts": "2026-11-18T08:13:08.658398Z"
+    },
+    {
+      "seq": 1037,
+      "subject": "safi.control.events.conv_ver_a10_nats_20261118T081009Z_1794989544.action_dispatched",
+      "eventId": "evt_9f373858d265",
+      "conversationId": "conv_ver_a10_nats_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "A10 NATS Outage 20261118T081009Z",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "ACTION_DISPATCHED",
+      "operationId": "n8n:dispatch_followup",
+      "idempotencyKey": "seed:conv_ver_a10_nats_20261118T081009Z_1794989544",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:13:09.954203Z"
+    },
+    {
+      "seq": 1038,
+      "subject": "safi.control.events.conv_ver_a10_nats_20261118T081009Z_1794989544.mode_gated",
+      "eventId": "evt_263c66f544ad",
+      "conversationId": "conv_ver_a10_nats_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "A10 NATS Outage 20261118T081009Z",
+      "actorGuid": "user_safi_pilot_owner_01",
+      "actorKind": "USER",
+      "type": "MODE_GATED",
+      "operationId": "reconcile:5d29f387",
+      "idempotencyKey": "reconcile:conv_ver_a10_nats_20261118T081009Z_1794989544:reconcile:5d29f387",
+      "outcome": "ok",
+      "context": {
+        "meetingContext": {
+          "meetingId": "mtg_ver_20261118T081009Z",
+          "channel": "safichat-pilot"
+        },
+        "portContext": {
+          "port": "safichat-local-api",
+          "host": "127.0.0.1"
+        },
+        "permissionProvenance": {
+          "role": "BUSINESS_OWNER",
+          "scope": "conversation:admin"
+        }
+      },
+      "ts": "2026-11-18T08:13:15.605522Z"
+    }
+  ]
+}

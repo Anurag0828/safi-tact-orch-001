@@ -1,0 +1,11 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# command: grep -nE 'image:|FROM ' deploy/docker-compose.yml deploy/Dockerfile.gate
+# rc: 0
+
+deploy/docker-compose.yml:56:    image: docker.n8n.io/n8nio/n8n:1.68.0@sha256:d468689474fdea94304047da35e59e9e591c98110106a2f302dc5509f7ce2f4b
+deploy/docker-compose.yml:80:    image: ${CALNODE_PINNED_IMAGE:-ghcr.io/calnode/calnode:0.14.0@sha256:120f1434d02c409b25f981a163cd4408db3e3f3ea571abc4c1e3e922f292af80}
+deploy/docker-compose.yml:103:    image: nats:2.10-alpine@sha256:b83efabe3e7def1e0a4a31ec6e078999bb17c80363f881df35edc70fcb6bb927
+deploy/docker-compose.yml:121:    image: postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c
+deploy/docker-compose.yml:140:    image: ghcr.io/windmill-labs/windmill:1.425.0@sha256:d90895fdf60891a7b09d5833c403e39d5ed30be8de78e2122e5053152b551ce2
+deploy/docker-compose.yml:158:    image: ghcr.io/windmill-labs/windmill:1.425.0@sha256:d90895fdf60891a7b09d5833c403e39d5ed30be8de78e2122e5053152b551ce2
+deploy/Dockerfile.gate:1:FROM python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90

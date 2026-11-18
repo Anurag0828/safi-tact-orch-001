@@ -1,0 +1,12 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:44.717210Z",
+  "statusCode": 200,
+  "body": {
+    "actionId": "act_ab00bb7006e1",
+    "conversationId": "conv_ver_b_20261118T081009Z_1794989544",
+    "state": "REJECTED",
+    "idempotencyKey": "a07:b:held4:20261118T081009Z",
+    "idempotentReplay": true
+  }
+}

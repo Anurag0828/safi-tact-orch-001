@@ -1,0 +1,24 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# command: /tmp/safi_verify_venv/bin/python -c "import json, glob; print(json.dumps({f: [n['parameters'] for n in json.load(open(f))['nodes'] if n['type']=='n8n-nodes-base.webhook'] for f in sorted(glob.glob('workflows/n8n/*.json'))}, indent=2))"
+# rc: 0
+
+{
+  "workflows/n8n/approved_followup_dispatch.json": [
+    {
+      "httpMethod": "POST",
+      "path": "safi-approved-followup",
+      "authentication": "headerAuth",
+      "responseMode": "responseNode",
+      "options": {}
+    }
+  ],
+  "workflows/n8n/lead_intake_gated_followup.json": [
+    {
+      "httpMethod": "POST",
+      "path": "safi-lead-intake",
+      "authentication": "headerAuth",
+      "responseMode": "responseNode",
+      "options": {}
+    }
+  ]
+}

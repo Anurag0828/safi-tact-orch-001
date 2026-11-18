@@ -1,0 +1,16 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# command: grep -nE 'payload_json|REDACT|purge|terminal' gate/store.py
+# rc: 0
+
+123:                    payload_json TEXT NOT NULL,
+204:                    payload_json TEXT NOT NULL,
+219:                    state, payload_ref, payload_json, recipients_json, actor_guid,
+225:                    state, payload_ref, payload_json, recipients_json, actor_guid,
+417:                    state, payload_ref, payload_json, recipients_json, actor_guid,
+479:        data["payload"] = json.loads(data["payload_json"])
+529:            item["payload"] = json.loads(item["payload_json"])
+557:        terminal_states = (
+581:            # R-CTX-03: Purge message payload body once terminal; retain only operational ref/hash
+582:            if state in terminal_states:
+586:                    SET state = ?, payload_json = '{}',
+646:        data["payload"] = json.loads(data["payload_json"])

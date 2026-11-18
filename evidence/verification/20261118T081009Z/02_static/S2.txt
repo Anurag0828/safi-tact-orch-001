@@ -1,0 +1,55 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# command: /tmp/safi_verify_venv/bin/python -c "import json, glob; print(json.dumps({f: [{'name':n['name'],'type':n['type'],'url':n.get('parameters',{}).get('url')} for n in json.load(open(f))['nodes']] for f in sorted(glob.glob('workflows/n8n/*.json'))}, indent=2))"
+# rc: 0
+
+{
+  "workflows/n8n/approved_followup_dispatch.json": [
+    {
+      "name": "Gate-Authorized Follow-Up Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "url": null
+    },
+    {
+      "name": "Verify Gate Approval Flag",
+      "type": "n8n-nodes-base.if",
+      "url": null
+    },
+    {
+      "name": "Record Verified Allowlisted Delivery Receipt",
+      "type": "n8n-nodes-base.code",
+      "url": null
+    },
+    {
+      "name": "Confirm Verified Follow-Up Status",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "url": null
+    },
+    {
+      "name": "Reject Direct Gate Bypass",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "url": null
+    }
+  ],
+  "workflows/n8n/lead_intake_gated_followup.json": [
+    {
+      "name": "Lead Intake Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "url": null
+    },
+    {
+      "name": "Prepare Approved Follow-Up Payload",
+      "type": "n8n-nodes-base.set",
+      "url": null
+    },
+    {
+      "name": "Return Verified Intake Status to Gate",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "url": null
+    },
+    {
+      "name": "Submit Controlled Effect to Gate Adapter (NO Direct Send)",
+      "type": "n8n-nodes-base.httpRequest",
+      "url": "http://gate-adapter:8000/gate/dispatch"
+    }
+  ]
+}

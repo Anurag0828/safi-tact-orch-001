@@ -1,0 +1,22 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:40.400966Z",
+  "statusCode": 502,
+  "body": {
+    "errorCode": "DOWNSTREAM_ERROR",
+    "message": "Downstream engine 'windmill' failed: Windmill job 01a1edb7-1129-2132-ce0f-86254404355e failed: {'error': {'name': 'ValueError', 'stack': '  File \"/tmp/windmill/wk-default-2dab004009d4-syE1U/01a1edb7-1129-2132-ce0f-86254404355e/f/safi/ops_task_assignment.py\", line 27, in main\\n    raise ValueError(\\n', 'message': 'Operational assignment rejected for invalid booking/assignee: bookingId=ERR_VER_20261118T081009Z, assignee=ops-specialist-1@allowlist.test.local'}}",
+    "details": {
+      "engine": "windmill",
+      "jobId": "01a1edb7-1129-2132-ce0f-86254404355e",
+      "retryCount": 0,
+      "result": {
+        "error": {
+          "name": "ValueError",
+          "stack": "  File \"/tmp/windmill/wk-default-2dab004009d4-syE1U/01a1edb7-1129-2132-ce0f-86254404355e/f/safi/ops_task_assignment.py\", line 27, in main\n    raise ValueError(\n",
+          "message": "Operational assignment rejected for invalid booking/assignee: bookingId=ERR_VER_20261118T081009Z, assignee=ops-specialist-1@allowlist.test.local"
+        }
+      },
+      "logs": "job=01a1edb7-1129-2132-ce0f-86254404355e tag=python3 worker=wk-default-2dab004009d4-syE1U hostname=2dab004009d4\n\n\n--- PYTHON CODE EXECUTION ---\n"
+    }
+  }
+}

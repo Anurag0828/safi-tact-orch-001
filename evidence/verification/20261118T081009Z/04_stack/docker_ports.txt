@@ -1,0 +1,7 @@
+safi-gate-adapter 127.0.0.1:8000->8000/tcp
+safi-calnode 127.0.0.1:3000->3000/tcp
+safi-local-nats 127.0.0.1:4222->4222/tcp, 127.0.0.1:8222->8222/tcp, 6222/tcp
+safi-n8n 127.0.0.1:5678->5678/tcp
+safi-windmill-worker 8000/tcp
+safi-windmill-server 127.0.0.1:8001->8000/tcp
+safi-windmill-db 5432/tcp

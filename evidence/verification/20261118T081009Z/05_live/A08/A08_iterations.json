@@ -1,0 +1,499 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "totalIterations": 20,
+  "reconciledOverlaps": 19,
+  "iterations": [
+    {
+      "iteration": 1,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_01",
+      "jitterMs": 0,
+      "dispatchStartUtc": "2026-11-18T08:12:46.139907Z",
+      "bargeInStartUtc": "2026-11-18T08:12:46.144954Z",
+      "dispatchEndUtc": "2026-11-18T08:12:46.175623Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:46.180375Z",
+      "inflightActionState": "HELD",
+      "reconciledInFlightCount": 0,
+      "reconciledInFlight": [],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 0,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 2,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_02",
+      "jitterMs": 15,
+      "dispatchStartUtc": "2026-11-18T08:12:46.417569Z",
+      "bargeInStartUtc": "2026-11-18T08:12:46.438468Z",
+      "dispatchEndUtc": "2026-11-18T08:12:46.743502Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:46.748480Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_4a48ff9a72a0",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 3,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_03",
+      "jitterMs": 25,
+      "dispatchStartUtc": "2026-11-18T08:12:46.997369Z",
+      "bargeInStartUtc": "2026-11-18T08:12:47.028691Z",
+      "dispatchEndUtc": "2026-11-18T08:12:47.333772Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:47.338678Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_98aeba5ee9e4",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 4,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_04",
+      "jitterMs": 35,
+      "dispatchStartUtc": "2026-11-18T08:12:47.607920Z",
+      "bargeInStartUtc": "2026-11-18T08:12:47.649049Z",
+      "dispatchEndUtc": "2026-11-18T08:12:47.954624Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:47.958783Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_493a37219e0e",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 5,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_05",
+      "jitterMs": 45,
+      "dispatchStartUtc": "2026-11-18T08:12:48.202276Z",
+      "bargeInStartUtc": "2026-11-18T08:12:48.253209Z",
+      "dispatchEndUtc": "2026-11-18T08:12:48.537487Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:48.542126Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_d6c3f42a7a58",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 6,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_06",
+      "jitterMs": 55,
+      "dispatchStartUtc": "2026-11-18T08:12:48.792313Z",
+      "bargeInStartUtc": "2026-11-18T08:12:48.852647Z",
+      "dispatchEndUtc": "2026-11-18T08:12:49.134607Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:49.138785Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_de0a71092dc1",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 7,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_07",
+      "jitterMs": 65,
+      "dispatchStartUtc": "2026-11-18T08:12:49.376195Z",
+      "bargeInStartUtc": "2026-11-18T08:12:49.446891Z",
+      "dispatchEndUtc": "2026-11-18T08:12:49.698163Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:49.702642Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_dc5f1399a289",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 8,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_08",
+      "jitterMs": 75,
+      "dispatchStartUtc": "2026-11-18T08:12:49.929878Z",
+      "bargeInStartUtc": "2026-11-18T08:12:50.011301Z",
+      "dispatchEndUtc": "2026-11-18T08:12:50.251879Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:50.256461Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_f63dbccd00d8",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 9,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_09",
+      "jitterMs": 85,
+      "dispatchStartUtc": "2026-11-18T08:12:50.505125Z",
+      "bargeInStartUtc": "2026-11-18T08:12:50.596936Z",
+      "dispatchEndUtc": "2026-11-18T08:12:50.839851Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:50.844347Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_b5997977f9d5",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 10,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_10",
+      "jitterMs": 95,
+      "dispatchStartUtc": "2026-11-18T08:12:51.083887Z",
+      "bargeInStartUtc": "2026-11-18T08:12:51.184785Z",
+      "dispatchEndUtc": "2026-11-18T08:12:51.427454Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:51.437463Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_537207f43e14",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 11,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_11",
+      "jitterMs": 105,
+      "dispatchStartUtc": "2026-11-18T08:12:51.678074Z",
+      "bargeInStartUtc": "2026-11-18T08:12:51.789974Z",
+      "dispatchEndUtc": "2026-11-18T08:12:51.990608Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:51.994889Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_33452e6c7358",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 12,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_12",
+      "jitterMs": 115,
+      "dispatchStartUtc": "2026-11-18T08:12:52.266701Z",
+      "bargeInStartUtc": "2026-11-18T08:12:52.388081Z",
+      "dispatchEndUtc": "2026-11-18T08:12:52.593552Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:52.597796Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_c1d0c941eb8d",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 13,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_13",
+      "jitterMs": 125,
+      "dispatchStartUtc": "2026-11-18T08:12:52.837322Z",
+      "bargeInStartUtc": "2026-11-18T08:12:52.970549Z",
+      "dispatchEndUtc": "2026-11-18T08:12:53.164369Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:53.168886Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_cb4c07d76784",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 14,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_14",
+      "jitterMs": 140,
+      "dispatchStartUtc": "2026-11-18T08:12:53.406118Z",
+      "bargeInStartUtc": "2026-11-18T08:12:53.552975Z",
+      "dispatchEndUtc": "2026-11-18T08:12:53.715790Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:53.724925Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_0196b1e8ce43",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 15,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_15",
+      "jitterMs": 155,
+      "dispatchStartUtc": "2026-11-18T08:12:53.952898Z",
+      "bargeInStartUtc": "2026-11-18T08:12:54.113407Z",
+      "dispatchEndUtc": "2026-11-18T08:12:54.268208Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:54.272927Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_6fa953aa051f",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 16,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_16",
+      "jitterMs": 170,
+      "dispatchStartUtc": "2026-11-18T08:12:54.518307Z",
+      "bargeInStartUtc": "2026-11-18T08:12:54.695528Z",
+      "dispatchEndUtc": "2026-11-18T08:12:54.866162Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:54.870903Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_d4066d98ed05",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 17,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_17",
+      "jitterMs": 185,
+      "dispatchStartUtc": "2026-11-18T08:12:55.103346Z",
+      "bargeInStartUtc": "2026-11-18T08:12:55.296549Z",
+      "dispatchEndUtc": "2026-11-18T08:12:55.417647Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:55.422060Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_bdfabc0647a8",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 18,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_18",
+      "jitterMs": 200,
+      "dispatchStartUtc": "2026-11-18T08:12:55.668609Z",
+      "bargeInStartUtc": "2026-11-18T08:12:55.875833Z",
+      "dispatchEndUtc": "2026-11-18T08:12:55.979433Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:55.988474Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_882783fe1246",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 19,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_19",
+      "jitterMs": 220,
+      "dispatchStartUtc": "2026-11-18T08:12:56.225203Z",
+      "bargeInStartUtc": "2026-11-18T08:12:56.452083Z",
+      "dispatchEndUtc": "2026-11-18T08:12:56.540726Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:56.544374Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_f97dfd765fab",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    },
+    {
+      "iteration": 20,
+      "conversationId": "conv_ver_a08_20261118T081009Z_1794989544_20",
+      "jitterMs": 60,
+      "dispatchStartUtc": "2026-11-18T08:12:56.785093Z",
+      "bargeInStartUtc": "2026-11-18T08:12:56.850897Z",
+      "dispatchEndUtc": "2026-11-18T08:12:57.120035Z",
+      "bargeInConfirmUtc": "2026-11-18T08:12:57.123692Z",
+      "inflightActionState": "DONE",
+      "reconciledInFlightCount": 1,
+      "reconciledInFlight": [
+        {
+          "actionId": "act_8bc3a22c71c4",
+          "engine": "windmill",
+          "operation": "start_assignment",
+          "finalState": "DONE",
+          "undone": false
+        }
+      ],
+      "undone": false,
+      "postConfirmActionState": "HELD",
+      "oracleWindmillDelta": 1,
+      "oraclePostConfirmN8nDelta": 0,
+      "verdict": "PASS"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# command: cat deploy/Dockerfile.gate && echo '--- compose gate-adapter ---' && sed -n '7,48p' deploy/docker-compose.yml
+# rc: 0
+
+FROM python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+RUN groupadd -r safi && useradd -r -g safi -d /app -s /sbin/nologin safi
+
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
+COPY contracts /app/contracts
+COPY gate /app/gate
+COPY adapters /app/adapters
+COPY safichat /app/safichat
+
+RUN mkdir -p /app/data && chown -R safi:safi /app && chmod 750 /app/data
+
+USER safi
+
+EXPOSE 8000
+
+CMD ["uvicorn", "gate.app:app", "--host", "0.0.0.0", "--port", "8000", "--log-config", "/app/gate/logging_config.json"]
+--- compose gate-adapter ---
+  gate-adapter:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.gate
+    container_name: safi-gate-adapter
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      GATE_STORE_PATH: /app/data/gate_state.db
+      GATE_API_TOKEN: ${GATE_API_TOKEN:?GATE_API_TOKEN must be set}
+      GATE_REQUIRE_AUTH: ${GATE_REQUIRE_AUTH:-true}
+      AUTHZ_MODE: ${AUTHZ_MODE:-http}
+      LOCAL_ACL_JSON: ${LOCAL_ACL_JSON:-}
+      SAFI_ALLOWED_RECIPIENTS: ${SAFI_ALLOWED_RECIPIENTS:?SAFI_ALLOWED_RECIPIENTS must be set}
+      N8N_BASE_URL: http://n8n:5678
+      N8N_API_KEY: ${N8N_API_KEY:?N8N_API_KEY must be set}
+      N8N_WEBHOOK_SECRET: ${N8N_WEBHOOK_SECRET:?N8N_WEBHOOK_SECRET must be set}
+      CALNODE_BASE_URL: http://calnode:3000
+      CALNODE_API_KEY: ${CALNODE_API_KEY:?CALNODE_API_KEY must be set}
+      CALNODE_CALENDAR_ID: ${CALNODE_CALENDAR_ID:-consultation-30m}
+      WINDMILL_BASE_URL: http://windmill-server:8000
+      WINDMILL_TOKEN: ${WINDMILL_TOKEN:?WINDMILL_TOKEN must be set}
+      WINDMILL_WORKSPACE: ${WINDMILL_WORKSPACE:-safi-ops}
+      WINDMILL_ALLOWED_SCRIPTS: ${WINDMILL_ALLOWED_SCRIPTS:-f/safi/ops_task_assignment}
+      SAFI_AUTHZ_URL: ${SAFI_AUTHZ_URL:-}
+      SAFI_AUTHZ_TOKEN: ${SAFI_AUTHZ_TOKEN:-}
+      NATS_URL: ${NATS_URL:?NATS_URL must be set}
+      NATS_TOKEN: ${NATS_TOKEN:-}
+      NATS_USER: ${NATS_USER:-}
+      NATS_PASSWORD: ${NATS_PASSWORD:-}
+      JETSTREAM_STREAM: ${JETSTREAM_STREAM:-SAFI_HISTORY}
+      JETSTREAM_CONTROL_SUBJECT_PREFIX: ${JETSTREAM_CONTROL_SUBJECT_PREFIX:-safi.control.events}
+      JETSTREAM_REQUIRED: ${JETSTREAM_REQUIRED:-true}
+      JETSTREAM_AUTO_CREATE_STREAM: ${JETSTREAM_AUTO_CREATE_STREAM:-false}
+      NATS_CONNECT_TIMEOUT_SECONDS: ${NATS_CONNECT_TIMEOUT_SECONDS:-3}
+      NATS_CONNECT_TOTAL_BUDGET_SECONDS: ${NATS_CONNECT_TOTAL_BUDGET_SECONDS:-12}

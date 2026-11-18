@@ -1,0 +1,643 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "runId": "20261118T081009Z",
+  "generatedUtc": "2026-11-18T08:13:17.920981Z",
+  "pytest": {
+    "runs": 3,
+    "passed": 73,
+    "failed": 0,
+    "skipped": 0,
+    "deselected": 0,
+    "perRun": [
+      {
+        "run": 1,
+        "tests": 73,
+        "passed": 73,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "run": 2,
+        "tests": 73,
+        "passed": 73,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "run": 3,
+        "tests": 73,
+        "passed": 73,
+        "failed": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "defects": {
+    "D1": "FIXED",
+    "D2": "FIXED",
+    "D3": "FIXED",
+    "D4": "FIXED",
+    "D5": "FIXED"
+  },
+  "static": {
+    "S1": "PASS",
+    "S2": "PASS",
+    "S3": "PASS",
+    "S4": "PASS",
+    "S5": "PASS",
+    "S6": "PASS",
+    "S7": "PASS",
+    "S8": "PASS",
+    "S9": "PASS",
+    "S10": "PASS",
+    "S11": "PASS",
+    "S12": "PASS",
+    "S13": "PASS",
+    "S14": "PASS",
+    "S15": "PASS"
+  },
+  "acceptance": {
+    "A01": {
+      "verdict": "PASS",
+      "startedUtc": "2026-11-18T08:12:26.838256Z",
+      "endedUtc": "2026-11-18T08:12:34.969138Z",
+      "conversationIds": [],
+      "downstreamIds": {
+        "n8nExecutions": [],
+        "calnodeBookings": [],
+        "windmillJobs": []
+      },
+      "oracleDelta": {
+        "expected": {
+          "healthyServices": 7
+        },
+        "observed": {
+          "healthyServices": 7
+        }
+      },
+      "evidenceFiles": [
+        "04_stack/up.txt",
+        "04_stack/ps.json",
+        "04_stack/images.txt",
+        "04_stack/volumes.txt",
+        "04_stack/gate_health.json",
+        "04_stack/gate_inspect.json",
+        "04_stack/listening_ports.txt",
+        "04_stack/docker_ports.txt",
+        "04_stack/default_cred_probes.json"
+      ],
+      "notes": "All 7 services running/healthy, exact tag+digest pins, 127.0.0.1-only bindings, non-root read-only gate container, default creds rejected."
+    },
+    "A02": {
+      "verdict": "BLOCKED",
+      "startedUtc": "2026-11-18T08:12:34.978448Z",
+      "endedUtc": "2026-11-18T08:12:34.978450Z",
+      "conversationIds": [],
+      "downstreamIds": {
+        "n8nExecutions": [],
+        "calnodeBookings": [],
+        "windmillJobs": []
+      },
+      "oracleDelta": {
+        "expected": {},
+        "observed": {}
+      },
+      "evidenceFiles": [],
+      "notes": "BLOCKED: V-06 native SafiChat / Meeting Manager UI invocation contract not supplied by SAFI. REST surrogate verified across A03-A08."
+    },
+    "A03": {
+      "verdict": "PASS",
+      "startedUtc": "2026-11-18T08:12:34.978455Z",
+      "endedUtc": "2026-11-18T08:12:38.160002Z",
+      "conversationIds": [
+        "conv_ver_a_20261118T081009Z_1794989544"
+      ],
+      "downstreamIds": {
+        "n8nExecutions": [
+          "269",
+          "270"
+        ],
+        "calnodeBookings": [],
+        "windmillJobs": []
+      },
+      "oracleDelta": {
+        "expected": {
+          "intakeAndFollowupSuccess": 2,
+          "replayAndAllowlistDelta": 0
+        },
+        "observed": {
+          "intakeAndFollowupSuccess": 2,
+          "postIntakeTotalDeltaIncluding403GuardExec": 1
+        }
+      },
+      "evidenceFiles": [
+        "06_independent_oracles/A03_before.json",
+        "05_live/A03/01_ingest_lead.req.json",
+        "05_live/A03/01_ingest_lead.res.json",
+        "06_independent_oracles/A03_after_intake.json",
+        "05_live/A03/02_direct_no_secret.req.json",
+        "05_live/A03/02_direct_no_secret.res.json",
+        "05_live/A03/03_direct_wrong_secret.req.json",
+        "05_live/A03/03_direct_wrong_secret.res.json",
+        "05_live/A03/04_direct_no_gate_approved.req.json",
+        "05_live/A03/04_direct_no_gate_approved.res.json",
+        "05_live/A03/05_non_allowlisted.req.json",
+        "05_live/A03/05_non_allowlisted.res.json",
+        "05_live/A03/06_duplicate_followup_replay.req.json",
+        "05_live/A03/06_duplicate_followup_replay.res.json",
+        "06_independent_oracles/A03_after.json"
+      ],
+      "notes": "Ingest + single Gate-mediated follow-up verified at n8n oracle; direct no-secret/wrong-secret/gateApproved=false returned 403; non-allowlisted 403; duplicate key replayed with 0 extra executions."
+    },
+    "A04": {
+      "verdict": "PASS",
+      "startedUtc": "2026-11-18T08:12:38.160023Z",
+      "endedUtc": "2026-11-18T08:12:39.245684Z",
+      "conversationIds": [
+        "conv_ver_a_20261118T081009Z_1794989544"
+      ],
+      "downstreamIds": {
+        "n8nExecutions": [],
+        "calnodeBookings": [
+          "fe4767e4-a8af-4aad-8f21-3746e4444b31"
+        ],
+        "windmillJobs": []
+      },
+      "oracleDelta": {
+        "expected": {
+          "calnodeConfirmed": 1
+        },
+        "observed": {
+          "calnodeConfirmed": 1
+        }
+      },
+      "evidenceFiles": [
+        "06_independent_oracles/A04_before.json",
+        "05_live/A04/01_slots.req.json",
+        "05_live/A04/01_slots.res.json",
+        "05_live/A04/02_book_first.req.json",
+        "05_live/A04/02_book_first.res.json",
+        "05_live/A04/03_book_same_key_replay.req.json",
+        "05_live/A04/03_book_same_key_replay.res.json",
+        "05_live/A04/04_book_diff_key_same_slot.req.json",
+        "05_live/A04/04_book_diff_key_same_slot.res.json",
+        "05_live/A04/05_calendar_oob.req.json",
+        "05_live/A04/05_calendar_oob.res.json",
+        "06_independent_oracles/A04_after.json"
+      ],
+      "notes": "Slots matched Calnode direct API exactly; 1 booking created (invite_delivery=none); same-key replayed; different-key same-slot rejected; out-of-bounds calendarId 403."
+    },
+    "A05": {
+      "verdict": "PASS",
+      "startedUtc": "2026-11-18T08:12:39.245718Z",
+      "endedUtc": "2026-11-18T08:12:40.861384Z",
+      "conversationIds": [
+        "conv_ver_a_20261118T081009Z_1794989544"
+      ],
+      "downstreamIds": {
+        "n8nExecutions": [],
+        "calnodeBookings": [],
+        "windmillJobs": [
+          "01a1edb7-0f86-e943-691e-167adfbe3852",
+          "01a1edb7-1129-2132-ce0f-86254404355e"
+        ]
+      },
+      "oracleDelta": {
+        "expected": {
+          "windmillSuccess": 1,
+          "windmillFailed": 1
+        },
+        "observed": {
+          "windmillSuccess": 1,
+          "windmillFailed": 1
+        }
+      },
+      "evidenceFiles": [
+        "06_independent_oracles/A05_before.json",
+        "05_live/A05/01_assign.req.json",
+        "05_live/A05/01_assign.res.json",
+        "05_live/A05/02_job_status.req.json",
+        "05_live/A05/02_job_status.res.json",
+        "05_live/A05/02b_windmill_direct_job.json",
+        "05_live/A05/03_forced_failure.req.json",
+        "05_live/A05/03_forced_failure.res.json",
+        "05_live/A05/04_disallowed_script_path.req.json",
+        "05_live/A05/04_disallowed_script_path.res.json",
+        "05_live/A05/05_cross_conv_idor.req.json",
+        "05_live/A05/05_cross_conv_idor.res.json",
+        "06_independent_oracles/A05_after.json"
+      ],
+      "notes": "Completed under super_admin=false operator u/safi_ops_runner; job-status matched Windmill direct API; forced error returned 502 with failed jobId; scriptPath escape 403; IDOR 404."
+    },
+    "A06": {
+      "verdict": "PASS",
+      "startedUtc": "2026-11-18T08:12:40.861410Z",
+      "endedUtc": "2026-11-18T08:12:43.100019Z",
+      "conversationIds": [
+        "conv_ver_a_20261118T081009Z_1794989544",
+        "conv_ver_b_20261118T081009Z_1794989544",
+        "conv_ver_c_20261118T081009Z_1794989544",
+        "conv_ver_d1_20261118T081009Z_1794989544",
+        "conv_ver_d2_20261118T081009Z_1794989544",
+        "conv_ver_wild_20261118T081009Z_1794989544"
+      ],
+      "downstreamIds": {
+        "n8nExecutions": [
+          "274"
+        ],
+        "calnodeBookings": [],
+        "windmillJobs": [
+          "01a1edb7-1784-44b9-7874-ce820effd910"
+        ]
+      },
+      "oracleDelta": {
+        "expected": {
+          "convA_n8n": 1,
+          "convB_heldEffects": 0,
+          "convC_windmill": 1
+        },
+        "observed": {
+          "convA_n8n": 1,
+          "convB_heldEffects": 0,
+          "convC_windmill": 1
+        }
+      },
+      "evidenceFiles": [
+        "05_live/A06/01_seed_94989544.req.json",
+        "05_live/A06/01_seed_94989544.res.json",
+        "05_live/A06/01_seed_94989544.req.json",
+        "05_live/A06/01_seed_94989544.res.json",
+        "05_live/A06/02_barge_in_b_by_subject.req.json",
+        "05_live/A06/02_barge_in_b_by_subject.res.json",
+        "06_independent_oracles/A06_before.json",
+        "05_live/A06/03a_action_conv_a.req.json",
+        "05_live/A06/03a_action_conv_a.res.json",
+        "05_live/A06/03b_action_conv_b_held.req.json",
+        "05_live/A06/03b_action_conv_b_held.res.json",
+        "05_live/A06/03c_action_conv_c.req.json",
+        "05_live/A06/03c_action_conv_c.res.json",
+        "06_independent_oracles/A06_after.json",
+        "05_live/A06/04_list_held_b.req.json",
+        "05_live/A06/04_list_held_b.res.json",
+        "05_live/A06/05_ambiguous_subject_409.req.json",
+        "05_live/A06/05_ambiguous_subject_409.res.json",
+        "05_live/A06/06_select_by_conv_id.req.json",
+        "05_live/A06/06_select_by_conv_id.res.json",
+        "05_live/A06/07_wildcard_subject_line.req.json",
+        "05_live/A06/07_wildcard_subject_line.res.json"
+      ],
+      "notes": "Conv B gated by Subject Line while Conv A & C ran concurrently; 409 ambiguity & conversationId selection verified; wildcard Subject Line 'foo.> a.b.*' left NATS subjects untouched."
+    },
+    "A07": {
+      "verdict": "PASS",
+      "startedUtc": "2026-11-18T08:12:43.100047Z",
+      "endedUtc": "2026-11-18T08:12:45.643498Z",
+      "conversationIds": [
+        "conv_ver_b_20261118T081009Z_1794989544"
+      ],
+      "downstreamIds": {
+        "n8nExecutions": [
+          "278",
+          "279",
+          "280"
+        ],
+        "calnodeBookings": [],
+        "windmillJobs": []
+      },
+      "oracleDelta": {
+        "expected": {
+          "approvedPlusReleased": 2,
+          "retries3xEach": 0,
+          "postUngateNew": 1
+        },
+        "observed": {
+          "approvedPlusReleased": 2,
+          "retries3xEach": 0,
+          "postUngateNew": 1
+        }
+      },
+      "evidenceFiles": [
+        "05_live/A07/01_hold_2.req.json",
+        "05_live/A07/01_hold_2.res.json",
+        "05_live/A07/01_hold_3.req.json",
+        "05_live/A07/01_hold_3.res.json",
+        "05_live/A07/01_hold_4.req.json",
+        "05_live/A07/01_hold_4.res.json",
+        "05_live/A07/02_list_4_held.req.json",
+        "05_live/A07/02_list_4_held.res.json",
+        "06_independent_oracles/A07_before.json",
+        "05_live/A07/03_approve_h3.req.json",
+        "05_live/A07/03_approve_h3.res.json",
+        "05_live/A07/04_reject_h4.req.json",
+        "05_live/A07/04_reject_h4.res.json",
+        "05_live/A07/05_ungate_release_cancel.req.json",
+        "05_live/A07/05_ungate_release_cancel.res.json",
+        "06_independent_oracles/A07_after_ungate.json",
+        "05_live/A07/06_retry_h1_try1.req.json",
+        "05_live/A07/06_retry_h1_try1.res.json",
+        "05_live/A07/06_retry_h1_try2.req.json",
+        "05_live/A07/06_retry_h1_try2.res.json",
+        "05_live/A07/06_retry_h1_try3.req.json",
+        "05_live/A07/06_retry_h1_try3.res.json",
+        "05_live/A07/06_retry_h2_try1.req.json",
+        "05_live/A07/06_retry_h2_try1.res.json",
+        "05_live/A07/06_retry_h2_try2.req.json",
+        "05_live/A07/06_retry_h2_try2.res.json",
+        "05_live/A07/06_retry_h2_try3.req.json",
+        "05_live/A07/06_retry_h2_try3.res.json",
+        "05_live/A07/06_retry_h3_try1.req.json",
+        "05_live/A07/06_retry_h3_try1.res.json",
+        "05_live/A07/06_retry_h3_try2.req.json",
+        "05_live/A07/06_retry_h3_try2.res.json",
+        "05_live/A07/06_retry_h3_try3.req.json",
+        "05_live/A07/06_retry_h3_try3.res.json",
+        "05_live/A07/06_retry_h4_try1.req.json",
+        "05_live/A07/06_retry_h4_try1.res.json",
+        "05_live/A07/06_retry_h4_try2.req.json",
+        "05_live/A07/06_retry_h4_try2.res.json",
+        "05_live/A07/06_retry_h4_try3.req.json",
+        "05_live/A07/06_retry_h4_try3.res.json",
+        "06_independent_oracles/A07_after_retries.json",
+        "05_live/A07/07_post_ungate_new_action.req.json",
+        "05_live/A07/07_post_ungate_new_action.res.json",
+        "06_independent_oracles/A07_final.json"
+      ],
+      "notes": "4 held actions resolved (1 approve, 1 reject, 1 release, 1 cancel); 12 retries (3x each) produced 0 extra executions; post-ungate action executed immediately."
+    },
+    "A08": {
+      "verdict": "PASS",
+      "startedUtc": "2026-11-18T08:12:45.643528Z",
+      "endedUtc": "2026-11-18T08:12:57.509872Z",
+      "conversationIds": [
+        "conv_ver_a08_20261118T081009Z_1794989544_01",
+        "conv_ver_a08_20261118T081009Z_1794989544_02",
+        "conv_ver_a08_20261118T081009Z_1794989544_03",
+        "conv_ver_a08_20261118T081009Z_1794989544_04",
+        "conv_ver_a08_20261118T081009Z_1794989544_05",
+        "conv_ver_a08_20261118T081009Z_1794989544_06",
+        "conv_ver_a08_20261118T081009Z_1794989544_07",
+        "conv_ver_a08_20261118T081009Z_1794989544_08",
+        "conv_ver_a08_20261118T081009Z_1794989544_09",
+        "conv_ver_a08_20261118T081009Z_1794989544_10",
+        "conv_ver_a08_20261118T081009Z_1794989544_11",
+        "conv_ver_a08_20261118T081009Z_1794989544_12",
+        "conv_ver_a08_20261118T081009Z_1794989544_13",
+        "conv_ver_a08_20261118T081009Z_1794989544_14",
+        "conv_ver_a08_20261118T081009Z_1794989544_15",
+        "conv_ver_a08_20261118T081009Z_1794989544_16",
+        "conv_ver_a08_20261118T081009Z_1794989544_17",
+        "conv_ver_a08_20261118T081009Z_1794989544_18",
+        "conv_ver_a08_20261118T081009Z_1794989544_19",
+        "conv_ver_a08_20261118T081009Z_1794989544_20"
+      ],
+      "downstreamIds": {
+        "n8nExecutions": [],
+        "calnodeBookings": [],
+        "windmillJobs": [
+          "01a1edb7-29eb-bb3e-79ed-6117e4d62316",
+          "01a1edb7-2c37-39dc-3970-26f0d99326cf",
+          "01a1edb7-2e98-9cb0-39ff-75a190a75ef9",
+          "01a1edb7-30ea-af7b-c239-a43e9715c386",
+          "01a1edb7-3346-09f7-fe50-93af33b229b4",
+          "01a1edb7-357b-c1c7-24a4-45aa344cbd19",
+          "01a1edb7-37ad-ab4c-a7ca-0498d4961ee0",
+          "01a1edb7-39ea-b402-48c1-a9fe2c1d9ba1",
+          "01a1edb7-3c3c-61a6-7e38-f0dbdd57bd16",
+          "01a1edb7-3e76-35dd-a4b6-0d679b632b6d",
+          "01a1edb7-40ce-d336-ec43-8e6e2fe375f2",
+          "01a1edb7-430a-2bc4-ab06-4c9d99d77eab",
+          "01a1edb7-4534-2555-cbdb-4532b9526499",
+          "01a1edb7-475b-6749-7c18-55e8acaf26f3",
+          "01a1edb7-4990-029d-5cec-2eddcfdccd78",
+          "01a1edb7-4bd8-5d6d-d3ec-cd25540fb6d7",
+          "01a1edb7-4e09-de95-a4af-fbbbf1160268",
+          "01a1edb7-5039-d212-13c0-85c8f05f5c04",
+          "01a1edb7-527b-218b-d222-60823e76ee65"
+        ]
+      },
+      "oracleDelta": {
+        "expected": {
+          "iterationsPassed": 20,
+          "postConfirmExtraEffects": 0
+        },
+        "observed": {
+          "iterationsPassed": 20,
+          "reconciledInFlightOverlaps": 19,
+          "postConfirmExtraEffects": 0
+        }
+      },
+      "evidenceFiles": [
+        "06_independent_oracles/A08_before.json",
+        "05_live/A08/A08_iterations.json",
+        "06_independent_oracles/A08_after.json"
+      ],
+      "notes": "All 20/20 race iterations passed (19 genuine mid-dispatch reconciliations with undone=false, 0 post-confirmation downstream effects)."
+    },
+    "A09": {
+      "verdict": "BLOCKED",
+      "localFailClosedVerdict": "PASS (local fail-closed + D4 HTTP mock authz)",
+      "startedUtc": "2026-11-18T08:12:57.509895Z",
+      "endedUtc": "2026-11-18T08:12:58.618813Z",
+      "conversationIds": [
+        "conv_ver_a_20261118T081009Z_1794989544",
+        "conv_ver_d1_20261118T081009Z_1794989544"
+      ],
+      "downstreamIds": {
+        "n8nExecutions": [],
+        "calnodeBookings": [],
+        "windmillJobs": []
+      },
+      "oracleDelta": {
+        "expected": {
+          "n8n": 0,
+          "calnode": 0,
+          "windmill": 0
+        },
+        "observed": {
+          "n8n": 0,
+          "calnode": 0,
+          "windmill": 0
+        }
+      },
+      "evidenceFiles": [
+        "06_independent_oracles/A09_before.json",
+        "05_live/A09/01_missing_bearer.req.json",
+        "05_live/A09/01_missing_bearer.res.json",
+        "05_live/A09/02_invalid_bearer.req.json",
+        "05_live/A09/02_invalid_bearer.res.json",
+        "05_live/A09/03_missing_cb_secret.req.json",
+        "05_live/A09/03_missing_cb_secret.res.json",
+        "05_live/A09/04_unauth_barge_in.req.json",
+        "05_live/A09/04_unauth_barge_in.res.json",
+        "05_live/A09/05_unauth_ungate.req.json",
+        "05_live/A09/05_unauth_ungate.res.json",
+        "05_live/A09/06_unauth_approve.req.json",
+        "05_live/A09/06_unauth_approve.res.json",
+        "05_live/A09/07_unauth_reject.req.json",
+        "05_live/A09/07_unauth_reject.res.json",
+        "05_live/A09/08_unauth_held.req.json",
+        "05_live/A09/08_unauth_held.res.json",
+        "05_live/A09/09_unauth_ops_followup.req.json",
+        "05_live/A09/09_unauth_ops_followup.res.json",
+        "05_live/A09/10_unauth_ops_slots.req.json",
+        "05_live/A09/10_unauth_ops_slots.res.json",
+        "05_live/A09/11_unauth_ops_assign.req.json",
+        "05_live/A09/11_unauth_ops_assign.res.json",
+        "05_live/A09/12_cross_subject_enum.req.json",
+        "05_live/A09/12_cross_subject_enum.res.json",
+        "05_live/A09/13_cross_incomplete_dos.req.json",
+        "05_live/A09/13_cross_incomplete_dos.res.json",
+        "05_live/A09/14_revoked_actor_action.req.json",
+        "05_live/A09/14_revoked_actor_action.res.json",
+        "05_live/A09/15_revoked_actor_approve.req.json",
+        "05_live/A09/15_revoked_actor_approve.res.json",
+        "05_live/A09/16_spoofed_actor_guid.req.json",
+        "05_live/A09/16_spoofed_actor_guid.res.json",
+        "05_live/A09/17_nested_payload_recipient_bypass.req.json",
+        "05_live/A09/17_nested_payload_recipient_bypass.res.json",
+        "06_independent_oracles/A09_after.json",
+        "01_defects/D4_authz_http_pytest.txt",
+        "01_defects/D4_authz_http_mock_log.json"
+      ],
+      "notes": "BLOCKED on live SAFI Cognito endpoint (V-08 / SAFI_AUTHZ_URL). All 17 live local fail-closed negative cases denied with 0 downstream effects, and all 7 D4 AUTHZ_MODE=http cases (incl. mid-flow revocation & pre-dispatch recheck) PASSED."
+    },
+    "A10": {
+      "verdict": "PASS",
+      "startedUtc": "2026-11-18T08:12:58.618847Z",
+      "endedUtc": "2026-11-18T08:13:16.787724Z",
+      "conversationIds": [
+        "conv_ver_a10_20261118T081009Z_1794989544",
+        "conv_ver_a10_kill_20261118T081009Z_1794989544",
+        "conv_ver_a10_nats_20261118T081009Z_1794989544",
+        "conv_ver_a_20261118T081009Z_1794989544"
+      ],
+      "downstreamIds": {
+        "n8nExecutions": [],
+        "calnodeBookings": [
+          "fe4767e4-a8af-4aad-8f21-3746e4444b31"
+        ],
+        "windmillJobs": []
+      },
+      "oracleDelta": {
+        "expected": {
+          "restartHeldEffects": 0,
+          "kill9MaxWindmill": 1,
+          "natsOutageMaxN8n": 1,
+          "calnodeRetryDelta": 0
+        },
+        "observed": {
+          "restartHeldEffects": 0,
+          "kill9WindmillDelta": 1,
+          "natsOutageN8nDelta": 0,
+          "calnodeRetryDelta": 0
+        }
+      },
+      "evidenceFiles": [
+        "06_independent_oracles/A10_1_before_restart.json",
+        "05_live/A10/01_health_after_full_restart.json",
+        "05_live/A10/01_held_after_restart.req.json",
+        "05_live/A10/01_held_after_restart.res.json",
+        "06_independent_oracles/A10_1_after_restart.json",
+        "05_live/A10/05_calnode_post_restart_retry.req.json",
+        "05_live/A10/05_calnode_post_restart_retry.res.json",
+        "05_live/A10/02_health_after_kill9.json",
+        "05_live/A10/02_retry_same_key_after_kill9.req.json",
+        "05_live/A10/02_retry_same_key_after_kill9.res.json",
+        "06_independent_oracles/A10_2_kill9_oracle.json",
+        "05_live/A10/03_action_while_nats_stopped.req.json",
+        "05_live/A10/03_action_while_nats_stopped.res.json",
+        "05_live/A10/03_reconcile_after_nats_returns.req.json",
+        "05_live/A10/03_reconcile_after_nats_returns.res.json",
+        "05_live/A10/04_corrupt_sqlite_fail_closed.json",
+        "01_defects/D1_midrun_outage.txt"
+      ],
+      "notes": "All 5 A10 variants verified: (1) full compose restart preserves GATED+HELD (0 effects), (2) kill-9 mid-dispatch <=1 effect & no blind re-run, (3) mid-run NATS outage fails closed (0 effects, FAILED_CLOSED) & recovers on return, (4) corrupt SQLite fails closed with StoreError, (5) Calnode booking survives & replays with 0 duplicates."
+    },
+    "A11": {
+      "verdict": "BLOCKED",
+      "localJetStreamVerdict": "PASS (local JetStream SAFI_HISTORY)",
+      "startedUtc": "2026-11-18T08:13:16.808044Z",
+      "endedUtc": "2026-11-18T08:13:16.923080Z",
+      "conversationIds": [
+        "conv_ver_a_20261118T081009Z_1794989544",
+        "conv_ver_b_20261118T081009Z_1794989544",
+        "conv_ver_c_20261118T081009Z_1794989544"
+      ],
+      "downstreamIds": {
+        "n8nExecutions": [],
+        "calnodeBookings": [],
+        "windmillJobs": []
+      },
+      "oracleDelta": {
+        "expected": {
+          "invalidSchemaEvents": 0,
+          "nonPrefixSubjectMutations": 0
+        },
+        "observed": {
+          "totalValidatedEvents": 132,
+          "invalidSchemaEvents": 0,
+          "nonPrefixSubjectMutations": 0
+        }
+      },
+      "evidenceFiles": [
+        "07_jetstream/stream_info_before.json",
+        "07_jetstream/stream_info_after.json",
+        "07_jetstream/stream_diff.json",
+        "07_jetstream/run_events.json",
+        "07_jetstream/schema_validation.json"
+      ],
+      "notes": "BLOCKED on SAFI production NATS cluster (V-07). Locally 100% (132/132) of events validated against control-event.schema.json, all lifecycle types observed, PROXY preserved original portContext, and stream diff confirmed zero mutation of pre-existing subjects."
+    },
+    "A12": {
+      "verdict": "BLOCKED",
+      "startedUtc": "2026-11-18T08:13:16.923108Z",
+      "endedUtc": "2026-11-18T08:13:16.929686Z",
+      "conversationIds": [],
+      "downstreamIds": {
+        "n8nExecutions": [],
+        "calnodeBookings": [],
+        "windmillJobs": []
+      },
+      "oracleDelta": {
+        "expected": {},
+        "observed": {}
+      },
+      "evidenceFiles": [
+        "05_live/A12/A12_DRILL.json"
+      ],
+      "notes": "BLOCKED: Requires independent SAFI tester execution using docs/safichat_user_guide.md (cold-start A12-DRILL recorded separately)."
+    }
+  },
+  "blocked": [
+    {
+      "test": "A02",
+      "reason": "V-06 native SafiChat / Meeting Manager UI invocation contract not supplied by SAFI"
+    },
+    {
+      "test": "A09 (live SAFI Cognito portion)",
+      "reason": "V-08 live SAFI_AUTHZ_URL / Cognito endpoint not supplied by SAFI (local fail-closed + D4 HTTP mock authz PASS)"
+    },
+    {
+      "test": "A11 (SAFI production NATS portion)",
+      "reason": "V-07 SAFI production NATS/JetStream cluster & subject verification not supplied by SAFI (local SAFI_HISTORY 100% PASS)"
+    },
+    {
+      "test": "A12",
+      "reason": "Independent SAFI tester execution required per SOW \u00a78 A12 (cold-start A12-DRILL PASS)"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "MED",
+      "text": "D3 \u2014 With owner approval to keep Anurag0828/safi-tact-orch-001 PUBLIC for stakeholder review, proprietary SOW '.docx' and internal 'SAFI_BUILD_SPEC.md' were scrubbed from ALL Git commits via git filter-branch and excluded via .gitignore (0 occurrences in working tree or Git history).",
+      "status": "FIXED"
+    },
+    {
+      "id": "F2",
+      "severity": "LOW",
+      "text": "D5 \u2014 Fixed mismatch in deploy/README.md and scripts/verify_sow_live.py where X-SAFI-Gate-Secret previously referenced GATE_API_TOKEN instead of N8N_WEBHOOK_SECRET (matching gate/app.py), and added explicit :0.14.0 tag to Calnode digest pin.",
+      "status": "FIXED"
+    }
+  ]
+}

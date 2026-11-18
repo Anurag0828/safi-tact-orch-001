@@ -1,0 +1,12 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:40.472909Z",
+  "statusCode": 404,
+  "body": {
+    "errorCode": "ACTION_NOT_FOUND",
+    "message": "Action '01a1edb7-0f86-e943-691e-167adfbe3852' not found",
+    "details": {
+      "actionId": "01a1edb7-0f86-e943-691e-167adfbe3852"
+    }
+  }
+}

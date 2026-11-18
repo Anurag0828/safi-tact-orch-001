@@ -1,0 +1,21 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:35.650105Z",
+  "statusCode": 200,
+  "body": {
+    "actionId": "act_7d997bb08d0d",
+    "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+    "state": "DONE",
+    "idempotencyKey": "intake:conv_ver_a_20261118T081009Z_1794989544:1",
+    "idempotentReplay": false,
+    "result": {
+      "status": "ingested",
+      "executionId": "269",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "subjectLineDisplay": "Customer A - Ver 20261118T081009Z_1794989544",
+      "recipientEmail": "customer-a@allowlist.test.local",
+      "preparedFollowup": "Hello Alice Ver, thank you for contacting us regarding: Interested in local business automation. Here are available consultation times.",
+      "followupIdempotencyKey": "followup:conv_ver_a_20261118T081009Z_1794989544:intake:conv_ver_a_20261118T081009Z_1794989544:1"
+    }
+  }
+}

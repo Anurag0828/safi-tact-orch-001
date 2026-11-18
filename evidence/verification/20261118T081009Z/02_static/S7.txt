@@ -1,0 +1,28 @@
+# testedSha: 11a31766f79c035d1a115d5f0b38ad4e92924753
+# command: grep -n 'ports:' -A3 deploy/docker-compose.yml
+# rc: 0
+
+18:    ports:
+19-      - "127.0.0.1:8000:8000"
+20-    environment:
+21-      GATE_STORE_PATH: /app/data/gate_state.db
+--
+59:    ports:
+60-      - "127.0.0.1:5678:5678"
+61-    environment:
+62-      N8N_HOST: 127.0.0.1
+--
+83:    ports:
+84-      - "127.0.0.1:3000:3000"
+85-    environment:
+86-      PORT: "3000"
+--
+107:    ports:
+108-      - "127.0.0.1:4222:4222"
+109-      - "127.0.0.1:8222:8222"
+110-    healthcheck:
+--
+146:    ports:
+147-      - "127.0.0.1:8001:8000"
+148-    environment:
+149-      DATABASE_URL: postgres://${WINDMILL_DB_USER}:${WINDMILL_DB_PASSWORD}@windmill-db:5432/windmill?sslmode=disable

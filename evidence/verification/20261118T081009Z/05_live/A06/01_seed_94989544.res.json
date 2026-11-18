@@ -1,0 +1,24 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:41.130097Z",
+  "statusCode": 200,
+  "body": {
+    "actionId": "act_fae1620a97d1",
+    "conversationId": "conv_ver_c_20261118T081009Z_1794989544",
+    "state": "DONE",
+    "idempotencyKey": "seed:conv_ver_c_20261118T081009Z_1794989544",
+    "idempotentReplay": false,
+    "result": {
+      "receiptId": "rcpt_273_1794989561107",
+      "executionId": "273",
+      "conversationId": "conv_ver_c_20261118T081009Z_1794989544",
+      "recipientEmail": "customer-c@allowlist.test.local",
+      "idempotencyKey": "seed:conv_ver_c_20261118T081009Z_1794989544",
+      "messagePreview": "Seed conv_ver_c_20261118T081009Z_1794989544",
+      "gateApproved": true,
+      "dispatchedAt": "2026-11-18T08:12:41.107Z",
+      "status": "dispatched",
+      "deliveredCount": 195
+    }
+  }
+}

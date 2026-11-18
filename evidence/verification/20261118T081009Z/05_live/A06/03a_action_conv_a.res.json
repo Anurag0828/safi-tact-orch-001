@@ -1,0 +1,24 @@
+{
+  "testedSha": "11a31766f79c035d1a115d5f0b38ad4e92924753",
+  "tsUtc": "2026-11-18T08:12:41.789334Z",
+  "statusCode": 200,
+  "body": {
+    "actionId": "act_a065a4a42268",
+    "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+    "state": "DONE",
+    "idempotencyKey": "a06:a:20261118T081009Z",
+    "idempotentReplay": false,
+    "result": {
+      "receiptId": "rcpt_274_1794989561767",
+      "executionId": "274",
+      "conversationId": "conv_ver_a_20261118T081009Z_1794989544",
+      "recipientEmail": "customer-a@allowlist.test.local",
+      "idempotencyKey": "a06:a:20261118T081009Z",
+      "messagePreview": "Conv A runs while B gated",
+      "gateApproved": true,
+      "dispatchedAt": "2026-11-18T08:12:41.767Z",
+      "status": "dispatched",
+      "deliveredCount": 196
+    }
+  }
+}
